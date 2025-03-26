@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Tracking | Crohn's Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                        accent: '#ec4899',
+                        neutral: '#f3f4f6',
+                    },
+                    borderRadius: {
+                        'xl': '1rem',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .gradient-bg {
+                background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            }
+            .device-frame {
+                width: 375px;
+                height: 812px;
+                margin: 0 auto;
+                border: 12px solid #1f2937;
+                border-radius: 40px;
+                overflow: hidden;
+                position: relative;
+            }
+            .page-container {
+                width: 100%;
+                height: 100%;
+                overflow-y: auto;
+                position: relative;
+            }
+            .nav-item.active {
+                color: #6366f1;
+                border-top: 3px solid #6366f1;
+            }
+            .emoji-selected {
+                transform: scale(1.2);
+                border: 2px solid #6366f1;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="device-frame shadow-2xl">
+        <div class="page-container bg-white">
+            <!-- Header -->
+            <header class="gradient-bg p-6 text-white">
+                <div class="flex items-center mb-2">
+                    <a href="index.html" class="mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a>
+                    <h1 class="text-2xl font-bold">Daily Tracking</h1>
+                </div>
+                <p class="text-sm opacity-90">Track your bowel movements and daily feelings</p>
+            </header>
+
+            <!-- Main Content -->
+            <main class="p-6 pb-20">
+                <!-- Date Selector -->
+                <div class="flex justify-between items-center mb-6">
+                    <button class="p-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <h2 class="text-black font-medium">Today, May 15</h2>
+                    <button class="p-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- How are you feeling today? -->
+                <div class="bg-white rounded-xl shadow-md p-5 mb-6">
+                    <h3 class="text-black font-medium mb-4">How are you feeling today?</h3>
+                    <div class="flex justify-between items-center">
+                        <button class="w-14 h-14 rounded-full flex items-center justify-center transition transform hover:scale-110">
+                            <span class="text-3xl">😞</span>
+                        </button>
+                        <button class="w-14 h-14 rounded-full flex items-center justify-center transition transform hover:scale-110">
+                            <span class="text-3xl">😐</span>
+                        </button>
+                        <button class="w-14 h-14 rounded-full flex items-center justify-center transition transform hover:scale-110 emoji-selected">
+                            <span class="text-3xl">🙂</span>
+                        </button>
+                        <button class="w-14 h-14 rounded-full flex items-center justify-center transition transform hover:scale-110">
+                            <span class="text-3xl">😀</span>
+                        </button>
+                        <button class="w-14 h-14 rounded-full flex items-center justify-center transition transform hover:scale-110">
+                            <span class="text-3xl">😄</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bowel Movements -->
+                <div class="bg-white rounded-xl shadow-md p-5 mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-black font-medium">Bowel Movements</h3>
+                        <button class="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center shadow-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Bowel Movement Entry -->
+                    <div class="bg-neutral rounded-lg p-4 mb-3">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="text-black font-medium">8:30 AM</span>
+                                <div class="flex items-center mt-1">
+                                    <span class="inline-block w-3 h-3 rounded-full bg-yellow-500 mr-2"></span>
+                                    <span class="text-black text-sm">Bristol Type 4</span>
+                                </div>
+                            </div>
+                            <button>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="text-black text-sm">Normal consistency, no pain or discomfort.</p>
+                    </div>
+
+                    <!-- Bowel Movement Entry -->
+                    <div class="bg-neutral rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="text-black font-medium">2:15 PM</span>
+                                <div class="flex items-center mt-1">
+                                    <span class="inline-block w-3 h-3 rounded-full bg-green-500 mr-2"></span>
+                                    <span class="text-black text-sm">Bristol Type 3</span>
+                                </div>
+                            </div>
+                            <button>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="text-black text-sm">Slight urgency but otherwise normal.</p>
+                    </div>
+                </div>
+
+                <!-- Pain Level -->
+                <div class="bg-white rounded-xl shadow-md p-5 mb-6">
+                    <h3 class="text-black font-medium mb-3">Pain Level</h3>
+                    <div class="mb-2">
+                        <div class="flex justify-between text-xs text-black mb-1">
+                            <span>No Pain</span>
+                            <span>Severe</span>
+                        </div>
+                        <input type="range" min="0" max="10" value="2" class="w-full accent-primary">
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-black text-sm font-medium">Current: 2/10</span>
+                        <button class="text-primary text-sm font-medium">Add Note</button>
+                    </div>
+                </div>
+
+                <!-- Energy Level -->
+                <div class="bg-white rounded-xl shadow-md p-5">
+                    <h3 class="text-black font-medium mb-3">Energy Level</h3>
+                    <div class="mb-2">
+                        <div class="flex justify-between text-xs text-black mb-1">
+                            <span>Low</span>
+                            <span>High</span>
+                        </div>
+                        <input type="range" min="0" max="10" value="7" class="w-full accent-primary">
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-black text-sm font-medium">Current: 7/10</span>
+                        <button class="text-primary text-sm font-medium">Add Note</button>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Navigation -->
+            <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around py-3">
+                <a href="index.html" class="nav-item flex flex-col items-center pt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    <span class="text-xs mt-1">Home</span>
+                </a>
+                <a href="tracking.html" class="nav-item active flex flex-col items-center pt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <span class="text-xs mt-1">Track</span>
+                </a>
+                <a href="insights.html" class="nav-item flex flex-col items-center pt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span class="text-xs mt-1">Insights</span>
+                </a>
+                <a href="chat.html" class="nav-item flex flex-col items-center pt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V

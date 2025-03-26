@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diet Tracker | Crohn's Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                        accent: '#ec4899',
+                        neutral: '#f3f4f6',
+                    },
+                    borderRadius: {
+                        'xl': '1rem',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .gradient-bg {
+                background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            }
+            .device-frame {
+                width: 375px;
+                height: 812px;
+                margin: 0 auto;
+                border: 12px solid #1f2937;
+                border-radius: 40px;
+                overflow: hidden;
+                position: relative;
+            }
+            .page-container {
+                width: 100%;
+                height: 100%;
+                overflow-y: auto;
+                position: relative;
+            }
+            .nav-item.active {
+                color: #6366f1;
+                border-top: 3px solid #6366f1;
+            }
+            .food-tag {
+                background-color: rgba(99, 102, 241, 0.1);
+                color: #6366f1;
+                border-radius: 9999px;
+                padding: 0.25rem 0.75rem;
+                font-size: 0.75rem;
+                font-weight: 500;
+                display: inline-block;
+                margin-right: 0.5rem;
+                margin-bottom: 0.5rem;
+            }
+            .food-tag.trigger {
+                background-color: rgba(239, 68, 68, 0.1);
+                color: #ef4444;
+            }
+            .food-tag.safe {
+                background-color: rgba(34, 197, 94, 0.1);
+                color: #22c55e;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="device-frame shadow-2xl">
+        <div class="page-container bg-white">
+            <!-- Header -->
+            <header class="gradient-bg p-6 text-white">
+                <div class="flex items-center mb-2">
+                    <a href="index.html" class="mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a>
+                    <h1 class="text-2xl font-bold">Diet Tracker</h1>
+                </div>
+                <p class="text-sm opacity-90">Monitor your food intake and identify triggers</p>
+            </header>
+
+            <!-- Main Content -->
+            <main class="p-6 pb-20">
+                <!-- Date Selector -->
+                <div class="flex justify-between items-center mb-6">
+                    <button class="p-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <h2 class="text-black font-medium">Today, May 15</h2>
+                    <button class="p-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Add Meal Button -->
+                <button class="w-full bg-primary text-white rounded-xl py-3 mb-6 flex items-center justify-center shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <span>Add Meal</span>
+                </button>
+
+                <!-- Today's Meals -->
+                <div class="bg-white rounded-xl shadow-md p-5 mb-6">
+                    <h3 class="text-black font-medium mb-4">Today's Meals</h3>
+
+                    <!-- Breakfast Entry -->
+                    <div class="bg-neutral rounded-lg p-4 mb-3">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="text-black font-medium">Breakfast</span>
+                                <div class="flex items-center mt-1">
+                                    <span class="text-black text-xs">7:30 AM</span>
+                                </div>
+                            </div>
+                            <button>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="text-black text-sm mb-2">Oatmeal with banana and honey</p>
+                        <div class="flex flex-wrap">
+                            <span class="food-tag safe">Oatmeal</span>
+                            <span class="food-tag safe">Banana</span>
+                            <span class="food-tag">Honey</span>
+                        </div>
+                        <div class="mt-2 flex justify-between items-center">
+                            <span class="text-black text-xs">Reaction: None</span>
+                            <button class="text-primary text-sm font-medium">Edit</button>
+                        </div>
+                    </div>
+
+                    <!-- Lunch Entry -->
+                    <div class="bg-neutral rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="text-black font-medium">Lunch</span>
+                                <div class="flex items-center mt-1">
+                                    <span class="text-black text-xs">12:15 PM</span>
+                                </div>
+                            </div>
+                            <button>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="text-black text-sm mb-2">Grilled chicken sandwich with avocado</p>
+                        <div class="flex flex-wrap">
+                            <span class="food-tag safe">Chicken</span>
+                            <span class="food-tag safe">Avocado</span>
+                            <span class="food-tag trigger">Wheat Bread</span>
+                        </div>
+                        <div class="mt-2 flex justify-between items-center">
+                            <span class="text-black text-xs">Reaction: Mild bloating</span>
+                            <button class="text-primary text-sm font-medium">Edit</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Food Triggers -->
+                <div class="bg-white rounded-xl shadow-md p-5 mb-6">
+                    <h3 class="text-black font-medium mb-3">Your Food Triggers</h3>
+                    <div class="flex flex-wrap mb-2">
+                        <span class="food-tag trigger">Dairy</span>
+                        <span class="food-tag trigger">Wheat</span>
+                        <span class="food-tag trigger">Spicy Foods</span>
+                        <span class="food-tag trigger">Fried Foods</span>
+                        <span class="food-tag trigger">Caffeine</span>
+                    </div>
+                    <button class="text-primary text-sm font-medium">Manage Triggers</button>
+                </div>
+
+                <!-- Safe Foods -->
+                <div class="bg-white rounded-xl shadow-md p-5">
+                    <h3 class="text-black font-medium mb-3">Your Safe Foods</h3>
+                    <div class="flex flex-wrap mb-2">
+                        <span class="food-tag safe">Rice</span>
+                        <span class="food-tag safe">Chicken</span>
+                        <span class="food-tag safe">Bananas</span>
+                        <span class="food-tag safe">Oatmeal</span>
+                        <span class="food-tag safe">Avocado</span>
+                    </div>
+                    <button class="text-primary text-sm font-medium">Manage Safe Foods</button>
+                </div>
+            </main>
+
+            <!-- Navigation -->
+            <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around py-3">
+                <a href="index.html" class="nav-item flex flex-col items-center pt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    <span class="text-xs mt-1">Home</span>
+                </a>
+                <a href="tracking.html" class="nav-item flex flex-col items-center pt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <span class="text-xs mt-1">Track</span>
+                </a>
+                <a href="diet.html" class="nav-item active flex flex-col items-center pt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span class="text-xs mt-1">Diet</span>
+                </a>
+                <a href="insights.html" class="nav-item flex flex-col items-center pt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span class="text-xs mt-1">Insights</span>
+                </a>
+                <a href="chat.html" class="nav-item flex flex-col items-center pt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8

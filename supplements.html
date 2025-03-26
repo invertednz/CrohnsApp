@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplements Tracker | Crohn's Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                        accent: '#ec4899',
+                        neutral: '#f3f4f6',
+                    },
+                    borderRadius: {
+                        'xl': '1rem',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .gradient-bg {
+                background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            }
+            .device-frame {
+                width: 375px;
+                height: 812px;
+                margin: 0 auto;
+                border: 12px solid #1f2937;
+                border-radius: 40px;
+                overflow: hidden;
+                position: relative;
+            }
+            .page-container {
+                width: 100%;
+                height: 100%;
+                overflow-y: auto;
+                position: relative;
+            }
+            .nav-item.active {
+                color: #6366f1;
+                border-top: 3px solid #6366f1;
+            }
+            .supplement-card {
+                border-left: 4px solid #6366f1;
+            }
+            .supplement-card.missed {
+                border-left: 4px solid #ef4444;
+            }
+            .supplement-card.taken {
+                border-left: 4px solid #22c55e;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="device-frame shadow-2xl">
+        <div class="page-container bg-white">
+            <!-- Header -->
+            <header class="gradient-bg p-6 text-white">
+                <div class="flex items-center mb-2">
+                    <a href="index.html" class="mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a>
+                    <h1 class="text-2xl font-bold">Supplements</h1>
+                </div>
+                <p class="text-sm opacity-90">Track your supplement intake</p>
+            </header>
+
+            <!-- Main Content -->
+            <main class="p-6 pb-20">
+                <!-- Date Selector -->
+                <div class="flex justify-between items-center mb-6">
+                    <button class="p-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <h2 class="text-black font-medium">Today, May 15</h2>
+                    <button class="p-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Add Supplement Button -->
+                <button class="w-full bg-primary text-white rounded-xl py-3 mb-6 flex items-center justify-center shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <span>Add Supplement</span>
+                </button>
+
+                <!-- Morning Supplements -->
+                <div class="mb-6">
+                    <h3 class="text-black font-medium mb-3">Morning</h3>
+                    
+                    <!-- Supplement Card -->
+                    <div class="bg-white rounded-xl shadow-md p-4 mb-3 supplement-card taken">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="flex items-center">
+                                    <span class="text-black font-medium">Vitamin D3</span>
+                                    <span class="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">Taken</span>
+                                </div>
+                                <p class="text-black text-sm mt-1">2000 IU - Take with breakfast</p>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-black text-xs mr-2">7:45 AM</span>
+                                <button>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Supplement Card -->
+                    <div class="bg-white rounded-xl shadow-md p-4 supplement-card taken">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="flex items-center">
+                                    <span class="text-black font-medium">Omega-3 Fish Oil</span>
+                                    <span class="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">Taken</span>
+                                </div>
+                                <p class="text-black text-sm mt-1">1000mg - Take with breakfast</p>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-black text-xs mr-2">7:45 AM</span>
+                                <button>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Afternoon Supplements -->
+                <div class="mb-6">
+                    <h3 class="text-black font-medium mb-3">Afternoon</h3>
+                    
+                    <!-- Supplement Card -->
+                    <div class="bg-white rounded-xl shadow-md p-4 mb-3 supplement-card">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="flex items-center">
+                                    <span class="text-black font-medium">Probiotic</span>
+                                    <span class="ml-2 text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full">Scheduled</span>
+                                </div>
+                                <p class="text-black text-sm mt-1">50 billion CFU - Take after lunch</p>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-black text-xs mr-2">1:00 PM</span>
+                                <button>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mt-2 flex justify-end">
+                            <button class="bg-primary text-white text-sm px-3 py-1 rounded-lg shadow-sm">Mark as Taken</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Evening Supplements -->
+                <div class="mb-6">
+                    <h3 class="text-black font-medium mb-3">Evening</h3>
+                    
+                    <!-- Supplement Card -->
+                    <div class="bg-white rounded-xl shadow-md p-4 mb-3 supplement-card">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="flex items-center">
+                                    <span class="text-black font-medium">Turmeric Extract</span>
+                                    <span class="ml-2 text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full">Scheduled</span>
+                                </div>
+                                <p class="text-black text-sm mt-1">500mg - Take with dinner</p>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-black text-xs mr-2">6:30 PM</span>
+                                <button>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mt-2 flex justify-end">
+                            <button class="bg-primary text-white text-sm px-3 py-1 rounded-lg shadow-sm">Mark as Taken</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Supplement Card -->
+                    <div class="bg-white rounded-xl shadow-md p-4 supplement-card missed">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="flex items-center">
+                                    <span class="text-black font-medium">Magnesium Glycinate</span>
+                                    <span class="ml-2 text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded-full">Missed</span>
+                                </div>
+                                <p class="text-black text-sm mt-1">400mg - Take before bed</p>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-black text-xs mr-2">Yesterday</span>
+                                <button>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Supplement History -->
+                <div class="bg-white rounded-xl shadow-md p-5">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-black font-medium">Supplement History</h3>
+                        <button class="text-primary text-sm font-medium">
+            <!-- Navigation -->
+            <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around py-3">
+                <a href="index.html" class="nav-item flex flex-col items-center pt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    <span class="text-xs mt-1">Home</span>
+                </a>
+                <a href="tracking.html" class="nav-item flex flex-col items-center pt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <span class="text-xs mt-1">Track</span>
+                </a>
+                <a href="diet.html" class="nav-item flex flex-col items-center pt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span class="text-xs mt-1">Diet</span>
+                </a>
+                <a href="insights.html" class="nav-item flex flex-col items-center pt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span class="text-xs mt-1">Insights</span>
+                </a>
+                <a href="chat.html" class="nav-item flex flex-col items-center pt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                    </svg>
+                    <span class="text-xs mt-1">Chat</span>
+                </a>
+            </nav>

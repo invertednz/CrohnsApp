@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symptoms Tracker | Crohn's Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                        accent: '#ec4899',
+                        neutral: '#f3f4f6',
+                    },
+                    borderRadius: {
+                        'xl': '1rem',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .gradient-bg {
+                background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            }
+            .device-frame {
+                width: 375px;
+                height: 812px;
+                margin: 0 auto;
+                border: 12px solid #1f2937;
+                border-radius: 40px;
+                overflow: hidden;
+                position: relative;
+            }
+            .page-container {
+                width: 100%;
+                height: 100%;
+                overflow-y: auto;
+                position: relative;
+            }
+            .nav-item.active {
+                color: #6366f1;
+                border-top: 3px solid #6366f1;
+            }
+            .symptom-tag {
+                background-color: rgba(99, 102, 241, 0.1);
+                color: #6366f1;
+                border-radius: 9999px;
+                padding: 0.25rem 0.75rem;
+                font-size: 0.75rem;
+                font-weight: 500;
+                display: inline-block;
+                margin-right: 0.5rem;
+                margin-bottom: 0.5rem;
+            }
+            .symptom-tag.active {
+                background-color: #6366f1;
+                color: white;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="device-frame shadow-2xl">
+        <div class="page-container bg-white">
+            <!-- Header -->
+            <header class="gradient-bg p-6 text-white">
+                <div class="flex items-center mb-2">
+                    <a href="index.html" class="mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a>
+                    <h1 class="text-2xl font-bold">Symptoms Tracker</h1>
+                </div>
+                <p class="text-sm opacity-90">Monitor and track your symptoms</p>
+            </header>
+
+            <!-- Main Content -->
+            <main class="p-6 pb-20">
+                <!-- Date Selector -->
+                <div class="flex justify-between items-center mb-6">
+                    <button class="p-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <h2 class="text-black font-medium">Today, May 15</h2>
+                    <button class="p-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Common Symptoms -->
+                <div class="mb-6">
+                    <h3 class="text-black font-medium mb-3">Common Symptoms</h3>
+                    <div class="flex flex-wrap">
+                        <span class="symptom-tag active">Abdominal Pain</span>
+                        <span class="symptom-tag">Diarrhea</span>
+                        <span class="symptom-tag active">Fatigue</span>
+                        <span class="symptom-tag">Nausea</span>
+                        <span class="symptom-tag">Bloating</span>
+                        <span class="symptom-tag">Joint Pain</span>
+                        <span class="symptom-tag">Fever</span>
+                        <span class="symptom-tag">Weight Loss</span>
+                        <span class="symptom-tag">+ Add New</span>
+                    </div>
+                </div>
+
+                <!-- Active Symptoms -->
+                <div class="bg-white rounded-xl shadow-md p-5 mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-black font-medium">Active Symptoms</h3>
+                        <button class="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center shadow-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Symptom Entry -->
+                    <div class="bg-neutral rounded-lg p-4 mb-3">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="text-black font-medium">Abdominal Pain</span>
+                                <div class="flex items-center mt-1">
+                                    <span class="inline-block w-3 h-3 rounded-full bg-red-500 mr-2"></span>
+                                    <span class="text-black text-sm">Moderate</span>
+                                </div>
+                            </div>
+                            <button>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="text-black text-sm">Lower right quadrant, worse after eating.</p>
+                        <div class="mt-2 flex justify-between items-center">
+                            <span class="text-black text-xs">Started: Today, 8:30 AM</span>
+                            <button class="text-primary text-sm font-medium">Update</button>
+                        </div>
+                    </div>
+
+                    <!-- Symptom Entry -->
+                    <div class="bg-neutral rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="text-black font-medium">Fatigue</span>
+                                <div class="flex items-center mt-1">
+                                    <span class="inline-block w-3 h-3 rounded-full bg-yellow-500 mr-2"></span>
+                                    <span class="text-black text-sm">Mild</span>
+                                </div>
+                            </div>
+                            <button>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="text-black text-sm">General tiredness throughout the day.</p>
+                        <div class="mt-2 flex justify-between items-center">
+                            <span class="text-black text-xs">Started: Yesterday, 6:00 PM</span>
+                            <button class="text-primary text-sm font-medium">Update</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Symptom History -->
+                <div class="bg-white rounded-xl shadow-md p-5">
+                    <h3 class="text-black font-medium mb-4">Symptom History</h3>
+                    
+                    <div class="border-b border-gray-200 pb-3 mb-3">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-black font-medium">Nausea</span>
+                            <span class="text-black text-xs">May 12-14</span>
+                        </div>
+                        <p class="text-black text-sm">Morning nausea, resolved after medication.</p>
+                    </div>
+                    
+                    <div class="border-b border-gray-200 pb-3 mb-3">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-black font-medium">Joint Pain</span>
+                            <span class="text-black text-xs">May 10-13</span>
+                        </div>
+                        <p class="text-black text-sm">Knees and ankles, worse in the morning.</p>
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-black font-medium">Bloating</span>
+                            <span class="text-black text-xs">May 8-11</span>
+                        </div>
+                        <p class="text-black text-sm">After meals, especially dairy products.</p>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Navigation -->
+            <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around py-3">
+                <a href="index.html" class="nav-item flex flex-col items-center pt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    <span class="text-xs mt-1">Home</span>
+                </a>
+                <a href="tracking.html" class="nav-item flex flex-col items-center pt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <span class="text-xs mt-1">Track</span>
+                </a>
+                <a href="diet.html" class="nav-item flex flex-col items-center pt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span class="text-xs mt-1">Diet</span>
+                </a>
+                <a href="chat.html" class="nav-item flex flex-col items-center pt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
