@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 import 'package:crohns_companion/core/theme/app_theme.dart';
 import 'package:crohns_companion/core/backend_service_provider.dart';
 import 'package:crohns_companion/screens/auth/sign_up_screen.dart';
@@ -19,52 +20,21 @@ class _SignInScreenState extends State<SignInScreen> {
   bool _obscurePassword = true;
 
   @override
+  void initState() {
+    developer.log('Initializing SignInScreen', name: 'SignInScreen');
+    super.initState();
+  }
+
+  @override
   void dispose() {
+    developer.log('Disposing SignInScreen', name: 'SignInScreen');
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  Future<void> _signIn() async {
-    // Validate form
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final authService = BackendServiceProvider.instance.auth;
-      final user = await authService.signInWithEmail(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
-
-      if (!mounted) return;
-
-      if (user != null) {
-        // Navigate to home screen
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-          (route) => false,
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      // Show error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Sign-in failed: ${e.toString()}')),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
   Future<void> _signInWithGoogle() async {
+    developer.log('Attempting Google sign in', name: 'SignInScreen');
     setState(() {
       _isLoading = true;
     });
@@ -73,20 +43,26 @@ class _SignInScreenState extends State<SignInScreen> {
       final authService = BackendServiceProvider.instance.auth;
       final user = await authService.signInWithGoogle();
 
-      if (!mounted) return;
+      if (!mounted) {
+        developer.log('Widget not mounted after Google sign in', name: 'SignInScreen');
+        return;
+      }
 
       if (user != null) {
-        // Navigate to home screen
+        developer.log('Google sign in successful, navigating to HomeScreen', name: 'SignInScreen');
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const HomeScreen()),
           (route) => false,
         );
+      } else {
+        developer.log('Google sign in failed: user is null', name: 'SignInScreen');
       }
-    } catch (e) {
-      if (!mounted) return;
-      // Show error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Google sign-in failed: ${e.toString()}')),
+    } catch (e, stackTrace) {
+      developer.log(
+        'Error during Google sign in',
+        name: 'SignInScreen',
+        error: e,
+        stackTrace: stackTrace,
       );
     } finally {
       if (mounted) {
@@ -98,6 +74,7 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   Future<void> _signInWithApple() async {
+    developer.log('Attempting Apple sign in', name: 'SignInScreen');
     setState(() {
       _isLoading = true;
     });
@@ -106,20 +83,78 @@ class _SignInScreenState extends State<SignInScreen> {
       final authService = BackendServiceProvider.instance.auth;
       final user = await authService.signInWithApple();
 
-      if (!mounted) return;
+      if (!mounted) {
+        developer.log('Widget not mounted after Apple sign in', name: 'SignInScreen');
+        return;
+      }
 
       if (user != null) {
+        developer.log('Apple sign in successful, navigating to HomeScreen', name: 'SignInScreen');
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (route) => false,
+        );
+      } else {
+        developer.log('Apple sign in failed: user is null', name: 'SignInScreen');
+      }
+    } catch (e, stackTrace) {
+      developer.log(
+        'Error during Apple sign in',
+        name: 'SignInScreen',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _signIn() async {
+    developer.log('Attempting email sign in', name: 'SignInScreen');
+    // Validate form
+    if (!_formKey.currentState!.validate()) {
+      developer.log('Form validation failed', name: 'SignInScreen');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      developer.log('Initializing auth service', name: 'SignInScreen');
+      final authService = BackendServiceProvider.instance.auth;
+      developer.log('Calling signInWithEmail', name: 'SignInScreen');
+      final user = await authService.signInWithEmail(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      if (!mounted) {
+        developer.log('Widget not mounted after sign in', name: 'SignInScreen');
+        return;
+      }
+
+      if (user != null) {
+        developer.log('Sign in successful, navigating to HomeScreen', name: 'SignInScreen');
         // Navigate to home screen
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const HomeScreen()),
           (route) => false,
         );
+      } else {
+        developer.log('Sign in failed: user is null', name: 'SignInScreen');
       }
-    } catch (e) {
-      if (!mounted) return;
-      // Show error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Apple sign-in failed: ${e.toString()}')),
+    } catch (e, stackTrace) {
+      developer.log(
+        'Error during sign in',
+        name: 'SignInScreen',
+        error: e,
+        stackTrace: stackTrace,
       );
     } finally {
       if (mounted) {
@@ -132,6 +167,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    developer.log('Building SignInScreen widget', name: 'SignInScreen');
     return Scaffold(
       body: Stack(
         children: [

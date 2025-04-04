@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 import 'package:crohns_companion/core/theme/app_theme.dart';
 import 'package:crohns_companion/core/backend_service_provider.dart';
 import 'package:crohns_companion/screens/tracking/tracking_screen.dart';
@@ -25,12 +26,26 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   @override
+  void initState() {
+    developer.log('Initializing HomeScreen', name: 'HomeScreen');
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    developer.log('Disposing HomeScreen', name: 'HomeScreen');
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    developer.log('Building HomeScreen widget', name: 'HomeScreen');
     return Scaffold(
       body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
+          developer.log('Changing tab to index: $index', name: 'HomeScreen');
           setState(() {
             _currentIndex = index;
           });

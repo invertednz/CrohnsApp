@@ -55,7 +55,6 @@ class _TrackingScreenState extends State<TrackingScreen> {
         });
       }
     } catch (e) {
-      // Show error message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to load tracking data: ${e.toString()}')),
@@ -114,6 +113,34 @@ class _TrackingScreenState extends State<TrackingScreen> {
       _selectedDate = _selectedDate.add(Duration(days: days));
     });
     _loadTrackingData();
+  }
+
+  Widget _buildFeelingButton(int index, String emoji) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedFeeling = index;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          color: _selectedFeeling == index ? AppTheme.neutralColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          border: _selectedFeeling == index
+              ? Border.all(color: AppTheme.primaryColor, width: 2)
+              : null,
+        ),
+        child: Center(
+          child: Text(
+            emoji,
+            style: const TextStyle(fontSize: 28),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -199,11 +226,13 @@ class _TrackingScreenState extends State<TrackingScreen> {
                         const SizedBox(height: 24),
                         // How are you feeling today?
                         Card(
+                          elevation: 4,
+                          shadowColor: Colors.black.withOpacity(0.1),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Padding(
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(20),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -218,56 +247,27 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                                   children: [
-                                    FeelingOption(
-                                      emoji: '😞',
-                                      isSelected: _selectedFeeling == 0,
-                                      onTap: () {
-                                        setState(() {
-                                          _selectedFeeling = 0;
-                                        });
-                                      },
-                                    ),
-                                    FeelingOption(
-                                      emoji: '😐',
-                                      isSelected: _selectedFeeling == 1,
-                                      onTap: () {
-                                        setState(() {
-                                          _selectedFeeling = 1;
-                                        });
-                                      },
-                                    ),
-                                    FeelingOption(
-                                      emoji: '🙂',
-                                      isSelected: _selectedFeeling == 2,
-                                      onTap: () {
-                                        setState(() {
-                                          _selectedFeeling = 2;
-                                        });
-                                      },
-                                    ),
-                                    FeelingOption(
-                                      emoji: '😄',
-                                      isSelected: _selectedFeeling == 3,
-                                      onTap: () {
-                                        setState(() {
-                                          _selectedFeeling = 3;
-                                        });
-                                      },
-                                    ),
+                                    _buildFeelingButton(0, '😞'),
+                                    _buildFeelingButton(1, '😐'),
+                                    _buildFeelingButton(2, '🙂'),
+                                    _buildFeelingButton(3, '😊'),
+                                    _buildFeelingButton(4, '🤗'),
                                   ],
                                 ),
                               ],
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        // Bowel movements
+                        const SizedBox(height: 24),
+                        // Bowel Movements
                         Card(
+                          elevation: 4,
+                          shadowColor: Colors.black.withOpacity(0.1),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Padding(
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(20),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -292,25 +292,16 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                       },
                                       icon: const Icon(Icons.remove_circle_outline),
                                       color: AppTheme.primaryColor,
-                                      iconSize: 32,
                                     ),
-                                    Container(
-                                      width: 80,
-                                      height: 80,
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.neutralColor,
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          _bowelMovements.toString(),
-                                          style: const TextStyle(
-                                            fontSize: 32,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
+                                    const SizedBox(width: 16),
+                                    Text(
+                                      _bowelMovements.toString(),
+                                      style: const TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
+                                    const SizedBox(width: 16),
                                     IconButton(
                                       onPressed: () {
                                         setState(() {
@@ -319,112 +310,15 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                       },
                                       icon: const Icon(Icons.add_circle_outline),
                                       color: AppTheme.primaryColor,
-                                      iconSize: 32,
                                     ),
                                   ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        // Pain level
-                        Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Pain Level',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text('None'),
-                                    Text(
-                                      '${_painLevel.toInt()}/10',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const Text('Severe'),
-                                  ],
-                                ),
-                                Slider(
-                                  value: _painLevel,
-                                  min: 0,
-                                  max: 10,
-                                  divisions: 10,
-                                  activeColor: AppTheme.primaryColor,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _painLevel = value;
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        // Energy level
-                        Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Energy Level',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text('Low'),
-                                    Text(
-                                      '${_energyLevel.toInt()}/10',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const Text('High'),
-                                  ],
-                                ),
-                                Slider(
-                                  value: _energyLevel,
-                                  min: 0,
-                                  max: 10,
-                                  divisions: 10,
-                                  activeColor: AppTheme.primaryColor,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _energyLevel = value;
-                                    });
-                                  },
                                 ),
                               ],
                             ),
                           ),
                         ),
                         const SizedBox(height: 24),
-                        // Save button
+                        // Save Button
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
@@ -435,8 +329,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                     width: 20,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          Colors.white),
+                                      valueColor:
+                                          AlwaysStoppedAnimation<Color>(Colors.white),
                                     ),
                                   )
                                 : const Text('Save'),
@@ -447,43 +341,6 @@ class _TrackingScreenState extends State<TrackingScreen> {
                   ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class FeelingOption extends StatelessWidget {
-  final String emoji;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const FeelingOption({
-    Key? key,
-    required this.emoji,
-    required this.isSelected,
-    required this.onTap,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          color: isSelected ? AppTheme.neutralColor : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-          border: isSelected
-              ? Border.all(color: AppTheme.primaryColor, width: 2)
-              : null,
-        ),
-        child: Center(
-          child: Text(
-            emoji,
-            style: const TextStyle(fontSize: 28),
-          ),
-        ),
       ),
     );
   }
