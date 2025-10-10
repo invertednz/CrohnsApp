@@ -4,7 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 // Import the backend service and environment
-import '../../FlutterBackend/src/core/backend_service.dart';
+import '../FlutterBackend/src/core/backend_service.dart';
 import '../core/environment.dart';
 
 /// A provider class that manages the initialization and access to the BackendService

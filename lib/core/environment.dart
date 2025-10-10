@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class Environment {
@@ -11,7 +12,12 @@ class Environment {
   static Future<void> initialize() async {
     const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'development');
     final envFile = flavor == 'production' ? '.env.production' : '.env';
-    
-    await dotenv.load(fileName: envFile);
+
+    try {
+      await dotenv.load(fileName: envFile);
+    } catch (error, stackTrace) {
+      debugPrint('Environment: failed to load $envFile. Using fallback values. Error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    }
   }
 }

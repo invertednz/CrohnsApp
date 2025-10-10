@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
 import 'package:crohns_companion/core/theme/app_theme.dart';
-import 'package:crohns_companion/core/backend_service_provider.dart';
 import 'package:crohns_companion/screens/tracking/tracking_screen.dart';
 import 'package:crohns_companion/screens/symptoms/symptoms_screen.dart';
 import 'package:crohns_companion/screens/diet/diet_screen.dart';
@@ -41,6 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     developer.log('Building HomeScreen widget', name: 'HomeScreen');
     return Scaffold(
+      backgroundColor: AppTheme.darkNavy,
       body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
@@ -82,226 +82,228 @@ class HomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          // Header with gradient background
-          Container(
-            padding: const EdgeInsets.fromLTRB(24, 60, 24, 24),
-            decoration: const BoxDecoration(
-              gradient: AppTheme.primaryGradient,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Crohn\'s Companion',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: AppTheme.primaryGradient,
+      ),
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              const Text(
+                'Crohn\'s Companion',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      color: Colors.white,
+                      blurRadius: 5,
+                    ),
+                    Shadow(
+                      color: AppTheme.accentIndigo,
+                      blurRadius: 10,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Your personal health tracker',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w400,
-                  ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Your personal health tracker',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: AppTheme.indigoGlow.withOpacity(0.9),
                 ),
-              ],
-            ),
-          ),
-          // Main content with scrolling
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+              const SizedBox(height: 32),
+              
+              // Feature grid
+              GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                childAspectRatio: 1.0,
                 children: [
-                  // Feature grid
-                  GridView.count(
-                    crossAxisCount: 2,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
-                    children: [
-                      // Daily Tracking
-                      FeatureCard(
-                        icon: Icons.note_alt_outlined,
-                        title: 'Daily Tracking',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const TrackingScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                      // Symptoms
-                      FeatureCard(
-                        icon: Icons.warning_amber_outlined,
-                        title: 'Symptoms',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SymptomsScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                      // Diet Tracker
-                      FeatureCard(
-                        icon: Icons.restaurant_outlined,
-                        title: 'Diet Tracker',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const DietScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                      // Supplements
-                      FeatureCard(
-                        icon: Icons.medication_outlined,
-                        title: 'Supplements',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SupplementsScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  // Insights shortcut
-                  ShortcutCard(
-                    title: 'Your Insights',
-                    description: 'View personalized health insights based on your tracking data',
-                    icon: Icons.lightbulb_outline,
+                  FeatureCard(
+                    icon: Icons.note_alt_outlined,
+                    title: 'Daily Tracking',
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const InsightsScreen(),
+                          builder: (context) => const TrackingScreen(),
                         ),
                       );
                     },
                   ),
-                  const SizedBox(height: 16),
-                  // Chat shortcut
-                  ShortcutCard(
-                    title: 'Chat Assistant',
-                    description: 'Get answers to your questions about Crohn\'s disease',
-                    icon: Icons.chat_outlined,
+                  FeatureCard(
+                    icon: Icons.warning_amber_outlined,
+                    title: 'Symptoms',
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const ChatScreen(),
+                          builder: (context) => const SymptomsScreen(),
                         ),
                       );
                     },
                   ),
-                  const SizedBox(height: 24),
-                  // Today's summary
-                  const Text(
-                    'Today\'s Summary',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  FeatureCard(
+                    icon: Icons.restaurant_outlined,
+                    title: 'Diet Tracker',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const DietScreen(),
+                        ),
+                      );
+                    },
                   ),
-                  const SizedBox(height: 12),
-                  Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: AppTheme.neutralColor,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    '🙂',
-                                    style: TextStyle(fontSize: 20),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              const Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Feeling Good',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    Text(
-                                      'No major symptoms today',
-                                      style: TextStyle(
-                                        color: AppTheme.lightTextColor,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const Divider(height: 32),
-                          const Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              SummaryItem(
-                                icon: Icons.water_drop_outlined,
-                                title: 'BM',
-                                value: '2',
-                              ),
-                              SummaryItem(
-                                icon: Icons.local_fire_department_outlined,
-                                title: 'Pain',
-                                value: '2/10',
-                              ),
-                              SummaryItem(
-                                icon: Icons.battery_charging_full_outlined,
-                                title: 'Energy',
-                                value: '7/10',
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
+                  FeatureCard(
+                    icon: Icons.medication_outlined,
+                    title: 'Supplements',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SupplementsScreen(),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
-            ),
+              const SizedBox(height: 24),
+              
+              // Insights shortcut
+              ShortcutCard(
+                title: 'Your Insights',
+                description: 'View personalized health insights based on your tracking data',
+                icon: Icons.lightbulb_outline,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const InsightsScreen(),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              
+              // Chat shortcut
+              ShortcutCard(
+                title: 'Chat Assistant',
+                description: 'Get answers to your questions about Crohn\'s disease',
+                icon: Icons.chat_outlined,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ChatScreen(),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 32),
+              
+              // Today's summary
+              const Text(
+                'Today\'s Summary',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                decoration: AppTheme.cardDecoration(),
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: AppTheme.healthGreen.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: AppTheme.healthGreen.withOpacity(0.5),
+                            ),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              '🙂',
+                              style: TextStyle(fontSize: 24),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Feeling Good',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                'No major symptoms today',
+                                style: TextStyle(
+                                  color: AppTheme.indigoGlow,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Divider(color: AppTheme.accentIndigo.withOpacity(0.3)),
+                    const SizedBox(height: 24),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        SummaryItem(
+                          icon: Icons.water_drop_outlined,
+                          title: 'BM',
+                          value: '2',
+                        ),
+                        SummaryItem(
+                          icon: Icons.local_fire_department_outlined,
+                          title: 'Pain',
+                          value: '2/10',
+                        ),
+                        SummaryItem(
+                          icon: Icons.battery_charging_full_outlined,
+                          title: 'Energy',
+                          value: '7/10',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -321,41 +323,40 @@ class FeatureCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 4,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: const BoxDecoration(
-                  gradient: AppTheme.primaryGradient,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 24,
-                ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        decoration: AppTheme.cardDecoration(),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                gradient: AppTheme.accentGradient,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: AppTheme.neonGlow(color: AppTheme.accentIndigo),
               ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
-                textAlign: TextAlign.center,
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: 28,
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+                color: Colors.white,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
@@ -378,59 +379,57 @@ class ShortcutCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 4,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: const BoxDecoration(
-                  gradient: AppTheme.primaryGradient,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 24,
-                ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        decoration: AppTheme.cardDecoration(),
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                gradient: AppTheme.accentGradient,
+                borderRadius: BorderRadius.circular(12),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      color: Colors.white,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      description,
-                      style: const TextStyle(
-                        color: AppTheme.lightTextColor,
-                        fontSize: 12,
-                      ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: const TextStyle(
+                      color: AppTheme.indigoGlow,
+                      fontSize: 13,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: AppTheme.lightTextColor,
-              ),
-            ],
-          ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: AppTheme.lightIndigo.withOpacity(0.6),
+            ),
+          ],
         ),
       ),
     );
@@ -455,14 +454,14 @@ class SummaryItem extends StatelessWidget {
       children: [
         Icon(
           icon,
-          color: AppTheme.primaryColor,
-          size: 24,
+          color: AppTheme.lightIndigo,
+          size: 28,
         ),
         const SizedBox(height: 8),
         Text(
           title,
           style: const TextStyle(
-            color: AppTheme.lightTextColor,
+            color: AppTheme.indigoGlow,
             fontSize: 12,
           ),
         ),
@@ -471,7 +470,8 @@ class SummaryItem extends StatelessWidget {
           value,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 16,
+            fontSize: 18,
+            color: Colors.white,
           ),
         ),
       ],

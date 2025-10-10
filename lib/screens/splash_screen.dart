@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
 import 'package:crohns_companion/core/theme/app_theme.dart';
-import 'package:crohns_companion/screens/auth/sign_in_screen.dart';
+import 'package:crohns_companion/screens/onboarding/onboarding_flow.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -34,9 +34,9 @@ class _SplashScreenState extends State<SplashScreen> {
         return;
       }
       
-      developer.log('Navigating to SignInScreen', name: 'SplashScreen');
+      developer.log('Navigating to OnboardingFlow', name: 'SplashScreen');
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const SignInScreen()),
+        MaterialPageRoute(builder: (context) => const OnboardingFlow()),
       );
     } catch (e, stackTrace) {
       developer.log(
