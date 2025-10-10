@@ -24,14 +24,13 @@ class WelcomeScreen extends StatelessWidget {
                     children: [
                       const SizedBox(height: 40),
                       
-                      // App Icon with glow
+                      // App Icon
                       Container(
                         width: 100,
                         height: 100,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(24),
-                          boxShadow: OnboardingTheme.neonGlow(),
                         ),
                         child: const Icon(
                           Icons.medical_services_outlined,
@@ -45,7 +44,7 @@ class WelcomeScreen extends StatelessWidget {
                       // Welcome heading
                       Text(
                         'Welcome to\nCrohn\'s Companion',
-                        style: OnboardingTheme.neonTextStyle(fontSize: 36),
+                        style: OnboardingTheme.headingTextStyle(fontSize: 36),
                         textAlign: TextAlign.center,
                       ),
                       
@@ -61,7 +60,7 @@ class WelcomeScreen extends StatelessWidget {
                       
                       // Social proof card
                       Container(
-                        decoration: OnboardingTheme.cardDecoration(withGlow: true),
+                        decoration: OnboardingTheme.cardDecoration(),
                         padding: const EdgeInsets.all(24),
                         child: Column(
                           children: [

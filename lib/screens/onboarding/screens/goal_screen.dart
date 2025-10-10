@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../onboarding_theme.dart';
 import '../onboarding_controller.dart';
 
-class GoalScreen extends StatelessWidget {
+class GoalScreen extends StatefulWidget {
   final OnboardingController controller;
   final VoidCallback onNext;
   final VoidCallback onBack;
@@ -13,6 +13,27 @@ class GoalScreen extends StatelessWidget {
     required this.onNext,
     required this.onBack,
   }) : super(key: key);
+
+  @override
+  State<GoalScreen> createState() => _GoalScreenState();
+}
+
+class _GoalScreenState extends State<GoalScreen> {
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_onControllerUpdate);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onControllerUpdate);
+    super.dispose();
+  }
+
+  void _onControllerUpdate() {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,9 +63,13 @@ class GoalScreen extends StatelessWidget {
                     children: [
                       const SizedBox(height: 24),
                       
-                      Text(
+                      const Text(
                         'What\'s your main goal?',
-                        style: OnboardingTheme.neonTextStyle(fontSize: 32),
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                       
                       const SizedBox(height: 12),
@@ -60,8 +85,8 @@ class GoalScreen extends StatelessWidget {
                         icon: Icons.trending_down,
                         title: 'Reduce Symptoms',
                         description: 'Track and minimize flare-ups and discomfort',
-                        isSelected: controller.data.goal == 'reduce_symptoms',
-                        onTap: () => controller.setGoal('reduce_symptoms'),
+                        isSelected: widget.controller.data.goal == 'reduce_symptoms',
+                        onTap: () => widget.controller.setGoal('reduce_symptoms'),
                       ),
                       
                       const SizedBox(height: 16),
@@ -70,8 +95,8 @@ class GoalScreen extends StatelessWidget {
                         icon: Icons.search,
                         title: 'Identify Triggers',
                         description: 'Discover what foods or activities affect you',
-                        isSelected: controller.data.goal == 'identify_triggers',
-                        onTap: () => controller.setGoal('identify_triggers'),
+                        isSelected: widget.controller.data.goal == 'identify_triggers',
+                        onTap: () => widget.controller.setGoal('identify_triggers'),
                       ),
                       
                       const SizedBox(height: 16),
@@ -80,8 +105,8 @@ class GoalScreen extends StatelessWidget {
                         icon: Icons.restaurant_menu,
                         title: 'Improve Diet',
                         description: 'Find foods that work best for your body',
-                        isSelected: controller.data.goal == 'improve_diet',
-                        onTap: () => controller.setGoal('improve_diet'),
+                        isSelected: widget.controller.data.goal == 'improve_diet',
+                        onTap: () => widget.controller.setGoal('improve_diet'),
                       ),
                       
                       const SizedBox(height: 16),
@@ -90,8 +115,8 @@ class GoalScreen extends StatelessWidget {
                         icon: Icons.insights,
                         title: 'Better Understanding',
                         description: 'Learn patterns and gain insights into your health',
-                        isSelected: controller.data.goal == 'better_understanding',
-                        onTap: () => controller.setGoal('better_understanding'),
+                        isSelected: widget.controller.data.goal == 'better_understanding',
+                        onTap: () => widget.controller.setGoal('better_understanding'),
                       ),
                       
                       const SizedBox(height: 16),
@@ -100,8 +125,8 @@ class GoalScreen extends StatelessWidget {
                         icon: Icons.favorite,
                         title: 'Overall Wellness',
                         description: 'Comprehensive health tracking and improvement',
-                        isSelected: controller.data.goal == 'overall_wellness',
-                        onTap: () => controller.setGoal('overall_wellness'),
+                        isSelected: widget.controller.data.goal == 'overall_wellness',
+                        onTap: () => widget.controller.setGoal('overall_wellness'),
                       ),
                     ],
                   ),
@@ -113,7 +138,7 @@ class GoalScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: controller.data.goal != null ? onNext : null,
+                  onPressed: widget.controller.data.goal != null ? widget.onNext : null,
                   style: OnboardingTheme.primaryButtonStyle().copyWith(
                     padding: const MaterialStatePropertyAll(
                       EdgeInsets.symmetric(vertical: 18),
@@ -166,7 +191,7 @@ class _GoalOption extends StatelessWidget {
                 : OnboardingTheme.accentIndigo.withOpacity(0.3),
             width: isSelected ? 2 : 1,
           ),
-          boxShadow: isSelected ? OnboardingTheme.neonGlow() : null,
+          // No boxShadow for cleaner look
         ),
         child: Row(
           children: [

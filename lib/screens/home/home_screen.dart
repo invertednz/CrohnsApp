@@ -99,16 +99,6 @@ class HomeContent extends StatelessWidget {
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
-                  shadows: [
-                    Shadow(
-                      color: Colors.white,
-                      blurRadius: 5,
-                    ),
-                    Shadow(
-                      color: AppTheme.accentIndigo,
-                      blurRadius: 10,
-                    ),
-                  ],
                 ),
               ),
               const SizedBox(height: 8),
@@ -338,7 +328,6 @@ class FeatureCard extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: AppTheme.accentGradient,
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: AppTheme.neonGlow(color: AppTheme.accentIndigo),
               ),
               child: Icon(
                 icon,

@@ -26,32 +26,27 @@ class OnboardingTheme {
     colors: [accentIndigo, lightIndigo],
   );
   
-  // Neon glow effect
-  static List<BoxShadow> neonGlow({Color color = accentIndigo}) {
+  // Subtle shadow effect
+  static List<BoxShadow> subtleShadow() {
     return [
       BoxShadow(
-        color: Colors.white.withOpacity(0.5),
-        blurRadius: 5,
-        spreadRadius: 0,
-      ),
-      BoxShadow(
-        color: color.withOpacity(0.5),
-        blurRadius: 10,
-        spreadRadius: 0,
+        color: Colors.black.withOpacity(0.3),
+        blurRadius: 8,
+        offset: const Offset(0, 4),
       ),
     ];
   }
   
   // Card decoration
-  static BoxDecoration cardDecoration({bool withGlow = false}) {
+  static BoxDecoration cardDecoration({bool withShadow = false}) {
     return BoxDecoration(
-      color: Colors.black.withOpacity(0.4),
-      borderRadius: BorderRadius.circular(24),
+      color: Colors.black.withOpacity(0.3),
+      borderRadius: BorderRadius.circular(20),
       border: Border.all(
-        color: accentIndigo.withOpacity(0.3),
+        color: accentIndigo.withOpacity(0.2),
         width: 1,
       ),
-      boxShadow: withGlow ? neonGlow() : null,
+      boxShadow: withShadow ? subtleShadow() : null,
     );
   }
   
@@ -142,21 +137,12 @@ class OnboardingTheme {
     height: 1.6,
   );
   
-  static TextStyle neonTextStyle({double fontSize = 32}) {
+  static TextStyle headingTextStyle({double fontSize = 32}) {
     return TextStyle(
       fontSize: fontSize,
       fontWeight: FontWeight.bold,
       color: Colors.white,
-      shadows: [
-        Shadow(
-          color: Colors.white.withOpacity(0.8),
-          blurRadius: 5,
-        ),
-        Shadow(
-          color: accentIndigo.withOpacity(0.8),
-          blurRadius: 10,
-        ),
-      ],
+      height: 1.2,
     );
   }
 }

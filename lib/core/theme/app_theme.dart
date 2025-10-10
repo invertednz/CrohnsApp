@@ -38,32 +38,27 @@ class AppTheme {
     colors: [accentIndigo, lightIndigo],
   );
   
-  // Neon glow effect
-  static List<BoxShadow> neonGlow({Color color = accentIndigo}) {
+  // Subtle shadow effect
+  static List<BoxShadow> subtleShadow() {
     return [
       BoxShadow(
-        color: Colors.white.withOpacity(0.5),
-        blurRadius: 5,
-        spreadRadius: 0,
-      ),
-      BoxShadow(
-        color: color.withOpacity(0.5),
-        blurRadius: 10,
-        spreadRadius: 0,
+        color: Colors.black.withOpacity(0.3),
+        blurRadius: 8,
+        offset: const Offset(0, 4),
       ),
     ];
   }
   
   // Card decoration
-  static BoxDecoration cardDecoration({bool withGlow = false}) {
+  static BoxDecoration cardDecoration({bool withShadow = false}) {
     return BoxDecoration(
-      color: Colors.black.withOpacity(0.4),
-      borderRadius: BorderRadius.circular(24),
+      color: Colors.black.withOpacity(0.3),
+      borderRadius: BorderRadius.circular(20),
       border: Border.all(
-        color: accentIndigo.withOpacity(0.3),
+        color: accentIndigo.withOpacity(0.2),
         width: 1,
       ),
-      boxShadow: withGlow ? neonGlow() : null,
+      boxShadow: withShadow ? subtleShadow() : null,
     );
   }
   
@@ -132,18 +127,26 @@ class AppTheme {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: Colors.black.withOpacity(0.5),
+      fillColor: Colors.black.withOpacity(0.3),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: accentIndigo.withOpacity(0.5)),
+        borderSide: BorderSide(color: accentIndigo.withOpacity(0.3)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: accentIndigo.withOpacity(0.5)),
+        borderSide: BorderSide(color: accentIndigo.withOpacity(0.3)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: accentIndigo, width: 2),
+        borderSide: BorderSide(color: accentIndigo.withOpacity(0.6), width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: errorRed, width: 1),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: errorRed, width: 1.5),
       ),
       labelStyle: TextStyle(color: indigoGlow.withOpacity(0.8)),
       hintStyle: TextStyle(color: lightIndigo.withOpacity(0.5)),
