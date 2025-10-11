@@ -97,7 +97,7 @@ class _AppUsageScreenState extends State<AppUsageScreen> {
               
               Text(
                 'How It Works',
-                style: OnboardingTheme.neonTextStyle(fontSize: 32),
+                style: OnboardingTheme.headingTextStyle(fontSize: 32),
               ),
               
               const SizedBox(height: 12),
@@ -226,7 +226,7 @@ class _CarouselCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8),
       padding: const EdgeInsets.all(24),
-      decoration: OnboardingTheme.cardDecoration(withGlow: true),
+      decoration: OnboardingTheme.cardDecoration(withShadow: true),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -237,7 +237,7 @@ class _CarouselCard extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: OnboardingTheme.accentGradient,
               borderRadius: BorderRadius.circular(24),
-              boxShadow: OnboardingTheme.neonGlow(),
+              
             ),
             child: Icon(
               item.icon,

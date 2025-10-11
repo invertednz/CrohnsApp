@@ -72,7 +72,7 @@ class _DietFlagsScreenState extends State<DietFlagsScreen> {
                       
                       Text(
                         'Diet Considerations',
-                        style: OnboardingTheme.neonTextStyle(fontSize: 32),
+                        style: OnboardingTheme.headingTextStyle(fontSize: 32),
                       ),
                       
                       const SizedBox(height: 12),
@@ -86,8 +86,8 @@ class _DietFlagsScreenState extends State<DietFlagsScreen> {
                       
                       // Common diet flags
                       Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
+                        spacing: 8,
+                        runSpacing: 8,
                         children: _commonDietFlags.map((flag) {
                           final isSelected = widget.controller.data.dietFlags.contains(flag);
                           return GestureDetector(
@@ -98,32 +98,31 @@ class _DietFlagsScreenState extends State<DietFlagsScreen> {
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
+                                horizontal: 12,
+                                vertical: 8,
                               ),
                               decoration: BoxDecoration(
                                 color: isSelected
                                     ? OnboardingTheme.accentIndigo
                                     : Colors.black.withOpacity(0.4),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
                                   color: isSelected
                                       ? OnboardingTheme.accentIndigo
                                       : OnboardingTheme.accentIndigo.withOpacity(0.3),
                                   width: isSelected ? 2 : 1,
                                 ),
-                                boxShadow: isSelected ? OnboardingTheme.neonGlow() : null,
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   if (isSelected)
                                     const Padding(
-                                      padding: EdgeInsets.only(right: 8),
+                                      padding: EdgeInsets.only(right: 6),
                                       child: Icon(
                                         Icons.check_circle,
                                         color: Colors.white,
-                                        size: 18,
+                                        size: 14,
                                       ),
                                     ),
                                   Text(
@@ -131,6 +130,7 @@ class _DietFlagsScreenState extends State<DietFlagsScreen> {
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w600,
+                                      fontSize: 13,
                                     ),
                                   ),
                                 ],
@@ -144,7 +144,7 @@ class _DietFlagsScreenState extends State<DietFlagsScreen> {
                       
                       // Custom diet flag input
                       Container(
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(16),
                         decoration: OnboardingTheme.cardDecoration(),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,25 +152,25 @@ class _DietFlagsScreenState extends State<DietFlagsScreen> {
                             const Text(
                               'Add Custom Item',
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 14,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 10),
                             Row(
                               children: [
                                 Expanded(
                                   child: TextField(
                                     controller: _customController,
-                                    style: const TextStyle(color: Colors.white),
+                                    style: const TextStyle(color: Colors.white, fontSize: 14),
                                     decoration: OnboardingTheme.inputDecoration(
                                       label: 'Food or ingredient',
                                       hint: 'e.g., Tomatoes',
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 12),
+                                const SizedBox(width: 10),
                                 ElevatedButton(
                                   onPressed: () {
                                     if (_customController.text.trim().isNotEmpty) {
@@ -180,8 +180,12 @@ class _DietFlagsScreenState extends State<DietFlagsScreen> {
                                       });
                                     }
                                   },
-                                  style: OnboardingTheme.primaryButtonStyle(),
-                                  child: const Text('Add'),
+                                  style: OnboardingTheme.primaryButtonStyle().copyWith(
+                                    padding: const MaterialStatePropertyAll(
+                                      EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                    ),
+                                  ),
+                                  child: const Text('Add', style: TextStyle(fontSize: 14)),
                                 ),
                               ],
                             ),
@@ -196,27 +200,27 @@ class _DietFlagsScreenState extends State<DietFlagsScreen> {
                         const Text(
                           'Selected Items',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 10),
                         Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(12),
                           decoration: OnboardingTheme.cardDecoration(),
                           child: Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
+                            spacing: 6,
+                            runSpacing: 6,
                             children: widget.controller.data.dietFlags.map((flag) {
                               return Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 8,
+                                  horizontal: 10,
+                                  vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
                                   gradient: OnboardingTheme.accentGradient,
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -226,9 +230,10 @@ class _DietFlagsScreenState extends State<DietFlagsScreen> {
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w600,
+                                        fontSize: 13,
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
+                                    const SizedBox(width: 6),
                                     GestureDetector(
                                       onTap: () {
                                         setState(() {
@@ -238,7 +243,7 @@ class _DietFlagsScreenState extends State<DietFlagsScreen> {
                                       child: const Icon(
                                         Icons.close,
                                         color: Colors.white,
-                                        size: 16,
+                                        size: 14,
                                       ),
                                     ),
                                   ],

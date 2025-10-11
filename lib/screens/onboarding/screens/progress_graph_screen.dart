@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import '../onboarding_theme.dart';
 
-class ProgressGraphScreen extends StatelessWidget {
+class ProgressGraphScreen extends StatefulWidget {
   final VoidCallback onNext;
   final VoidCallback onBack;
   
@@ -11,6 +11,39 @@ class ProgressGraphScreen extends StatelessWidget {
     required this.onNext,
     required this.onBack,
   }) : super(key: key);
+
+  @override
+  State<ProgressGraphScreen> createState() => _ProgressGraphScreenState();
+}
+
+class _ProgressGraphScreenState extends State<ProgressGraphScreen> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+  final int _totalPages = 5;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _nextPage() {
+    if (_currentPage < _totalPages - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void _previousPage() {
+    if (_currentPage > 0) {
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,37 +60,179 @@ class ProgressGraphScreen extends StatelessWidget {
               Row(
                 children: [
                   IconButton(
-                    onPressed: onBack,
+                    onPressed: widget.onBack,
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
                   ),
                 ],
               ),
               
+              const SizedBox(height: 24),
+              
+              Text(
+                'How It Works',
+                style: OnboardingTheme.headingTextStyle(fontSize: 32),
+              ),
+              
+              const SizedBox(height: 12),
+              
+              Text(
+                'Your journey to better health',
+                style: OnboardingTheme.subheadingStyle,
+              ),
+              
+              const SizedBox(height: 32),
+              
+              // Carousel with arrows
               Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 24),
-                      
-                      Text(
-                        'Your Progress Journey',
-                        style: OnboardingTheme.neonTextStyle(fontSize: 32),
+                child: Stack(
+                  children: [
+                    // PageView
+                    PageView(
+                      controller: _pageController,
+                      onPageChanged: (index) {
+                        setState(() {
+                          _currentPage = index;
+                        });
+                      },
+                      children: [
+                        _buildGraphPage(),
+                        _buildMilestonePage(
+                          week: 'Week 1-2',
+                          title: 'Getting Started',
+                          description: 'Building tracking habits and gathering baseline data',
+                          icon: Icons.play_circle_outline,
+                        ),
+                        _buildMilestonePage(
+                          week: 'Week 3-4',
+                          title: 'Early Insights',
+                          description: 'Beginning to identify patterns and potential triggers',
+                          icon: Icons.lightbulb_outline,
+                        ),
+                        _buildMilestonePage(
+                          week: 'Week 5-8',
+                          title: 'Noticeable Changes',
+                          description: 'Implementing changes and seeing symptom reduction',
+                          icon: Icons.trending_up,
+                        ),
+                        _buildMilestonePage(
+                          week: 'Week 9+',
+                          title: 'Sustained Improvement',
+                          description: 'Maintaining healthy habits and continued progress',
+                          icon: Icons.emoji_events,
+                        ),
+                      ],
+                    ),
+                    
+                    // Left Arrow
+                    if (_currentPage > 0)
+                      Positioned(
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: IconButton(
+                            onPressed: _previousPage,
+                            icon: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.5),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.arrow_back_ios_new,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                      
-                      const SizedBox(height: 12),
-                      
-                      Text(
-                        'Typical improvement timeline with consistent use',
-                        style: OnboardingTheme.subheadingStyle,
+                    
+                    // Right Arrow
+                    if (_currentPage < _totalPages - 1)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: IconButton(
+                            onPressed: _nextPage,
+                            icon: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.5),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.arrow_forward_ios,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                      
-                      const SizedBox(height: 32),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Page indicators
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(_totalPages, (index) {
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: _currentPage == index ? 24 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: _currentPage == index
+                          ? OnboardingTheme.accentIndigo
+                          : Colors.white.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  );
+                }),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: widget.onNext,
+                  style: OnboardingTheme.primaryButtonStyle().copyWith(
+                    padding: const MaterialStatePropertyAll(
+                      EdgeInsets.symmetric(vertical: 18),
+                    ),
+                  ),
+                  child: const Text(
+                    'Continue',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGraphPage() {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
                       
                       // Graph card
                       Container(
                         padding: const EdgeInsets.all(24),
-                        decoration: OnboardingTheme.cardDecoration(withGlow: true),
+                        decoration: OnboardingTheme.cardDecoration(withShadow: true),
                         child: Column(
                           children: [
                             const Text(
@@ -100,95 +275,87 @@ class ProgressGraphScreen extends StatelessWidget {
                       ),
                       
                       const SizedBox(height: 24),
-                      
-                      // Timeline milestones
-                      _TimelineMilestone(
-                        week: 'Week 1-2',
-                        title: 'Getting Started',
-                        description: 'Building tracking habits and gathering baseline data',
-                        icon: Icons.play_circle_outline,
-                      ),
-                      
-                      const SizedBox(height: 16),
-                      
-                      _TimelineMilestone(
-                        week: 'Week 3-4',
-                        title: 'Early Insights',
-                        description: 'Beginning to identify patterns and potential triggers',
-                        icon: Icons.lightbulb_outline,
-                      ),
-                      
-                      const SizedBox(height: 16),
-                      
-                      _TimelineMilestone(
-                        week: 'Week 5-8',
-                        title: 'Noticeable Changes',
-                        description: 'Implementing changes and seeing symptom reduction',
-                        icon: Icons.trending_up,
-                      ),
-                      
-                      const SizedBox(height: 16),
-                      
-                      _TimelineMilestone(
-                        week: 'Week 9+',
-                        title: 'Sustained Improvement',
-                        description: 'Maintaining healthy habits and continued progress',
-                        icon: Icons.emoji_events,
-                      ),
-                      
-                      const SizedBox(height: 24),
-                      
-                      // Encouragement box
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          gradient: OnboardingTheme.accentGradient,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: OnboardingTheme.neonGlow(),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.rocket_launch,
-                              color: Colors.white,
-                              size: 32,
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Text(
-                                'Your journey is unique. Stay consistent and you\'ll see results!',
-                                style: OnboardingTheme.bodyStyle.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMilestonePage({
+    required String week,
+    required String title,
+    required String description,
+    required IconData icon,
+  }) {
+    return Center(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Large icon
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  gradient: OnboardingTheme.accentGradient,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  color: Colors.white,
+                  size: 60,
+                ),
+              ),
+              
+              const SizedBox(height: 32),
+              
+              // Week badge
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: OnboardingTheme.accentIndigo.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: OnboardingTheme.accentIndigo,
+                    width: 2,
+                  ),
+                ),
+                child: Text(
+                  week,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: OnboardingTheme.lightIndigo,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
               
               const SizedBox(height: 24),
               
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: onNext,
-                  style: OnboardingTheme.primaryButtonStyle().copyWith(
-                    padding: const MaterialStatePropertyAll(
-                      EdgeInsets.symmetric(vertical: 18),
-                    ),
+              // Title
+              Text(
+                title,
+                style: OnboardingTheme.headingTextStyle(fontSize: 28),
+                textAlign: TextAlign.center,
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Description
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: OnboardingTheme.cardDecoration(),
+                child: Text(
+                  description,
+                  style: OnboardingTheme.bodyStyle.copyWith(
+                    fontSize: 16,
+                    height: 1.6,
                   ),
-                  child: const Text(
-                    'Continue',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ],

@@ -93,13 +93,6 @@ class _DiscountScreenState extends State<DiscountScreen> with SingleTickerProvid
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(24),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: OnboardingTheme.errorRed.withOpacity(0.5),
-                                  blurRadius: 20,
-                                  spreadRadius: 2,
-                                ),
-                              ],
                             ),
                             child: const Text(
                               '⚡ WAIT! EXCLUSIVE OFFER ⚡',
@@ -116,7 +109,7 @@ class _DiscountScreenState extends State<DiscountScreen> with SingleTickerProvid
                         
                         Text(
                           'Special Discount',
-                          style: OnboardingTheme.neonTextStyle(fontSize: 40),
+                          style: OnboardingTheme.headingTextStyle(fontSize: 40),
                           textAlign: TextAlign.center,
                         ),
                         
@@ -147,13 +140,6 @@ class _DiscountScreenState extends State<DiscountScreen> with SingleTickerProvid
                               color: OnboardingTheme.errorRed,
                               width: 2,
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: OnboardingTheme.errorRed.withOpacity(0.3),
-                                blurRadius: 20,
-                                spreadRadius: 2,
-                              ),
-                            ],
                           ),
                           child: Column(
                             children: [
@@ -340,7 +326,6 @@ class _DiscountScreenState extends State<DiscountScreen> with SingleTickerProvid
                           decoration: BoxDecoration(
                             gradient: OnboardingTheme.accentGradient,
                             borderRadius: BorderRadius.circular(16),
-                            boxShadow: OnboardingTheme.neonGlow(),
                           ),
                           child: Column(
                             children: [
@@ -425,7 +410,6 @@ class _DiscountScreenState extends State<DiscountScreen> with SingleTickerProvid
                       'No thanks, continue with regular price',
                       style: OnboardingTheme.bodyStyle.copyWith(
                         fontSize: 14,
-                        decoration: TextDecoration.underline,
                       ),
                     ),
                   ),

@@ -127,11 +127,13 @@ class _TrackingScreenState extends State<TrackingScreen> {
         width: 56,
         height: 56,
         decoration: BoxDecoration(
-          color: _selectedFeeling == index ? AppTheme.neutralColor : Colors.transparent,
+          color: _selectedFeeling == index 
+              ? AppTheme.accentIndigo.withOpacity(0.2)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
           border: _selectedFeeling == index
-              ? Border.all(color: AppTheme.primaryColor, width: 2)
-              : null,
+              ? Border.all(color: AppTheme.accentIndigo, width: 2)
+              : Border.all(color: Colors.grey.withOpacity(0.3), width: 1),
         ),
         child: Center(
           child: Text(

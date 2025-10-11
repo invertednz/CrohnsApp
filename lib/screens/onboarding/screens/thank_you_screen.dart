@@ -73,7 +73,7 @@ class _ThankYouScreenState extends State<ThankYouScreen> with SingleTickerProvid
                 decoration: BoxDecoration(
                   gradient: OnboardingTheme.accentGradient,
                   shape: BoxShape.circle,
-                  boxShadow: OnboardingTheme.neonGlow(),
+                  
                 ),
                 child: const Icon(
                   Icons.star,
@@ -190,7 +190,7 @@ class _ThankYouScreenState extends State<ThankYouScreen> with SingleTickerProvid
                             decoration: BoxDecoration(
                               gradient: OnboardingTheme.accentGradient,
                               shape: BoxShape.circle,
-                              boxShadow: OnboardingTheme.neonGlow(),
+                              
                             ),
                             child: const Icon(
                               Icons.check,
@@ -208,7 +208,7 @@ class _ThankYouScreenState extends State<ThankYouScreen> with SingleTickerProvid
                             children: [
                               Text(
                                 'Thank You!',
-                                style: OnboardingTheme.neonTextStyle(fontSize: 40),
+                                style: OnboardingTheme.headingTextStyle(fontSize: 40),
                                 textAlign: TextAlign.center,
                               ),
                               
@@ -224,7 +224,7 @@ class _ThankYouScreenState extends State<ThankYouScreen> with SingleTickerProvid
                               
                               Container(
                                 padding: const EdgeInsets.all(24),
-                                decoration: OnboardingTheme.cardDecoration(withGlow: true),
+                                decoration: OnboardingTheme.cardDecoration(withShadow: true),
                                 child: Column(
                                   children: [
                                     const Icon(
@@ -249,29 +249,6 @@ class _ThankYouScreenState extends State<ThankYouScreen> with SingleTickerProvid
                                     ),
                                   ],
                                 ),
-                              ),
-                              
-                              const SizedBox(height: 32),
-                              
-                              // Benefits list
-                              _BenefitItem(
-                                icon: Icons.track_changes,
-                                text: 'Track your symptoms and identify patterns',
-                              ),
-                              const SizedBox(height: 16),
-                              _BenefitItem(
-                                icon: Icons.insights,
-                                text: 'Get personalized insights and recommendations',
-                              ),
-                              const SizedBox(height: 16),
-                              _BenefitItem(
-                                icon: Icons.trending_up,
-                                text: 'Monitor your progress over time',
-                              ),
-                              const SizedBox(height: 16),
-                              _BenefitItem(
-                                icon: Icons.support_agent,
-                                text: 'Access 24/7 AI health assistant',
                               ),
                               
                               const SizedBox(height: 32),
@@ -303,7 +280,7 @@ class _ThankYouScreenState extends State<ThankYouScreen> with SingleTickerProvid
                                         decoration: BoxDecoration(
                                           gradient: OnboardingTheme.accentGradient,
                                           borderRadius: BorderRadius.circular(12),
-                                          boxShadow: OnboardingTheme.neonGlow(),
+                                          
                                         ),
                                         child: const Icon(
                                           Icons.star,
@@ -342,6 +319,29 @@ class _ThankYouScreenState extends State<ThankYouScreen> with SingleTickerProvid
                                     ],
                                   ),
                                 ),
+                              ),
+                              
+                              const SizedBox(height: 32),
+                              
+                              // Benefits list
+                              _BenefitItem(
+                                icon: Icons.track_changes,
+                                text: 'Track your symptoms and identify patterns',
+                              ),
+                              const SizedBox(height: 16),
+                              _BenefitItem(
+                                icon: Icons.insights,
+                                text: 'Get personalized insights and recommendations',
+                              ),
+                              const SizedBox(height: 16),
+                              _BenefitItem(
+                                icon: Icons.trending_up,
+                                text: 'Monitor your progress over time',
+                              ),
+                              const SizedBox(height: 16),
+                              _BenefitItem(
+                                icon: Icons.support_agent,
+                                text: 'Access 24/7 AI health assistant',
                               ),
                               
                               const SizedBox(height: 16),

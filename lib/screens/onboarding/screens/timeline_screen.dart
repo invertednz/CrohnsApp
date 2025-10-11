@@ -43,15 +43,15 @@ class TimelineScreen extends StatelessWidget {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 8),
                       
                       Text(
                         'Your Trial Timeline',
-                        style: OnboardingTheme.neonTextStyle(fontSize: 32),
+                        style: OnboardingTheme.headingTextStyle(fontSize: 32),
                         textAlign: TextAlign.center,
                       ),
                       
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
                       
                       Text(
                         'Here\'s what to expect',
@@ -59,7 +59,7 @@ class TimelineScreen extends StatelessWidget {
                         textAlign: TextAlign.center,
                       ),
                       
-                      const SizedBox(height: 48),
+                      const SizedBox(height: 32),
                       
                       // Timeline
                       _TimelineItem(
@@ -97,7 +97,7 @@ class TimelineScreen extends StatelessWidget {
                       // Info cards
                       Container(
                         padding: const EdgeInsets.all(20),
-                        decoration: OnboardingTheme.cardDecoration(withGlow: true),
+                        decoration: OnboardingTheme.cardDecoration(withShadow: true),
                         child: Column(
                           children: [
                             const Icon(

@@ -76,7 +76,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         
                         Text(
                           'Start Your Trial',
-                          style: OnboardingTheme.neonTextStyle(fontSize: 32),
+                          style: OnboardingTheme.headingTextStyle(fontSize: 32),
                           textAlign: TextAlign.center,
                         ),
                         
@@ -93,7 +93,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         // Pricing card
                         Container(
                           padding: const EdgeInsets.all(24),
-                          decoration: OnboardingTheme.cardDecoration(withGlow: true),
+                          decoration: OnboardingTheme.cardDecoration(withShadow: true),
                           child: Column(
                             children: [
                               const Text(

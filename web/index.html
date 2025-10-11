@@ -14,7 +14,7 @@
     This is a placeholder for base href that will be replaced by the value of
     the `--base-href` argument provided to `flutter build`.
   -->
-  <base href="$FLUTTER_BASE_HREF">
+  <base href="/">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
@@ -32,27 +32,23 @@
 
   <title>Crohn's Companion</title>
   <link rel="manifest" href="manifest.json">
-
+  <style>
+    /* Remove any accidental underlines or text decorations */
+    flt-paragraph, flt-span, .flt-paragraph, .flt-span, span, p {
+      text-decoration: none !important;
+      -webkit-text-decoration: none !important;
+      text-decoration-color: transparent !important;
+      text-decoration-thickness: 0 !important;
+    }
+  </style>
   <script>
-    // The value below is injected by flutter build, do not touch.
-    const serviceWorkerVersion = "{{flutter_service_worker_version}}";
+    // Force HTML renderer in debug to avoid CanvasKit download issues
+    window.flutterConfiguration = {
+      renderer: 'html'
+    };
   </script>
-  <!-- This script adds the flutter initialization JS code -->
-  <script src="flutter.js" defer></script>
+  <script src="flutter_bootstrap.js" async></script>
 </head>
 <body>
-  <script>
-    window.addEventListener('load', function(ev) {
-      _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
-        },
-      }).then(function(engineInitializer) {
-        return engineInitializer.initializeEngine();
-      }).then(function(appRunner) {
-        return appRunner.runApp();
-      });
-    });
-  </script>
 </body>
 </html>

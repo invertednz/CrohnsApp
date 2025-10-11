@@ -39,7 +39,7 @@ class TrialOfferScreen extends StatelessWidget {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 8),
                       
                       // Special offer badge
                       Container(
@@ -55,13 +55,6 @@ class TrialOfferScreen extends StatelessWidget {
                             ],
                           ),
                           borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: OnboardingTheme.warningAmber.withOpacity(0.5),
-                              blurRadius: 10,
-                              spreadRadius: 0,
-                            ),
-                          ],
                         ),
                         child: const Text(
                           '🎉 SPECIAL OFFER',
@@ -77,7 +70,7 @@ class TrialOfferScreen extends StatelessWidget {
                       
                       Text(
                         '7 Days Free',
-                        style: OnboardingTheme.neonTextStyle(fontSize: 48),
+                        style: OnboardingTheme.headingTextStyle(fontSize: 48),
                         textAlign: TextAlign.center,
                       ),
                       
@@ -94,7 +87,7 @@ class TrialOfferScreen extends StatelessWidget {
                       // Main offer card
                       Container(
                         padding: const EdgeInsets.all(24),
-                        decoration: OnboardingTheme.cardDecoration(withGlow: true),
+                        decoration: OnboardingTheme.cardDecoration(withShadow: true),
                         child: Column(
                           children: [
                             // Price

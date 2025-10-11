@@ -50,7 +50,7 @@ class _GoalScreenState extends State<GoalScreen> {
               Row(
                 children: [
                   IconButton(
-                    onPressed: onBack,
+                    onPressed: widget.onBack,
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
                   ),
                 ],

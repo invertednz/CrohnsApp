@@ -84,7 +84,7 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
                       
                       Text(
                         'Notification Preferences',
-                        style: OnboardingTheme.neonTextStyle(fontSize: 32),
+                        style: OnboardingTheme.headingTextStyle(fontSize: 32),
                       ),
                       
                       const SizedBox(height: 12),
@@ -99,7 +99,7 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
                       // Info card
                       Container(
                         padding: const EdgeInsets.all(20),
-                        decoration: OnboardingTheme.cardDecoration(withGlow: true),
+                        decoration: OnboardingTheme.cardDecoration(withShadow: true),
                         child: Row(
                           children: [
                             Container(
@@ -108,7 +108,7 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
                               decoration: BoxDecoration(
                                 gradient: OnboardingTheme.accentGradient,
                                 borderRadius: BorderRadius.circular(12),
-                                boxShadow: OnboardingTheme.neonGlow(),
+                                
                               ),
                               child: const Icon(
                                 Icons.notifications_active,
@@ -165,15 +165,6 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
                                       : OnboardingTheme.accentIndigo.withOpacity(0.3),
                                   width: isSelected ? 2 : 1,
                                 ),
-                                boxShadow: isSelected
-                                    ? [
-                                        BoxShadow(
-                                          color: time.color.withOpacity(0.3),
-                                          blurRadius: 10,
-                                          spreadRadius: 0,
-                                        ),
-                                      ]
-                                    : null,
                               ),
                               child: Row(
                                 children: [

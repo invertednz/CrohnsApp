@@ -3,6 +3,7 @@ import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' as rendering;
 import 'package:flutter/services.dart';
 
 import 'package:crohns_companion/core/backend_service_provider.dart';
@@ -31,6 +32,17 @@ Future<void> main() async {
   }
 
   developer.log('Running app', name: 'App.main');
+
+  // Ensure all debug paint flags are disabled in debug/profile to avoid baseline lines
+  try {
+    if (kDebugMode || kProfileMode) {
+      rendering.debugPaintBaselinesEnabled = false;
+      rendering.debugPaintSizeEnabled = false;
+      rendering.debugPaintLayerBordersEnabled = false;
+      rendering.debugRepaintRainbowEnabled = false;
+    }
+  } catch (_) {}
+
   runApp(const MyApp());
 
   // Kick off backend initialization in the background so the UI is never blocked
@@ -72,8 +84,21 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.light, // Default to light theme
+        themeMode: ThemeMode.dark, // Use dark theme to match onboarding
         home: const SplashScreen(),
+        builder: (context, child) {
+          final media = MediaQuery.of(context).copyWith(textScaleFactor: 1.0);
+          return MediaQuery(
+            data: media,
+            child: DefaultTextStyle.merge(
+              style: const TextStyle(
+                decoration: TextDecoration.none,
+                decorationColor: Colors.transparent,
+              ),
+              child: child!,
+            ),
+          );
+        },
       );
     } catch (e, stackTrace) {
       developer.log(

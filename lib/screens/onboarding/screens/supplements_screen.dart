@@ -87,7 +87,7 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
                       
                       Text(
                         'Supplements',
-                        style: OnboardingTheme.neonTextStyle(fontSize: 32),
+                        style: OnboardingTheme.headingTextStyle(fontSize: 32),
                       ),
                       
                       const SizedBox(height: 12),
@@ -103,27 +103,27 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
                       const Text(
                         'Common Supplements',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       
                       Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
+                        spacing: 8,
+                        runSpacing: 8,
                         children: _commonSupplements.map((supplement) {
                           return GestureDetector(
                             onTap: () => _addSupplement(supplement),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
+                                horizontal: 12,
+                                vertical: 8,
                               ),
                               decoration: BoxDecoration(
                                 color: Colors.black.withOpacity(0.4),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
                                   color: OnboardingTheme.accentIndigo.withOpacity(0.3),
                                 ),
@@ -134,14 +134,15 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
                                   const Icon(
                                     Icons.add_circle_outline,
                                     color: OnboardingTheme.lightIndigo,
-                                    size: 18,
+                                    size: 14,
                                   ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: 6),
                                   Text(
                                     supplement,
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w600,
+                                      fontSize: 13,
                                     ),
                                   ),
                                 ],
@@ -155,7 +156,7 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
                       
                       // Custom supplement input
                       Container(
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(16),
                         decoration: OnboardingTheme.cardDecoration(),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,25 +164,25 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
                             const Text(
                               'Add Custom Supplement',
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 14,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 10),
                             Row(
                               children: [
                                 Expanded(
                                   child: TextField(
                                     controller: _nameController,
-                                    style: const TextStyle(color: Colors.white),
+                                    style: const TextStyle(color: Colors.white, fontSize: 14),
                                     decoration: OnboardingTheme.inputDecoration(
                                       label: 'Supplement name',
                                       hint: 'e.g., Turmeric',
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 12),
+                                const SizedBox(width: 10),
                                 ElevatedButton(
                                   onPressed: () {
                                     if (_nameController.text.trim().isNotEmpty) {
@@ -189,8 +190,12 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
                                       _nameController.clear();
                                     }
                                   },
-                                  style: OnboardingTheme.primaryButtonStyle(),
-                                  child: const Text('Add'),
+                                  style: OnboardingTheme.primaryButtonStyle().copyWith(
+                                    padding: const MaterialStatePropertyAll(
+                                      EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                    ),
+                                  ),
+                                  child: const Text('Add', style: TextStyle(fontSize: 14)),
                                 ),
                               ],
                             ),
@@ -205,18 +210,18 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
                         const Text(
                           'Your Supplements',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 10),
                         ...widget.controller.data.supplements.asMap().entries.map((entry) {
                           final index = entry.key;
                           final supplement = entry.value;
                           return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.all(12),
                             decoration: OnboardingTheme.cardDecoration(),
                             child: Row(
                               children: [
@@ -227,12 +232,12 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
                                       Text(
                                         supplement.name,
                                         style: const TextStyle(
-                                          fontSize: 16,
+                                          fontSize: 14,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white,
                                         ),
                                       ),
-                                      const SizedBox(height: 8),
+                                      const SizedBox(height: 6),
                                       Row(
                                         children: [
                                           _TimeChip(
@@ -338,12 +343,12 @@ class _TimeChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected
               ? OnboardingTheme.accentIndigo
               : Colors.black.withOpacity(0.3),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(6),
           border: Border.all(
             color: isSelected
                 ? OnboardingTheme.accentIndigo
@@ -354,6 +359,7 @@ class _TimeChip extends StatelessWidget {
           label,
           style: TextStyle(
             color: Colors.white,
+            fontSize: 13,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
         ),
@@ -397,7 +403,7 @@ class _SupplementDialogState extends State<_SupplementDialog> {
             Text(
               'When do you take ${widget.name}?',
               style: const TextStyle(
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),

@@ -90,7 +90,7 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
                       
                       Text(
                         'Current Medications',
-                        style: OnboardingTheme.neonTextStyle(fontSize: 32),
+                        style: OnboardingTheme.headingTextStyle(fontSize: 32),
                       ),
                       
                       const SizedBox(height: 12),
@@ -106,17 +106,17 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
                       const Text(
                         'Common IBD Medications',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       
                       ..._commonMedications.map((med) {
                         final isSelected = widget.controller.data.medications.contains(med.name);
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.only(bottom: 10),
                           child: GestureDetector(
                             onTap: () {
                               setState(() {
@@ -124,23 +124,22 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
                               });
                             },
                             child: Container(
-                              padding: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: Colors.black.withOpacity(0.4),
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: isSelected
                                       ? OnboardingTheme.accentIndigo
                                       : OnboardingTheme.accentIndigo.withOpacity(0.3),
                                   width: isSelected ? 2 : 1,
                                 ),
-                                boxShadow: isSelected ? OnboardingTheme.neonGlow() : null,
                               ),
                               child: Row(
                                 children: [
                                   Container(
-                                    width: 48,
-                                    height: 48,
+                                    width: 40,
+                                    height: 40,
                                     decoration: BoxDecoration(
                                       gradient: isSelected
                                           ? OnboardingTheme.accentGradient
@@ -148,15 +147,15 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
                                       color: isSelected
                                           ? null
                                           : OnboardingTheme.accentIndigo.withOpacity(0.3),
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Icon(
                                       med.icon,
                                       color: Colors.white,
-                                      size: 24,
+                                      size: 20,
                                     ),
                                   ),
-                                  const SizedBox(width: 16),
+                                  const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,7 +163,7 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
                                         Text(
                                           med.name,
                                           style: const TextStyle(
-                                            fontSize: 16,
+                                            fontSize: 14,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.white,
                                           ),
@@ -172,7 +171,7 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
                                         const SizedBox(height: 2),
                                         Text(
                                           med.category,
-                                          style: OnboardingTheme.bodyStyle.copyWith(fontSize: 13),
+                                          style: OnboardingTheme.bodyStyle.copyWith(fontSize: 12),
                                         ),
                                       ],
                                     ),
@@ -181,7 +180,7 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
                                     const Icon(
                                       Icons.check_circle,
                                       color: OnboardingTheme.healthGreen,
-                                      size: 24,
+                                      size: 20,
                                     ),
                                 ],
                               ),
@@ -194,7 +193,7 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
                       
                       // Custom medication input
                       Container(
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(16),
                         decoration: OnboardingTheme.cardDecoration(),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,25 +201,25 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
                             const Text(
                               'Add Other Medication',
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 14,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 10),
                             Row(
                               children: [
                                 Expanded(
                                   child: TextField(
                                     controller: _customController,
-                                    style: const TextStyle(color: Colors.white),
+                                    style: const TextStyle(color: Colors.white, fontSize: 14),
                                     decoration: OnboardingTheme.inputDecoration(
                                       label: 'Medication name',
                                       hint: 'e.g., Ibuprofen',
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 12),
+                                const SizedBox(width: 10),
                                 ElevatedButton(
                                   onPressed: () {
                                     if (_customController.text.trim().isNotEmpty) {
@@ -230,8 +229,12 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
                                       });
                                     }
                                   },
-                                  style: OnboardingTheme.primaryButtonStyle(),
-                                  child: const Text('Add'),
+                                  style: OnboardingTheme.primaryButtonStyle().copyWith(
+                                    padding: const MaterialStatePropertyAll(
+                                      EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                    ),
+                                  ),
+                                  child: const Text('Add', style: TextStyle(fontSize: 14)),
                                 ),
                               ],
                             ),
@@ -246,27 +249,27 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
                         const Text(
                           'Your Medications',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 10),
                         Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(12),
                           decoration: OnboardingTheme.cardDecoration(),
                           child: Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
+                            spacing: 6,
+                            runSpacing: 6,
                             children: widget.controller.data.medications.map((medication) {
                               return Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 8,
+                                  horizontal: 10,
+                                  vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
                                   gradient: OnboardingTheme.accentGradient,
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -276,9 +279,10 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w600,
+                                        fontSize: 13,
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
+                                    const SizedBox(width: 6),
                                     GestureDetector(
                                       onTap: () {
                                         setState(() {
@@ -288,7 +292,7 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
                                       child: const Icon(
                                         Icons.close,
                                         color: Colors.white,
-                                        size: 16,
+                                        size: 14,
                                       ),
                                     ),
                                   ],

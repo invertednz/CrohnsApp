@@ -124,7 +124,7 @@ class _CurrentSymptomsScreenState extends State<CurrentSymptomsScreen> {
                       
                       Text(
                         'Current Symptoms',
-                        style: OnboardingTheme.neonTextStyle(fontSize: 32),
+                        style: OnboardingTheme.headingTextStyle(fontSize: 32),
                       ),
                       
                       const SizedBox(height: 12),
@@ -158,15 +158,6 @@ class _CurrentSymptomsScreenState extends State<CurrentSymptomsScreen> {
                                       : OnboardingTheme.accentIndigo.withOpacity(0.3),
                                   width: isSelected ? 2 : 1,
                                 ),
-                                boxShadow: isSelected
-                                    ? [
-                                        BoxShadow(
-                                          color: symptom.color.withOpacity(0.3),
-                                          blurRadius: 8,
-                                          spreadRadius: 0,
-                                        ),
-                                      ]
-                                    : null,
                               ),
                               child: Row(
                                 children: [
@@ -228,7 +219,7 @@ class _CurrentSymptomsScreenState extends State<CurrentSymptomsScreen> {
                       if (widget.controller.data.currentSymptoms.isNotEmpty) ...[
                         Container(
                           padding: const EdgeInsets.all(20),
-                          decoration: OnboardingTheme.cardDecoration(withGlow: true),
+                          decoration: OnboardingTheme.cardDecoration(withShadow: true),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [

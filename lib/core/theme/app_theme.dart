@@ -87,20 +87,71 @@ class AppTheme {
       ),
     ),
     textTheme: const TextTheme(
-      displayLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      displayMedium: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      displaySmall: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      headlineMedium: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      headlineSmall: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-      titleLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-      titleMedium: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-      titleSmall: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-      bodyLarge: TextStyle(color: indigoGlow),
-      bodyMedium: TextStyle(color: indigoGlow),
-      bodySmall: TextStyle(color: indigoGlow),
-      labelLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-      labelMedium: TextStyle(color: indigoGlow),
-      labelSmall: TextStyle(color: indigoGlow),
+      displayLarge: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+        decoration: TextDecoration.none,
+      ),
+      displayMedium: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+        decoration: TextDecoration.none,
+      ),
+      displaySmall: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+        decoration: TextDecoration.none,
+      ),
+      headlineMedium: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+        decoration: TextDecoration.none,
+      ),
+      headlineSmall: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w600,
+        decoration: TextDecoration.none,
+      ),
+      titleLarge: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w600,
+        decoration: TextDecoration.none,
+      ),
+      titleMedium: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w600,
+        decoration: TextDecoration.none,
+      ),
+      titleSmall: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w600,
+        decoration: TextDecoration.none,
+      ),
+      bodyLarge: TextStyle(
+        color: indigoGlow,
+        decoration: TextDecoration.none,
+      ),
+      bodyMedium: TextStyle(
+        color: indigoGlow,
+        decoration: TextDecoration.none,
+      ),
+      bodySmall: TextStyle(
+        color: indigoGlow,
+        decoration: TextDecoration.none,
+      ),
+      labelLarge: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w600,
+        decoration: TextDecoration.none,
+      ),
+      labelMedium: TextStyle(
+        color: indigoGlow,
+        decoration: TextDecoration.none,
+      ),
+      labelSmall: TextStyle(
+        color: indigoGlow,
+        decoration: TextDecoration.none,
+      ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -168,7 +219,6 @@ class AppTheme {
       type: BottomNavigationBarType.fixed,
       elevation: 0,
     ),
-    fontFamily: 'Poppins',
   );
   
   // Dark theme (same as light theme for consistency)

@@ -41,7 +41,7 @@ class ExpectedResultsScreen extends StatelessWidget {
                       
                       Text(
                         'What to Expect',
-                        style: OnboardingTheme.neonTextStyle(fontSize: 32),
+                        style: OnboardingTheme.headingTextStyle(fontSize: 32),
                       ),
                       
                       const SizedBox(height: 12),
