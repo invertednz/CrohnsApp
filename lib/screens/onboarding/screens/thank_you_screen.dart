@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../onboarding_theme.dart';
+import '../widgets/staggered_animation.dart';
 
 class ThankYouScreen extends StatefulWidget {
   final VoidCallback onNext;
@@ -324,59 +325,74 @@ class _ThankYouScreenState extends State<ThankYouScreen> with SingleTickerProvid
                               const SizedBox(height: 32),
                               
                               // Benefits list
-                              _BenefitItem(
-                                icon: Icons.track_changes,
-                                text: 'Track your symptoms and identify patterns',
-                              ),
-                              const SizedBox(height: 16),
-                              _BenefitItem(
-                                icon: Icons.insights,
-                                text: 'Get personalized insights and recommendations',
-                              ),
-                              const SizedBox(height: 16),
-                              _BenefitItem(
-                                icon: Icons.trending_up,
-                                text: 'Monitor your progress over time',
-                              ),
-                              const SizedBox(height: 16),
-                              _BenefitItem(
-                                icon: Icons.support_agent,
-                                text: 'Access 24/7 AI health assistant',
-                              ),
-                              
-                              const SizedBox(height: 16),
-                              
-                              Container(
-                                padding: const EdgeInsets.all(20),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      OnboardingTheme.healthGreen.withOpacity(0.2),
-                                      OnboardingTheme.accentIndigo.withOpacity(0.2),
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: OnboardingTheme.healthGreen.withOpacity(0.3),
-                                  ),
+                              StaggeredAnimation(
+                                index: 0,
+                                child: _BenefitItem(
+                                  icon: Icons.track_changes,
+                                  text: 'Track your symptoms and identify patterns',
                                 ),
-                                child: Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.favorite,
-                                      color: OnboardingTheme.healthGreen,
-                                      size: 32,
+                              ),
+                              const SizedBox(height: 16),
+                              StaggeredAnimation(
+                                index: 1,
+                                child: _BenefitItem(
+                                  icon: Icons.insights,
+                                  text: 'Get personalized insights and recommendations',
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              StaggeredAnimation(
+                                index: 2,
+                                child: _BenefitItem(
+                                  icon: Icons.trending_up,
+                                  text: 'Monitor your progress over time',
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              StaggeredAnimation(
+                                index: 3,
+                                child: _BenefitItem(
+                                  icon: Icons.support_agent,
+                                  text: 'Access 24/7 AI health assistant',
+                                ),
+                              ),
+                              
+                              const SizedBox(height: 16),
+                              
+                              StaggeredAnimation(
+                                index: 4,
+                                child: Container(
+                                  padding: const EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        OnboardingTheme.healthGreen.withOpacity(0.2),
+                                        OnboardingTheme.accentIndigo.withOpacity(0.2),
+                                      ],
                                     ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Text(
-                                        'Your commitment to improving your health is inspiring!',
-                                        style: OnboardingTheme.bodyStyle.copyWith(
-                                          fontWeight: FontWeight.w600,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: OnboardingTheme.healthGreen.withOpacity(0.3),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.favorite,
+                                        color: OnboardingTheme.healthGreen,
+                                        size: 32,
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Text(
+                                          'Your commitment to improving your health is inspiring!',
+                                          style: OnboardingTheme.bodyStyle.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],

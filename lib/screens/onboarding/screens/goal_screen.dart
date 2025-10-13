@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../onboarding_theme.dart';
 import '../onboarding_controller.dart';
+import '../widgets/staggered_animation.dart';
 
 class GoalScreen extends StatefulWidget {
   final OnboardingController controller;
@@ -81,52 +82,67 @@ class _GoalScreenState extends State<GoalScreen> {
                       
                       const SizedBox(height: 32),
                       
-                      _GoalOption(
-                        icon: Icons.trending_down,
-                        title: 'Reduce Symptoms',
-                        description: 'Track and minimize flare-ups and discomfort',
-                        isSelected: widget.controller.data.goal == 'reduce_symptoms',
-                        onTap: () => widget.controller.setGoal('reduce_symptoms'),
+                      StaggeredAnimation(
+                        index: 0,
+                        child: _GoalOption(
+                          icon: Icons.trending_down,
+                          title: 'Reduce Symptoms',
+                          description: 'Track and minimize flare-ups and discomfort',
+                          isSelected: widget.controller.data.goal == 'reduce_symptoms',
+                          onTap: () => widget.controller.setGoal('reduce_symptoms'),
+                        ),
                       ),
                       
                       const SizedBox(height: 16),
                       
-                      _GoalOption(
-                        icon: Icons.search,
-                        title: 'Identify Triggers',
-                        description: 'Discover what foods or activities affect you',
-                        isSelected: widget.controller.data.goal == 'identify_triggers',
-                        onTap: () => widget.controller.setGoal('identify_triggers'),
+                      StaggeredAnimation(
+                        index: 1,
+                        child: _GoalOption(
+                          icon: Icons.search,
+                          title: 'Identify Triggers',
+                          description: 'Discover what foods or activities affect you',
+                          isSelected: widget.controller.data.goal == 'identify_triggers',
+                          onTap: () => widget.controller.setGoal('identify_triggers'),
+                        ),
                       ),
                       
                       const SizedBox(height: 16),
                       
-                      _GoalOption(
-                        icon: Icons.restaurant_menu,
-                        title: 'Improve Diet',
-                        description: 'Find foods that work best for your body',
-                        isSelected: widget.controller.data.goal == 'improve_diet',
-                        onTap: () => widget.controller.setGoal('improve_diet'),
+                      StaggeredAnimation(
+                        index: 2,
+                        child: _GoalOption(
+                          icon: Icons.restaurant_menu,
+                          title: 'Improve Diet',
+                          description: 'Find foods that work best for your body',
+                          isSelected: widget.controller.data.goal == 'improve_diet',
+                          onTap: () => widget.controller.setGoal('improve_diet'),
+                        ),
                       ),
                       
                       const SizedBox(height: 16),
                       
-                      _GoalOption(
-                        icon: Icons.insights,
-                        title: 'Better Understanding',
-                        description: 'Learn patterns and gain insights into your health',
-                        isSelected: widget.controller.data.goal == 'better_understanding',
-                        onTap: () => widget.controller.setGoal('better_understanding'),
+                      StaggeredAnimation(
+                        index: 3,
+                        child: _GoalOption(
+                          icon: Icons.insights,
+                          title: 'Better Understanding',
+                          description: 'Learn patterns and gain insights into your health',
+                          isSelected: widget.controller.data.goal == 'better_understanding',
+                          onTap: () => widget.controller.setGoal('better_understanding'),
+                        ),
                       ),
                       
                       const SizedBox(height: 16),
                       
-                      _GoalOption(
-                        icon: Icons.favorite,
-                        title: 'Overall Wellness',
-                        description: 'Comprehensive health tracking and improvement',
-                        isSelected: widget.controller.data.goal == 'overall_wellness',
-                        onTap: () => widget.controller.setGoal('overall_wellness'),
+                      StaggeredAnimation(
+                        index: 4,
+                        child: _GoalOption(
+                          icon: Icons.favorite,
+                          title: 'Overall Wellness',
+                          description: 'Comprehensive health tracking and improvement',
+                          isSelected: widget.controller.data.goal == 'overall_wellness',
+                          onTap: () => widget.controller.setGoal('overall_wellness'),
+                        ),
                       ),
                     ],
                   ),

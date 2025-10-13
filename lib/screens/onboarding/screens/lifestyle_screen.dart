@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../onboarding_theme.dart';
 import '../onboarding_controller.dart';
+import '../widgets/staggered_animation.dart';
 
 class LifestyleScreen extends StatefulWidget {
   final OnboardingController controller;
@@ -72,11 +73,12 @@ class _LifestyleScreenState extends State<LifestyleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: OnboardingTheme.primaryGradient,
-      ),
-      child: SafeArea(
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: OnboardingTheme.primaryGradient,
+        ),
+        child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
@@ -113,11 +115,15 @@ class _LifestyleScreenState extends State<LifestyleScreen> {
                       const SizedBox(height: 32),
                       
                       // Lifestyle factors grid
-                      ..._factors.map((factor) {
+                      ..._factors.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final factor = entry.value;
                         final isSelected = widget.controller.data.lifestyle.contains(factor.name);
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 10),
-                          child: GestureDetector(
+                          child: StaggeredAnimation(
+                            index: index,
+                            child: GestureDetector(
                             onTap: () {
                               setState(() {
                                 widget.controller.toggleLifestyle(factor.name);
@@ -185,6 +191,7 @@ class _LifestyleScreenState extends State<LifestyleScreen> {
                                 ],
                               ),
                             ),
+                          ),
                           ),
                         );
                       }),
@@ -330,6 +337,7 @@ class _LifestyleScreenState extends State<LifestyleScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

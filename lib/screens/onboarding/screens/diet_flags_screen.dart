@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../onboarding_theme.dart';
 import '../onboarding_controller.dart';
+import '../widgets/staggered_animation.dart';
 
 class DietFlagsScreen extends StatefulWidget {
   final OnboardingController controller;
@@ -44,11 +45,12 @@ class _DietFlagsScreenState extends State<DietFlagsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: OnboardingTheme.primaryGradient,
-      ),
-      child: SafeArea(
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: OnboardingTheme.primaryGradient,
+        ),
+        child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
@@ -88,9 +90,13 @@ class _DietFlagsScreenState extends State<DietFlagsScreen> {
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: _commonDietFlags.map((flag) {
+                        children: _commonDietFlags.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final flag = entry.value;
                           final isSelected = widget.controller.data.dietFlags.contains(flag);
-                          return GestureDetector(
+                          return StaggeredAnimation(
+                            index: index,
+                            child: GestureDetector(
                             onTap: () {
                               setState(() {
                                 widget.controller.toggleDietFlag(flag);
@@ -136,6 +142,7 @@ class _DietFlagsScreenState extends State<DietFlagsScreen> {
                                 ],
                               ),
                             ),
+                          ),
                           );
                         }).toList(),
                       ),
@@ -311,6 +318,7 @@ class _DietFlagsScreenState extends State<DietFlagsScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

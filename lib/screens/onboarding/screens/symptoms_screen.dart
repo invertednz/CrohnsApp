@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../onboarding_theme.dart';
 import '../onboarding_controller.dart';
+import '../widgets/staggered_animation.dart';
 
 class CurrentSymptomsScreen extends StatefulWidget {
   final OnboardingController controller;
@@ -96,11 +97,12 @@ class _CurrentSymptomsScreenState extends State<CurrentSymptomsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: OnboardingTheme.primaryGradient,
-      ),
-      child: SafeArea(
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: OnboardingTheme.primaryGradient,
+        ),
+        child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
@@ -137,11 +139,15 @@ class _CurrentSymptomsScreenState extends State<CurrentSymptomsScreen> {
                       const SizedBox(height: 32),
                       
                       // Symptoms grid
-                      ..._symptoms.map((symptom) {
+                      ..._symptoms.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final symptom = entry.value;
                         final isSelected = widget.controller.data.currentSymptoms.contains(symptom.name);
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 12),
-                          child: GestureDetector(
+                          child: StaggeredAnimation(
+                            index: index,
+                            child: GestureDetector(
                             onTap: () {
                               setState(() {
                                 widget.controller.toggleSymptom(symptom.name);
@@ -209,6 +215,7 @@ class _CurrentSymptomsScreenState extends State<CurrentSymptomsScreen> {
                                 ],
                               ),
                             ),
+                          ),
                           ),
                         );
                       }),
@@ -307,6 +314,7 @@ class _CurrentSymptomsScreenState extends State<CurrentSymptomsScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

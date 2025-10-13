@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../onboarding_theme.dart';
 import '../onboarding_controller.dart';
 import '../onboarding_data.dart';
+import '../widgets/staggered_animation.dart';
 
 class SupplementsScreen extends StatefulWidget {
   final OnboardingController controller;
@@ -59,11 +60,12 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: OnboardingTheme.primaryGradient,
-      ),
-      child: SafeArea(
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: OnboardingTheme.primaryGradient,
+        ),
+        child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
@@ -113,8 +115,12 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: _commonSupplements.map((supplement) {
-                          return GestureDetector(
+                        children: _commonSupplements.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final supplement = entry.value;
+                          return StaggeredAnimation(
+                            index: index,
+                            child: GestureDetector(
                             onTap: () => _addSupplement(supplement),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
@@ -148,6 +154,7 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
                                 ],
                               ),
                             ),
+                          ),
                           );
                         }).toList(),
                       ),
@@ -219,7 +226,9 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
                         ...widget.controller.data.supplements.asMap().entries.map((entry) {
                           final index = entry.key;
                           final supplement = entry.value;
-                          return Container(
+                          return StaggeredAnimation(
+                            index: index,
+                            child: Container(
                             margin: const EdgeInsets.only(bottom: 10),
                             padding: const EdgeInsets.all(12),
                             decoration: OnboardingTheme.cardDecoration(),
@@ -291,6 +300,7 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
                                 ),
                               ],
                             ),
+                          ),
                           );
                         }),
                       ],
@@ -322,6 +332,7 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

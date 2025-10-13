@@ -19,6 +19,9 @@
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="A comprehensive health tracking application for individuals with Crohn's disease.">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -42,12 +45,31 @@
     }
   </style>
   <script>
-    // Force HTML renderer in debug to avoid CanvasKit download issues
-    window.flutterConfiguration = {
-      renderer: 'html'
-    };
+    // Ensure no stale service workers interfere during debug
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (regs) {
+        regs.forEach(function (r) { r.unregister(); });
+      });
+    }
   </script>
-  <script src="flutter_bootstrap.js" async></script>
+  <script>
+    // Service worker version; keep null for debug runs
+    var serviceWorkerVersion = null;
+  </script>
+  <script src="flutter.js" defer></script>
+  <script>
+    // Modern initialization API: force HTML renderer in debug
+    window.addEventListener('load', function () {
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: { serviceWorkerVersion: serviceWorkerVersion },
+        onEntrypointLoaded: function (engineInitializer) {
+          engineInitializer.initializeEngine({ renderer: 'html' }).then(function (appRunner) {
+            appRunner.runApp();
+          });
+        }
+      });
+    });
+  </script>
 </head>
 <body>
 </body>

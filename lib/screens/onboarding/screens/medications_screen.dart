@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../onboarding_theme.dart';
 import '../onboarding_controller.dart';
+import '../widgets/staggered_animation.dart';
 
 class MedicationsScreen extends StatefulWidget {
   final OnboardingController controller;
@@ -62,11 +63,12 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: OnboardingTheme.primaryGradient,
-      ),
-      child: SafeArea(
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: OnboardingTheme.primaryGradient,
+        ),
+        child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
@@ -113,11 +115,15 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
                       ),
                       const SizedBox(height: 12),
                       
-                      ..._commonMedications.map((med) {
+                      ..._commonMedications.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final med = entry.value;
                         final isSelected = widget.controller.data.medications.contains(med.name);
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 10),
-                          child: GestureDetector(
+                          child: StaggeredAnimation(
+                            index: index,
+                            child: GestureDetector(
                             onTap: () {
                               setState(() {
                                 widget.controller.toggleMedication(med.name);
@@ -185,6 +191,7 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
                                 ],
                               ),
                             ),
+                          ),
                           ),
                         );
                       }),
@@ -363,6 +370,7 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }
