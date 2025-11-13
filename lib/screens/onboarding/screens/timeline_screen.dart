@@ -86,7 +86,7 @@ class TimelineScreen extends StatelessWidget {
                       _TimelineItem(
                         date: _formatDate(trialEnd),
                         title: 'Trial Ends',
-                        description: 'Your subscription begins at \$9.99/month unless cancelled',
+                        description: 'Your subscription continues at \$49/year (or \$59 if you chose Pay It Forward)',
                         icon: Icons.event,
                         color: OnboardingTheme.accentIndigo,
                         isLast: true,

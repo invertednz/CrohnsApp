@@ -95,32 +95,38 @@ class TrialOfferScreen extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  '\$',
-                                  style: TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                    color: OnboardingTheme.lightIndigo,
-                                  ),
+                                Text(
+                                  'FREE',
+                                  style: OnboardingTheme.headingTextStyle(fontSize: 48),
                                 ),
-                                const Text(
-                                  '0',
-                                  style: TextStyle(
-                                    fontSize: 72,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    height: 1,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 20),
-                                  child: Text(
-                                    'for 7 days',
-                                    style: OnboardingTheme.bodyStyle.copyWith(
-                                      fontSize: 16,
+                                const SizedBox(width: 12),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      'for 7 days',
+                                      style: OnboardingTheme.bodyStyle.copyWith(
+                                        fontSize: 16,
+                                      ),
                                     ),
-                                  ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Then \$49/year',
+                                      style: OnboardingTheme.bodyStyle.copyWith(
+                                        fontSize: 16,
+                                        color: OnboardingTheme.healthGreen,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Pay it Forward option: \$59/year',
+                                      style: OnboardingTheme.bodyStyle.copyWith(
+                                        fontSize: 14,
+                                        color: OnboardingTheme.lightIndigo,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -128,9 +134,11 @@ class TrialOfferScreen extends StatelessWidget {
                             const SizedBox(height: 8),
                             
                             Text(
-                              'Then \$9.99/month',
+                              'Choose from our \$49 annual plan or become a hero by sponsoring someone for \$59.',
+                              textAlign: TextAlign.center,
                               style: OnboardingTheme.bodyStyle.copyWith(
                                 fontSize: 14,
+                                color: Colors.white.withOpacity(0.85),
                               ),
                             ),
                             

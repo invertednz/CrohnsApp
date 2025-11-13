@@ -136,13 +136,28 @@ class OnboardingController extends ChangeNotifier {
     notifyListeners();
   }
   
+  void selectPlan({
+    required String planId,
+    required double price,
+    bool isPayItForward = false,
+    bool isGiftedDiscount = false,
+    String? donorName,
+  }) {
+    data.selectedPlan = planId;
+    data.planPrice = price;
+    data.isPayItForward = isPayItForward;
+    data.isGiftedDiscount = isGiftedDiscount;
+    data.giftDonorName = donorName;
+    notifyListeners();
+  }
+
   void startTrial() {
     data.isOnTrial = true;
     data.trialStartDate = DateTime.now();
     data.trialEndDate = DateTime.now().add(const Duration(days: 7));
     notifyListeners();
   }
-  
+
   void completePurchase() {
     data.hasPaid = true;
     data.isOnTrial = true;

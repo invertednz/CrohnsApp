@@ -17,6 +17,8 @@ import 'screens/trial_offer_screen.dart';
 import 'screens/timeline_screen.dart';
 import 'screens/payment_screen.dart';
 import 'screens/discount_screen.dart';
+import 'screens/referral_share_screen.dart';
+import '../../services/referral_service.dart';
 
 class OnboardingFlow extends StatefulWidget {
   const OnboardingFlow({Key? key}) : super(key: key);
@@ -27,7 +29,9 @@ class OnboardingFlow extends StatefulWidget {
 
 class _OnboardingFlowState extends State<OnboardingFlow> {
   final OnboardingController _controller = OnboardingController();
+  final ReferralService _referralService = ReferralService();
   bool _showDiscountScreen = false;
+  bool _showReferralScreen = false;
 
   void _nextStep() {
     setState(() {
@@ -49,12 +53,20 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   }
 
   void _handleDiscountAccept() {
-    // User accepted discount, complete onboarding
-    _completeOnboarding();
+    // User accepted discount, show referral screen
+    setState(() {
+      _showDiscountScreen = false;
+      _showReferralScreen = true;
+    });
   }
 
   void _handleDiscountDecline() {
     // User declined discount, complete onboarding
+    _completeOnboarding();
+  }
+  
+  void _handleReferralComplete() {
+    // User completed referral flow, finish onboarding
     _completeOnboarding();
   }
 
@@ -68,6 +80,16 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
   @override
   Widget build(BuildContext context) {
+    // Show referral screen if triggered
+    if (_showReferralScreen) {
+      return ReferralShareScreen(
+        controller: _controller,
+        referralService: _referralService,
+        onComplete: _handleReferralComplete,
+        donorName: _controller.data.giftDonorName ?? 'A Community Member',
+      );
+    }
+    
     // Show discount screen if triggered
     if (_showDiscountScreen) {
       return DiscountScreen(

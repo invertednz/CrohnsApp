@@ -8,7 +8,13 @@ class Environment {
   static String get llmApiKey => dotenv.env['LLM_API_KEY'] ?? '';
   static String get llmModel => dotenv.env['LLM_MODEL'] ?? '';
   static String get llmEndpoint => dotenv.env['LLM_ENDPOINT'] ?? '';
+  static String get mixpanelToken => dotenv.env['MIXPANEL_TOKEN'] ?? '';
+  static String get mixpanelProjectId => dotenv.env['MIXPANEL_PROJECT_ID'] ?? '';
   
+  // Firebase Configuration
+  static bool get useFirebase => dotenv.env['USE_FIREBASE']?.toLowerCase() == 'true';
+  static bool get useMockData => dotenv.env['USE_MOCK_DATA']?.toLowerCase() == 'true';
+
   static Future<void> initialize() async {
     const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'development');
     final envFile = flavor == 'production' ? '.env.production' : '.env';

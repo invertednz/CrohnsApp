@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
+import 'package:crohns_companion/core/analytics/mixpanel_service.dart';
 import 'package:crohns_companion/core/theme/app_theme.dart';
 import 'package:crohns_companion/screens/onboarding/onboarding_flow.dart';
 
@@ -15,6 +16,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     developer.log('Initializing SplashScreen', name: 'SplashScreen');
     super.initState();
+    MixpanelService.trackEvent('SplashScreen_Viewed');
     _navigateToNextScreen();
   }
 
@@ -35,6 +37,7 @@ class _SplashScreenState extends State<SplashScreen> {
       }
       
       developer.log('Navigating to OnboardingFlow', name: 'SplashScreen');
+      MixpanelService.trackEvent('SplashScreen_NavigatingToOnboarding');
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const OnboardingFlow()),
       );

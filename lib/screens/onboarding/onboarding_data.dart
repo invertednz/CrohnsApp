@@ -11,6 +11,11 @@ class OnboardingData {
   bool hasPaid = false;
   DateTime? trialStartDate;
   DateTime? trialEndDate;
+  String selectedPlan = 'annual';
+  bool isPayItForward = false;
+  bool isGiftedDiscount = false;
+  double planPrice = 49;
+  String? giftDonorName;
 
   OnboardingData();
 
@@ -28,6 +33,11 @@ class OnboardingData {
       'hasPaid': hasPaid,
       'trialStartDate': trialStartDate?.toIso8601String(),
       'trialEndDate': trialEndDate?.toIso8601String(),
+      'selectedPlan': selectedPlan,
+      'isPayItForward': isPayItForward,
+      'isGiftedDiscount': isGiftedDiscount,
+      'planPrice': planPrice,
+      'giftDonorName': giftDonorName,
     };
   }
 
@@ -52,6 +62,11 @@ class OnboardingData {
     data.trialEndDate = json['trialEndDate'] != null
         ? DateTime.parse(json['trialEndDate'])
         : null;
+    data.selectedPlan = json['selectedPlan'] ?? 'annual';
+    data.isPayItForward = json['isPayItForward'] ?? false;
+    data.isGiftedDiscount = json['isGiftedDiscount'] ?? false;
+    data.planPrice = (json['planPrice'] ?? 0).toDouble();
+    data.giftDonorName = json['giftDonorName'];
     return data;
   }
 }

@@ -6,7 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' as rendering;
 import 'package:flutter/services.dart';
 
+import 'package:crohns_companion/core/analytics/mixpanel_service.dart';
 import 'package:crohns_companion/core/backend_service_provider.dart';
+import 'package:crohns_companion/core/environment.dart';
+import 'package:crohns_companion/core/firebase/firebase_service.dart';
 import 'package:crohns_companion/core/theme/app_theme.dart';
 import 'package:crohns_companion/screens/splash_screen.dart';
 
@@ -22,6 +25,9 @@ Future<void> main() async {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
+
+    developer.log('Loading environment configuration', name: 'App.main');
+    await Environment.initialize();
   } catch (error, stackTrace) {
     developer.log(
       'Non-fatal error during synchronous initialization',
@@ -47,6 +53,8 @@ Future<void> main() async {
 
   // Kick off backend initialization in the background so the UI is never blocked
   unawaited(_initializeBackend());
+  unawaited(_initializeAnalytics());
+  unawaited(_initializeFirebase());
 }
 
 Future<void> _initializeBackend() async {
@@ -65,6 +73,39 @@ Future<void> _initializeBackend() async {
   } catch (error, stackTrace) {
     developer.log(
       'BackendService initialization failed, continuing in offline mode',
+      name: 'App.main',
+      error: error,
+      stackTrace: stackTrace,
+    );
+  }
+}
+
+Future<void> _initializeAnalytics() async {
+  try {
+    developer.log('Initializing MixpanelService', name: 'App.main');
+    await MixpanelService.initialize();
+    developer.log('MixpanelService initialized successfully', name: 'App.main');
+  } catch (error, stackTrace) {
+    developer.log(
+      'MixpanelService initialization failed',
+      name: 'App.main',
+      error: error,
+      stackTrace: stackTrace,
+    );
+  }
+}
+
+Future<void> _initializeFirebase() async {
+  try {
+    developer.log('Initializing FirebaseService', name: 'App.main');
+    await FirebaseService.initialize();
+    developer.log(
+      'FirebaseService initialized successfully (using ${FirebaseService.isUsingMock ? "mock" : "Firebase"} data)',
+      name: 'App.main',
+    );
+  } catch (error, stackTrace) {
+    developer.log(
+      'FirebaseService initialization failed',
       name: 'App.main',
       error: error,
       stackTrace: stackTrace,
