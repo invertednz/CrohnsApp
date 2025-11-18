@@ -4,8 +4,9 @@ import '../widgets/staggered_animation.dart';
 
 class WelcomeScreen extends StatelessWidget {
   final VoidCallback onNext;
+  final VoidCallback onLogin;
   
-  const WelcomeScreen({Key? key, required this.onNext}) : super(key: key);
+  const WelcomeScreen({Key? key, required this.onNext, required this.onLogin}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -203,6 +204,21 @@ class WelcomeScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: onLogin,
+                  child: const Text(
+                    'Log In',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
                   ),
                 ),

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:crohns_companion/screens/home/home_screen.dart';
+import 'package:crohns_companion/core/backend_service_provider.dart';
+import 'package:crohns_companion/screens/auth/sign_in_screen.dart';
+import 'package:crohns_companion/screens/auth/sign_up_screen.dart';
 import 'onboarding_controller.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/goal_screen.dart';
@@ -72,9 +75,32 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
   void _completeOnboarding() {
     _controller.completeOnboarding();
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
-      (route) => false,
+    final authService = BackendServiceProvider.instance.auth;
+    final user = authService.currentUser;
+    if (user != null) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        (route) => false,
+      );
+    } else {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => const SignUpScreen(
+            shouldReturnToOnboarding: false,
+          ),
+        ),
+        (route) => false,
+      );
+    }
+  }
+
+  void _goToLogin() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const SignInScreen(
+          shouldReturnToOnboarding: true,
+        ),
+      ),
     );
   }
 
@@ -112,6 +138,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         return WelcomeScreen(
           key: const ValueKey(0),
           onNext: _nextStep,
+          onLogin: _goToLogin,
         );
       case 1:
         return GoalScreen(
@@ -212,6 +239,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         return WelcomeScreen(
           key: const ValueKey(0),
           onNext: _nextStep,
+          onLogin: _goToLogin,
         );
     }
   }

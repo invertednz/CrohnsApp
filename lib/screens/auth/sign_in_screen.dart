@@ -4,9 +4,12 @@ import 'package:crohns_companion/core/theme/app_theme.dart';
 import 'package:crohns_companion/core/backend_service_provider.dart';
 import 'package:crohns_companion/screens/auth/sign_up_screen.dart';
 import 'package:crohns_companion/screens/home/home_screen.dart';
+import 'package:crohns_companion/screens/onboarding/onboarding_flow.dart';
 
 class SignInScreen extends StatefulWidget {
-  const SignInScreen({Key? key}) : super(key: key);
+  final bool shouldReturnToOnboarding;
+
+  const SignInScreen({Key? key, this.shouldReturnToOnboarding = false}) : super(key: key);
 
   @override
   State<SignInScreen> createState() => _SignInScreenState();
@@ -49,11 +52,20 @@ class _SignInScreenState extends State<SignInScreen> {
       }
 
       if (user != null) {
-        developer.log('Google sign in successful, navigating to HomeScreen', name: 'SignInScreen');
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-          (route) => false,
-        );
+        developer.log('Google sign in successful', name: 'SignInScreen');
+        if (widget.shouldReturnToOnboarding) {
+          developer.log('Navigating to OnboardingFlow after Google sign in', name: 'SignInScreen');
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const OnboardingFlow()),
+            (route) => false,
+          );
+        } else {
+          developer.log('Navigating to HomeScreen after Google sign in', name: 'SignInScreen');
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+            (route) => false,
+          );
+        }
       } else {
         developer.log('Google sign in failed: user is null', name: 'SignInScreen');
       }
@@ -89,11 +101,20 @@ class _SignInScreenState extends State<SignInScreen> {
       }
 
       if (user != null) {
-        developer.log('Apple sign in successful, navigating to HomeScreen', name: 'SignInScreen');
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-          (route) => false,
-        );
+        developer.log('Apple sign in successful', name: 'SignInScreen');
+        if (widget.shouldReturnToOnboarding) {
+          developer.log('Navigating to OnboardingFlow after Apple sign in', name: 'SignInScreen');
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const OnboardingFlow()),
+            (route) => false,
+          );
+        } else {
+          developer.log('Navigating to HomeScreen after Apple sign in', name: 'SignInScreen');
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+            (route) => false,
+          );
+        }
       } else {
         developer.log('Apple sign in failed: user is null', name: 'SignInScreen');
       }
@@ -140,12 +161,20 @@ class _SignInScreenState extends State<SignInScreen> {
       }
 
       if (user != null) {
-        developer.log('Sign in successful, navigating to HomeScreen', name: 'SignInScreen');
-        // Navigate to home screen
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-          (route) => false,
-        );
+        developer.log('Sign in successful', name: 'SignInScreen');
+        if (widget.shouldReturnToOnboarding) {
+          developer.log('Navigating to OnboardingFlow after email sign in', name: 'SignInScreen');
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const OnboardingFlow()),
+            (route) => false,
+          );
+        } else {
+          developer.log('Navigating to HomeScreen after email sign in', name: 'SignInScreen');
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+            (route) => false,
+          );
+        }
       } else {
         developer.log('Sign in failed: user is null', name: 'SignInScreen');
       }
@@ -391,7 +420,9 @@ class _SignInScreenState extends State<SignInScreen> {
                           onPressed: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (context) => const SignUpScreen(),
+                                builder: (context) => SignUpScreen(
+                                  shouldReturnToOnboarding: widget.shouldReturnToOnboarding,
+                                ),
                               ),
                             );
                           },

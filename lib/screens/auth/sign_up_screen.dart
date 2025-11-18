@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:crohns_companion/core/theme/app_theme.dart';
 import 'package:crohns_companion/core/backend_service_provider.dart';
 import 'package:crohns_companion/screens/home/home_screen.dart';
+import 'package:crohns_companion/screens/onboarding/onboarding_flow.dart';
 
 class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({Key? key}) : super(key: key);
+  final bool shouldReturnToOnboarding;
+
+  const SignUpScreen({Key? key, this.shouldReturnToOnboarding = false}) : super(key: key);
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -50,11 +53,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (!mounted) return;
 
       if (user != null) {
-        // Navigate to home screen
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-          (route) => false,
-        );
+        if (widget.shouldReturnToOnboarding) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const OnboardingFlow()),
+            (route) => false,
+          );
+        } else {
+          // Navigate to home screen
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+            (route) => false,
+          );
+        }
       }
     } catch (e) {
       if (!mounted) return;
