@@ -118,13 +118,37 @@ class OnboardingController extends ChangeNotifier {
     notifyListeners();
   }
   
-  void toggleSymptom(String symptom) {
-    if (data.currentSymptoms.contains(symptom)) {
-      data.currentSymptoms.remove(symptom);
-    } else {
+  void addSymptom(SymptomEntry symptom) {
+    if (symptom.name.trim().isNotEmpty && 
+        !data.currentSymptoms.any((s) => s.name == symptom.name)) {
       data.currentSymptoms.add(symptom);
+      notifyListeners();
     }
+  }
+  
+  void removeSymptom(String symptomName) {
+    data.currentSymptoms.removeWhere((s) => s.name == symptomName);
     notifyListeners();
+  }
+  
+  void updateSymptomSeverity(String symptomName, String severity) {
+    final index = data.currentSymptoms.indexWhere((s) => s.name == symptomName);
+    if (index != -1) {
+      data.currentSymptoms[index].severity = severity;
+      notifyListeners();
+    }
+  }
+  
+  bool hasSymptom(String symptomName) {
+    return data.currentSymptoms.any((s) => s.name == symptomName);
+  }
+  
+  SymptomEntry? getSymptom(String symptomName) {
+    try {
+      return data.currentSymptoms.firstWhere((s) => s.name == symptomName);
+    } catch (e) {
+      return null;
+    }
   }
   
   void toggleNotificationTime(String time) {

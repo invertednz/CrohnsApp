@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
-import 'package:crohns_companion/core/theme/app_theme.dart';
-import 'package:crohns_companion/screens/tracking/tracking_screen.dart';
-import 'package:crohns_companion/screens/symptoms/symptoms_screen.dart';
-import 'package:crohns_companion/screens/diet/diet_screen.dart';
-import 'package:crohns_companion/screens/supplements/supplements_screen.dart';
-import 'package:crohns_companion/screens/insights/insights_screen.dart';
-import 'package:crohns_companion/screens/chat/chat_screen.dart';
+import 'package:gut_md/core/theme/app_theme.dart';
+import 'package:gut_md/screens/tracking/tracking_screen.dart';
+import 'package:gut_md/screens/symptoms/symptoms_screen.dart';
+import 'package:gut_md/screens/diet/diet_screen.dart';
+import 'package:gut_md/screens/supplements/supplements_screen.dart';
+import 'package:gut_md/screens/insights/insights_screen.dart';
+import 'package:gut_md/screens/chat/chat_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);

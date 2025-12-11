@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:crohns_companion/core/theme/app_theme.dart';
-import 'package:crohns_companion/core/backend_service_provider.dart';
+import 'package:gut_md/core/theme/app_theme.dart';
+import 'package:gut_md/core/backend_service_provider.dart';
 
 class TrackingScreen extends StatefulWidget {
   const TrackingScreen({Key? key}) : super(key: key);
@@ -18,11 +18,22 @@ class _TrackingScreenState extends State<TrackingScreen> {
   double _energyLevel = 5;
   bool _isLoading = false;
   bool _isSaving = false;
+  final TextEditingController _notesController = TextEditingController();
+  final TextEditingController _feelGoodController = TextEditingController();
+  final TextEditingController _feelBadController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _loadTrackingData();
+  }
+
+  @override
+  void dispose() {
+    _notesController.dispose();
+    _feelGoodController.dispose();
+    _feelBadController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadTrackingData() async {
@@ -44,6 +55,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
           _bowelMovements = data['bowel_movements'] ?? 0;
           _painLevel = (data['pain_level'] ?? 0).toDouble();
           _energyLevel = (data['energy_level'] ?? 5).toDouble();
+          _notesController.text = data['notes'] ?? '';
+          _feelGoodController.text = data['feel_good_factors'] ?? '';
+          _feelBadController.text = data['feel_bad_factors'] ?? '';
         });
       } else {
         // Reset to defaults if no data
@@ -52,6 +66,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
           _bowelMovements = 0;
           _painLevel = 0;
           _energyLevel = 5;
+          _notesController.text = '';
+          _feelGoodController.text = '';
+          _feelBadController.text = '';
         });
       }
     } catch (e) {
@@ -85,6 +102,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
           'bowel_movements': _bowelMovements,
           'pain_level': _painLevel,
           'energy_level': _energyLevel,
+          'notes': _notesController.text,
+          'feel_good_factors': _feelGoodController.text,
+          'feel_bad_factors': _feelBadController.text,
         },
       );
 
@@ -314,6 +334,113 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                       color: AppTheme.primaryColor,
                                     ),
                                   ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        // What made you feel good/bad
+                        Card(
+                          elevation: 4,
+                          shadowColor: Colors.black.withOpacity(0.1),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(Icons.thumb_up_outlined, color: Colors.green, size: 20),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      'What made you feel good?',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                TextField(
+                                  controller: _feelGoodController,
+                                  maxLines: 2,
+                                  decoration: InputDecoration(
+                                    hintText: 'e.g., Ate light meals, got good sleep, took a walk...',
+                                    hintStyle: TextStyle(color: Colors.grey.shade400),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    contentPadding: const EdgeInsets.all(12),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.thumb_down_outlined, color: Colors.red, size: 20),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      'What made you feel bad?',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                TextField(
+                                  controller: _feelBadController,
+                                  maxLines: 2,
+                                  decoration: InputDecoration(
+                                    hintText: 'e.g., Ate dairy, stressed at work, poor sleep...',
+                                    hintStyle: TextStyle(color: Colors.grey.shade400),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    contentPadding: const EdgeInsets.all(12),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        // Notes
+                        Card(
+                          elevation: 4,
+                          shadowColor: Colors.black.withOpacity(0.1),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Additional Notes',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                TextField(
+                                  controller: _notesController,
+                                  maxLines: 3,
+                                  decoration: InputDecoration(
+                                    hintText: 'Any other observations about your day...',
+                                    hintStyle: TextStyle(color: Colors.grey.shade400),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    contentPadding: const EdgeInsets.all(12),
+                                  ),
                                 ),
                               ],
                             ),

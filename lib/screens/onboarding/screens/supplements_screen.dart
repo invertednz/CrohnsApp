@@ -4,6 +4,18 @@ import '../onboarding_controller.dart';
 import '../onboarding_data.dart';
 import '../widgets/staggered_animation.dart';
 
+class SupplementItem {
+  final String name;
+  final String description;
+  final IconData icon;
+
+  const SupplementItem({
+    required this.name,
+    required this.description,
+    required this.icon,
+  });
+}
+
 class SupplementsScreen extends StatefulWidget {
   final OnboardingController controller;
   final VoidCallback onNext;
@@ -21,39 +33,266 @@ class SupplementsScreen extends StatefulWidget {
 }
 
 class _SupplementsScreenState extends State<SupplementsScreen> {
-  final TextEditingController _nameController = TextEditingController();
-  bool _takesAM = false;
-  bool _takesPM = false;
+  final TextEditingController _customController = TextEditingController();
   
-  final List<String> _commonSupplements = [
-    'Vitamin D',
-    'Probiotics',
-    'Omega-3',
-    'Iron',
-    'B12',
-    'Calcium',
-    'Zinc',
-    'Magnesium',
+  final List<SupplementItem> _commonSupplements = const [
+    SupplementItem(
+      name: 'Vitamin D',
+      description: 'Supports bone health and immunity',
+      icon: Icons.wb_sunny_outlined,
+    ),
+    SupplementItem(
+      name: 'Probiotics',
+      description: 'Gut health and digestive support',
+      icon: Icons.bubble_chart_outlined,
+    ),
+    SupplementItem(
+      name: 'Omega-3',
+      description: 'Anti-inflammatory fish oils',
+      icon: Icons.water_outlined,
+    ),
+    SupplementItem(
+      name: 'Iron',
+      description: 'Essential for blood health',
+      icon: Icons.fitness_center_outlined,
+    ),
+    SupplementItem(
+      name: 'B12',
+      description: 'Energy and nerve function',
+      icon: Icons.bolt_outlined,
+    ),
+    SupplementItem(
+      name: 'Calcium',
+      description: 'Bone and teeth strength',
+      icon: Icons.shield_outlined,
+    ),
+    SupplementItem(
+      name: 'Zinc',
+      description: 'Immune system support',
+      icon: Icons.security_outlined,
+    ),
+    SupplementItem(
+      name: 'Magnesium',
+      description: 'Muscle and nerve function',
+      icon: Icons.auto_awesome_outlined,
+    ),
   ];
+
+  // Check if supplement is already added
+  bool _isSupplementAdded(String name) {
+    return widget.controller.data.supplements.any((s) => s.name == name);
+  }
+
+  // Get supplement entry by name
+  SupplementEntry? _getSupplementEntry(String name) {
+    try {
+      return widget.controller.data.supplements.firstWhere((s) => s.name == name);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Get index of supplement
+  int _getSupplementIndex(String name) {
+    return widget.controller.data.supplements.indexWhere((s) => s.name == name);
+  }
+
+  // Get custom supplements (not in predefined list)
+  List<SupplementEntry> get _customSupplements {
+    return widget.controller.data.supplements
+        .where((s) => !_commonSupplements.any((item) => item.name == s.name))
+        .toList();
+  }
   
   @override
   void dispose() {
-    _nameController.dispose();
+    _customController.dispose();
     super.dispose();
   }
-  
+
   void _addSupplement(String name) {
     if (name.trim().isEmpty) return;
+    if (_isSupplementAdded(name)) return;
     
-    showDialog(
-      context: context,
-      builder: (context) => _SupplementDialog(
+    setState(() {
+      widget.controller.addSupplement(SupplementEntry(
         name: name,
-        onAdd: (supplement) {
-          setState(() {
-            widget.controller.addSupplement(supplement);
-          });
-        },
+        takesAM: false,
+        takesPM: false,
+      ));
+    });
+  }
+
+  void _removeSupplement(String name) {
+    final index = _getSupplementIndex(name);
+    if (index != -1) {
+      setState(() {
+        widget.controller.removeSupplement(index);
+      });
+    }
+  }
+
+  Widget _buildSupplementCard({
+    required String title,
+    required String description,
+    required IconData icon,
+    required bool isAdded,
+    required VoidCallback onTap,
+    bool isCustom = false,
+    VoidCallback? onDelete,
+    SupplementEntry? entry,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isAdded
+                ? OnboardingTheme.accentIndigo
+                : OnboardingTheme.accentIndigo.withOpacity(0.2),
+            width: isAdded ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                // Icon container
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: isAdded
+                        ? OnboardingTheme.accentIndigo.withOpacity(0.3)
+                        : OnboardingTheme.accentIndigo.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: isAdded ? Colors.white : OnboardingTheme.lightIndigo,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                // Text content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        description,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.white.withOpacity(0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Delete button for custom or checkmark
+                if (isCustom && onDelete != null)
+                  GestureDetector(
+                    onTap: onDelete,
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.red,
+                        size: 18,
+                      ),
+                    ),
+                  )
+                else if (isAdded)
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: OnboardingTheme.accentIndigo,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
+              ],
+            ),
+            // AM/PM toggles when added
+            if (isAdded && entry != null) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const SizedBox(width: 64), // Align with text
+                  Text(
+                    'When do you take it?',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white.withOpacity(0.5),
+                    ),
+                  ),
+                  const Spacer(),
+                  _TimeChip(
+                    label: 'AM',
+                    isSelected: entry.takesAM,
+                    onTap: () {
+                      final index = _getSupplementIndex(title);
+                      if (index != -1) {
+                        setState(() {
+                          widget.controller.updateSupplement(
+                            index,
+                            SupplementEntry(
+                              name: entry.name,
+                              takesAM: !entry.takesAM,
+                              takesPM: entry.takesPM,
+                            ),
+                          );
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  _TimeChip(
+                    label: 'PM',
+                    isSelected: entry.takesPM,
+                    onTap: () {
+                      final index = _getSupplementIndex(title);
+                      if (index != -1) {
+                        setState(() {
+                          widget.controller.updateSupplement(
+                            index,
+                            SupplementEntry(
+                              name: entry.name,
+                              takesAM: entry.takesAM,
+                              takesPM: !entry.takesPM,
+                            ),
+                          );
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -99,211 +338,184 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
                         style: OnboardingTheme.subheadingStyle,
                       ),
                       
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 24),
                       
-                      // Common supplements
-                      const Text(
-                        'Common Supplements',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: _commonSupplements.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final supplement = entry.value;
-                          return StaggeredAnimation(
-                            index: index,
-                            child: GestureDetector(
-                            onTap: () => _addSupplement(supplement),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.4),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: OnboardingTheme.accentIndigo.withOpacity(0.3),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.add_circle_outline,
-                                    color: OnboardingTheme.lightIndigo,
-                                    size: 14,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    supplement,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          );
-                        }).toList(),
-                      ),
-                      
-                      const SizedBox(height: 32),
-                      
-                      // Custom supplement input
+                      // Add Custom Item section
                       Container(
                         padding: const EdgeInsets.all(16),
-                        decoration: OnboardingTheme.cardDecoration(),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: OnboardingTheme.accentIndigo.withOpacity(0.2),
+                          ),
+                        ),
+                        child: Row(
                           children: [
-                            const Text(
-                              'Add Custom Supplement',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: OnboardingTheme.accentIndigo.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.add_circle_outline,
+                                color: OnboardingTheme.lightIndigo,
+                                size: 24,
                               ),
                             ),
-                            const SizedBox(height: 10),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: TextField(
-                                    controller: _nameController,
-                                    style: const TextStyle(color: Colors.white, fontSize: 14),
-                                    decoration: OnboardingTheme.inputDecoration(
-                                      label: 'Supplement name',
-                                      hint: 'e.g., Turmeric',
-                                    ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: TextField(
+                                controller: _customController,
+                                style: const TextStyle(color: Colors.white, fontSize: 14),
+                                decoration: InputDecoration(
+                                  hintText: 'Add custom supplement (e.g., Turmeric)',
+                                  hintStyle: TextStyle(
+                                    color: Colors.white.withOpacity(0.4),
+                                    fontSize: 14,
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                                onSubmitted: (value) {
+                                  if (value.trim().isNotEmpty) {
+                                    _addSupplement(value.trim());
+                                    _customController.clear();
+                                  }
+                                },
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                if (_customController.text.trim().isNotEmpty) {
+                                  _addSupplement(_customController.text.trim());
+                                  _customController.clear();
+                                }
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: OnboardingTheme.accentIndigo,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Text(
+                                  'Add',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
                                   ),
                                 ),
-                                const SizedBox(width: 10),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    if (_nameController.text.trim().isNotEmpty) {
-                                      _addSupplement(_nameController.text.trim());
-                                      _nameController.clear();
-                                    }
-                                  },
-                                  style: OnboardingTheme.primaryButtonStyle().copyWith(
-                                    padding: const MaterialStatePropertyAll(
-                                      EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                    ),
-                                  ),
-                                  child: const Text('Add', style: TextStyle(fontSize: 14)),
-                                ),
-                              ],
+                              ),
                             ),
                           ],
                         ),
                       ),
                       
-                      const SizedBox(height: 24),
-                      
-                      // Current supplements list
-                      if (widget.controller.data.supplements.isNotEmpty) ...[
-                        const Text(
-                          'Your Supplements',
+                      // Custom supplements section
+                      if (_customSupplements.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        Text(
+                          'Your Custom Supplements',
                           style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white.withOpacity(0.7),
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        ...widget.controller.data.supplements.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final supplement = entry.value;
-                          return StaggeredAnimation(
-                            index: index,
-                            child: Container(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            padding: const EdgeInsets.all(12),
-                            decoration: OnboardingTheme.cardDecoration(),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        supplement.name,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Row(
-                                        children: [
-                                          _TimeChip(
-                                            label: 'AM',
-                                            isSelected: supplement.takesAM,
-                                            onTap: () {
-                                              setState(() {
-                                                widget.controller.updateSupplement(
-                                                  index,
-                                                  SupplementEntry(
-                                                    name: supplement.name,
-                                                    takesAM: !supplement.takesAM,
-                                                    takesPM: supplement.takesPM,
-                                                  ),
-                                                );
-                                              });
-                                            },
-                                          ),
-                                          const SizedBox(width: 8),
-                                          _TimeChip(
-                                            label: 'PM',
-                                            isSelected: supplement.takesPM,
-                                            onTap: () {
-                                              setState(() {
-                                                widget.controller.updateSupplement(
-                                                  index,
-                                                  SupplementEntry(
-                                                    name: supplement.name,
-                                                    takesAM: supplement.takesAM,
-                                                    takesPM: !supplement.takesPM,
-                                                  ),
-                                                );
-                                              });
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      widget.controller.removeSupplement(index);
-                                    });
-                                  },
-                                  icon: const Icon(
-                                    Icons.delete_outline,
-                                    color: OnboardingTheme.errorRed,
-                                  ),
-                                ),
-                              ],
+                        const SizedBox(height: 12),
+                        ...List.generate(_customSupplements.length, (index) {
+                          final supplement = _customSupplements[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: StaggeredAnimation(
+                              index: index,
+                              child: _buildSupplementCard(
+                                title: supplement.name,
+                                description: 'Custom supplement',
+                                icon: Icons.medication_outlined,
+                                isAdded: true,
+                                isCustom: true,
+                                entry: supplement,
+                                onTap: () {},
+                                onDelete: () => _removeSupplement(supplement.name),
+                              ),
                             ),
-                          ),
                           );
                         }),
                       ],
+                      
+                      const SizedBox(height: 24),
+                      
+                      Text(
+                        'Common Supplements',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white.withOpacity(0.7),
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 12),
+                      
+                      // Common supplements as cards
+                      ...List.generate(_commonSupplements.length, (index) {
+                        final item = _commonSupplements[index];
+                        final isAdded = _isSupplementAdded(item.name);
+                        final entry = _getSupplementEntry(item.name);
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: StaggeredAnimation(
+                            index: index,
+                            child: _buildSupplementCard(
+                              title: item.name,
+                              description: item.description,
+                              icon: item.icon,
+                              isAdded: isAdded,
+                              entry: entry,
+                              onTap: () {
+                                if (isAdded) {
+                                  _removeSupplement(item.name);
+                                } else {
+                                  _addSupplement(item.name);
+                                }
+                              },
+                            ),
+                          ),
+                        );
+                      }),
+                      
+                      const SizedBox(height: 16),
+                      
+                      // Info box
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: OnboardingTheme.accentIndigo.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: OnboardingTheme.accentIndigo.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.info_outline,
+                              color: OnboardingTheme.lightIndigo,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Select AM/PM to track when you take each supplement',
+                                style: OnboardingTheme.bodyStyle.copyWith(fontSize: 14),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -316,7 +528,7 @@ class _SupplementsScreenState extends State<SupplementsScreen> {
                 child: ElevatedButton(
                   onPressed: widget.onNext,
                   style: OnboardingTheme.primaryButtonStyle().copyWith(
-                    padding: const MaterialStatePropertyAll(
+                    padding: const WidgetStatePropertyAll(
                       EdgeInsets.symmetric(vertical: 18),
                     ),
                   ),
@@ -373,108 +585,6 @@ class _TimeChip extends StatelessWidget {
             fontSize: 13,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SupplementDialog extends StatefulWidget {
-  final String name;
-  final Function(SupplementEntry) onAdd;
-  
-  const _SupplementDialog({
-    required this.name,
-    required this.onAdd,
-  });
-
-  @override
-  State<_SupplementDialog> createState() => _SupplementDialogState();
-}
-
-class _SupplementDialogState extends State<_SupplementDialog> {
-  bool _takesAM = false;
-  bool _takesPM = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: OnboardingTheme.darkNavy,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-        side: BorderSide(
-          color: OnboardingTheme.accentIndigo.withOpacity(0.3),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'When do you take ${widget.name}?',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _TimeChip(
-                  label: 'AM',
-                  isSelected: _takesAM,
-                  onTap: () {
-                    setState(() {
-                      _takesAM = !_takesAM;
-                    });
-                  },
-                ),
-                const SizedBox(width: 16),
-                _TimeChip(
-                  label: 'PM',
-                  isSelected: _takesPM,
-                  onTap: () {
-                    setState(() {
-                      _takesPM = !_takesPM;
-                    });
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: OnboardingTheme.secondaryButtonStyle(),
-                    child: const Text('Cancel'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: (_takesAM || _takesPM)
-                        ? () {
-                            widget.onAdd(SupplementEntry(
-                              name: widget.name,
-                              takesAM: _takesAM,
-                              takesPM: _takesPM,
-                            ));
-                            Navigator.pop(context);
-                          }
-                        : null,
-                    style: OnboardingTheme.primaryButtonStyle(),
-                    child: const Text('Add'),
-                  ),
-                ),
-              ],
-            ),
-          ],
         ),
       ),
     );

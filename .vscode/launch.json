@@ -1,0 +1,39 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Mock Mode (Development)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define=FLAVOR=development"
+      ],
+      "preLaunchTask": "flutter: pub get"
+    },
+    {
+      "name": "Firebase Mode (Production)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define=FLAVOR=production"
+      ],
+      "preLaunchTask": "flutter: pub get"
+    },
+    {
+      "name": "Profile Mode",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "profile"
+    },
+    {
+      "name": "Release Mode",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "release"
+    }
+  ]
+}

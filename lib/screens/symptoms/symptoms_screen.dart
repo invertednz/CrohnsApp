@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:crohns_companion/core/theme/app_theme.dart';
-import 'package:crohns_companion/core/backend_service_provider.dart';
+import 'package:gut_md/core/theme/app_theme.dart';
+import 'package:gut_md/core/backend_service_provider.dart';
 
 class SymptomsScreen extends StatefulWidget {
   const SymptomsScreen({Key? key}) : super(key: key);
@@ -205,7 +205,7 @@ class _SymptomsScreenState extends State<SymptomsScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Track and monitor your Crohn\'s symptoms',
+                  'Track and monitor your digestive symptoms',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.white,

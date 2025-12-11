@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:crohns_companion/screens/home/home_screen.dart';
-import 'package:crohns_companion/core/backend_service_provider.dart';
-import 'package:crohns_companion/screens/auth/sign_in_screen.dart';
-import 'package:crohns_companion/screens/auth/sign_up_screen.dart';
+import 'package:gut_md/screens/home/home_screen.dart';
+import 'package:gut_md/core/backend_service_provider.dart';
+import 'package:gut_md/screens/auth/sign_in_screen.dart';
+import 'package:gut_md/screens/auth/sign_up_screen.dart';
 import 'onboarding_controller.dart';
 import 'screens/welcome_screen.dart';
+import 'screens/condition_screen.dart';
 import 'screens/goal_screen.dart';
 import 'screens/expected_results_screen.dart';
 import 'screens/progress_graph_screen.dart';
@@ -18,6 +19,7 @@ import 'screens/symptoms_screen.dart';
 import 'screens/thank_you_screen.dart';
 import 'screens/trial_offer_screen.dart';
 import 'screens/timeline_screen.dart';
+import 'screens/compare_plans_screen.dart';
 import 'screens/payment_screen.dart';
 import 'screens/discount_screen.dart';
 import 'screens/referral_share_screen.dart';
@@ -35,6 +37,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   final ReferralService _referralService = ReferralService();
   bool _showDiscountScreen = false;
   bool _showReferralScreen = false;
+  bool _showComparePlans = false;
 
   void _nextStep() {
     setState(() {
@@ -98,14 +101,42 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const SignInScreen(
-          shouldReturnToOnboarding: true,
+          shouldReturnToOnboarding: false,
         ),
       ),
     );
   }
 
+  void _showComparePlansScreen() {
+    setState(() {
+      _showComparePlans = true;
+    });
+  }
+
+  void _hideComparePlansScreen() {
+    setState(() {
+      _showComparePlans = false;
+    });
+  }
+
+  void _selectPlanAndContinue() {
+    setState(() {
+      _showComparePlans = false;
+    });
+    _nextStep(); // Go to payment
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Show compare plans screen if triggered
+    if (_showComparePlans) {
+      return ComparePlansScreen(
+        controller: _controller,
+        onSelectPlan: _selectPlanAndContinue,
+        onBack: _hideComparePlansScreen,
+      );
+    }
+
     // Show referral screen if triggered
     if (_showReferralScreen) {
       return ReferralShareScreen(
@@ -141,95 +172,103 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
           onLogin: _goToLogin,
         );
       case 1:
-        return GoalScreen(
+        return ConditionScreen(
           key: const ValueKey(1),
           controller: _controller,
           onNext: _nextStep,
           onBack: _previousStep,
         );
       case 2:
-        return ExpectedResultsScreen(
+        return GoalScreen(
           key: const ValueKey(2),
+          controller: _controller,
           onNext: _nextStep,
           onBack: _previousStep,
         );
       case 3:
-        return ProgressGraphScreen(
+        return ExpectedResultsScreen(
           key: const ValueKey(3),
           onNext: _nextStep,
           onBack: _previousStep,
         );
       case 4:
-        return AppUsageScreen(
+        return ProgressGraphScreen(
           key: const ValueKey(4),
           onNext: _nextStep,
           onBack: _previousStep,
         );
       case 5:
-        return NotificationPreferencesScreen(
+        return AppUsageScreen(
           key: const ValueKey(5),
-          controller: _controller,
           onNext: _nextStep,
           onBack: _previousStep,
         );
       case 6:
-        return DietFlagsScreen(
+        return NotificationPreferencesScreen(
           key: const ValueKey(6),
           controller: _controller,
           onNext: _nextStep,
           onBack: _previousStep,
         );
       case 7:
-        return SupplementsScreen(
+        return DietFlagsScreen(
           key: const ValueKey(7),
           controller: _controller,
           onNext: _nextStep,
           onBack: _previousStep,
         );
       case 8:
-        return LifestyleScreen(
+        return SupplementsScreen(
           key: const ValueKey(8),
           controller: _controller,
           onNext: _nextStep,
           onBack: _previousStep,
         );
       case 9:
-        return MedicationsScreen(
+        return LifestyleScreen(
           key: const ValueKey(9),
           controller: _controller,
           onNext: _nextStep,
           onBack: _previousStep,
         );
       case 10:
-        return CurrentSymptomsScreen(
+        return MedicationsScreen(
           key: const ValueKey(10),
           controller: _controller,
           onNext: _nextStep,
           onBack: _previousStep,
         );
       case 11:
-        return ThankYouScreen(
+        return CurrentSymptomsScreen(
           key: const ValueKey(11),
-          onNext: _nextStep,
-          onBack: _previousStep,
-        );
-      case 12:
-        return TrialOfferScreen(
-          key: const ValueKey(12),
           controller: _controller,
           onNext: _nextStep,
           onBack: _previousStep,
         );
+      case 12:
+        return ThankYouScreen(
+          key: const ValueKey(12),
+          onNext: _nextStep,
+          onBack: _previousStep,
+        );
       case 13:
-        return TimelineScreen(
+        return TrialOfferScreen(
           key: const ValueKey(13),
           controller: _controller,
           onNext: _nextStep,
           onBack: _previousStep,
         );
       case 14:
-        return PaymentScreen(
+        return TimelineScreen(
           key: const ValueKey(14),
+          controller: _controller,
+          onNext: _nextStep,
+          onBack: _previousStep,
+          onComparePlans: _showComparePlansScreen,
+        );
+      case 15:
+        return PaymentScreen(
+          key: const ValueKey(15),
           controller: _controller,
           onNext: _completeOnboarding,
           onBack: _previousStep,

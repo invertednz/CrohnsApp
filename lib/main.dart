@@ -6,12 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' as rendering;
 import 'package:flutter/services.dart';
 
-import 'package:crohns_companion/core/analytics/mixpanel_service.dart';
-import 'package:crohns_companion/core/backend_service_provider.dart';
-import 'package:crohns_companion/core/environment.dart';
-import 'package:crohns_companion/core/firebase/firebase_service.dart';
-import 'package:crohns_companion/core/theme/app_theme.dart';
-import 'package:crohns_companion/screens/splash_screen.dart';
+import 'package:gut_md/core/analytics/mixpanel_service.dart';
+import 'package:gut_md/core/backend_service_provider.dart';
+import 'package:gut_md/core/environment.dart';
+import 'package:gut_md/core/firebase/firebase_service.dart';
+import 'package:gut_md/core/theme/app_theme.dart';
+import 'package:gut_md/screens/splash_screen.dart';
 
 Future<void> main() async {
   developer.log('Starting app initialization', name: 'App.main');
@@ -121,7 +121,7 @@ class MyApp extends StatelessWidget {
     developer.log('Building MaterialApp', name: 'App.MyApp');
     try {
       return MaterialApp(
-        title: 'Crohn\'s Companion',
+        title: 'GutMD',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,

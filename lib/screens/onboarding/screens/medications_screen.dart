@@ -3,6 +3,18 @@ import '../onboarding_theme.dart';
 import '../onboarding_controller.dart';
 import '../widgets/staggered_animation.dart';
 
+class MedicationItem {
+  final String name;
+  final String description;
+  final IconData icon;
+
+  const MedicationItem({
+    required this.name,
+    required this.description,
+    required this.icon,
+  });
+}
+
 class MedicationsScreen extends StatefulWidget {
   final OnboardingController controller;
   final VoidCallback onNext;
@@ -22,43 +34,164 @@ class MedicationsScreen extends StatefulWidget {
 class _MedicationsScreenState extends State<MedicationsScreen> {
   final TextEditingController _customController = TextEditingController();
   
-  final List<_MedicationOption> _commonMedications = [
-    _MedicationOption(
+  final List<MedicationItem> _commonMedications = const [
+    MedicationItem(
       name: 'Mesalamine',
-      category: 'Anti-inflammatory',
-      icon: Icons.medication,
+      description: 'Anti-inflammatory for IBD maintenance',
+      icon: Icons.medication_outlined,
     ),
-    _MedicationOption(
+    MedicationItem(
       name: 'Prednisone',
-      category: 'Corticosteroid',
-      icon: Icons.medication,
+      description: 'Corticosteroid for flare management',
+      icon: Icons.medical_services_outlined,
     ),
-    _MedicationOption(
+    MedicationItem(
       name: 'Azathioprine',
-      category: 'Immunosuppressant',
-      icon: Icons.medication,
+      description: 'Immunosuppressant medication',
+      icon: Icons.healing_outlined,
     ),
-    _MedicationOption(
+    MedicationItem(
       name: 'Infliximab',
-      category: 'Biologic',
-      icon: Icons.medication,
+      description: 'Biologic therapy (infusion)',
+      icon: Icons.vaccines_outlined,
     ),
-    _MedicationOption(
+    MedicationItem(
       name: 'Adalimumab',
-      category: 'Biologic',
-      icon: Icons.medication,
+      description: 'Biologic therapy (injection)',
+      icon: Icons.vaccines_outlined,
     ),
-    _MedicationOption(
+    MedicationItem(
       name: 'Budesonide',
-      category: 'Corticosteroid',
-      icon: Icons.medication,
+      description: 'Targeted corticosteroid',
+      icon: Icons.medical_services_outlined,
+    ),
+    MedicationItem(
+      name: 'Methotrexate',
+      description: 'Immunomodulator therapy',
+      icon: Icons.healing_outlined,
+    ),
+    MedicationItem(
+      name: 'Vedolizumab',
+      description: 'Gut-selective biologic',
+      icon: Icons.vaccines_outlined,
     ),
   ];
+
+  // Get custom medications (not in predefined list)
+  List<String> get _customMedications {
+    return widget.controller.data.medications
+        .where((med) => !_commonMedications.any((item) => item.name == med))
+        .toList();
+  }
   
   @override
   void dispose() {
     _customController.dispose();
     super.dispose();
+  }
+
+  Widget _buildMedicationCard({
+    required String title,
+    required String description,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+    bool isCustom = false,
+    VoidCallback? onDelete,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected
+                ? OnboardingTheme.accentIndigo
+                : OnboardingTheme.accentIndigo.withOpacity(0.2),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            // Icon container
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? OnboardingTheme.accentIndigo.withOpacity(0.3)
+                    : OnboardingTheme.accentIndigo.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                color: isSelected ? Colors.white : OnboardingTheme.lightIndigo,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Text content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white.withOpacity(0.7),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Delete button for custom or checkmark
+            if (isCustom && onDelete != null)
+              GestureDetector(
+                onTap: onDelete,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.close,
+                    color: Colors.red,
+                    size: 18,
+                  ),
+                ),
+              )
+            else if (isSelected)
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: OnboardingTheme.accentIndigo,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.check,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -102,215 +235,159 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
                         style: OnboardingTheme.subheadingStyle,
                       ),
                       
-                      const SizedBox(height: 32),
-                      
-                      // Common medications
-                      const Text(
-                        'Common IBD Medications',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      
-                      ..._commonMedications.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final med = entry.value;
-                        final isSelected = widget.controller.data.medications.contains(med.name);
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: StaggeredAnimation(
-                            index: index,
-                            child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                widget.controller.toggleMedication(med.name);
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.4),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? OnboardingTheme.accentIndigo
-                                      : OnboardingTheme.accentIndigo.withOpacity(0.3),
-                                  width: isSelected ? 2 : 1,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      gradient: isSelected
-                                          ? OnboardingTheme.accentGradient
-                                          : null,
-                                      color: isSelected
-                                          ? null
-                                          : OnboardingTheme.accentIndigo.withOpacity(0.3),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Icon(
-                                      med.icon,
-                                      color: Colors.white,
-                                      size: 20,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          med.name,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          med.category,
-                                          style: OnboardingTheme.bodyStyle.copyWith(fontSize: 12),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  if (isSelected)
-                                    const Icon(
-                                      Icons.check_circle,
-                                      color: OnboardingTheme.healthGreen,
-                                      size: 20,
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          ),
-                        );
-                      }),
-                      
                       const SizedBox(height: 24),
                       
-                      // Custom medication input
+                      // Add Custom Item section
                       Container(
                         padding: const EdgeInsets.all(16),
-                        decoration: OnboardingTheme.cardDecoration(),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: OnboardingTheme.accentIndigo.withOpacity(0.2),
+                          ),
+                        ),
+                        child: Row(
                           children: [
-                            const Text(
-                              'Add Other Medication',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: OnboardingTheme.accentIndigo.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.add_circle_outline,
+                                color: OnboardingTheme.lightIndigo,
+                                size: 24,
                               ),
                             ),
-                            const SizedBox(height: 10),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: TextField(
-                                    controller: _customController,
-                                    style: const TextStyle(color: Colors.white, fontSize: 14),
-                                    decoration: OnboardingTheme.inputDecoration(
-                                      label: 'Medication name',
-                                      hint: 'e.g., Ibuprofen',
-                                    ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: TextField(
+                                controller: _customController,
+                                style: const TextStyle(color: Colors.white, fontSize: 14),
+                                decoration: InputDecoration(
+                                  hintText: 'Add custom medication',
+                                  hintStyle: TextStyle(
+                                    color: Colors.white.withOpacity(0.4),
+                                    fontSize: 14,
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                                onSubmitted: (value) {
+                                  if (value.trim().isNotEmpty) {
+                                    setState(() {
+                                      widget.controller.addMedication(value.trim());
+                                      _customController.clear();
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                if (_customController.text.trim().isNotEmpty) {
+                                  setState(() {
+                                    widget.controller.addMedication(_customController.text.trim());
+                                    _customController.clear();
+                                  });
+                                }
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: OnboardingTheme.accentIndigo,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Text(
+                                  'Add',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
                                   ),
                                 ),
-                                const SizedBox(width: 10),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    if (_customController.text.trim().isNotEmpty) {
-                                      setState(() {
-                                        widget.controller.addMedication(_customController.text.trim());
-                                        _customController.clear();
-                                      });
-                                    }
-                                  },
-                                  style: OnboardingTheme.primaryButtonStyle().copyWith(
-                                    padding: const MaterialStatePropertyAll(
-                                      EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                    ),
-                                  ),
-                                  child: const Text('Add', style: TextStyle(fontSize: 14)),
-                                ),
-                              ],
+                              ),
                             ),
                           ],
                         ),
                       ),
                       
-                      const SizedBox(height: 24),
-                      
-                      // Selected medications
-                      if (widget.controller.data.medications.isNotEmpty) ...[
-                        const Text(
-                          'Your Medications',
+                      // Custom medications section
+                      if (_customMedications.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        Text(
+                          'Your Custom Medications',
                           style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white.withOpacity(0.7),
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: OnboardingTheme.cardDecoration(),
-                          child: Wrap(
-                            spacing: 6,
-                            runSpacing: 6,
-                            children: widget.controller.data.medications.map((medication) {
-                              return Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  gradient: OnboardingTheme.accentGradient,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      medication,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          widget.controller.removeMedication(medication);
-                                        });
-                                      },
-                                      child: const Icon(
-                                        Icons.close,
-                                        color: Colors.white,
-                                        size: 14,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
+                        const SizedBox(height: 12),
+                        ...List.generate(_customMedications.length, (index) {
+                          final medication = _customMedications[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: StaggeredAnimation(
+                              index: index,
+                              child: _buildMedicationCard(
+                                title: medication,
+                                description: 'Custom medication',
+                                icon: Icons.medication_outlined,
+                                isSelected: true,
+                                isCustom: true,
+                                onTap: () {},
+                                onDelete: () {
+                                  setState(() {
+                                    widget.controller.removeMedication(medication);
+                                  });
+                                },
+                              ),
+                            ),
+                          );
+                        }),
                       ],
                       
                       const SizedBox(height: 24),
+                      
+                      Text(
+                        'Common IBD Medications',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white.withOpacity(0.7),
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 12),
+                      
+                      // Common medications as cards
+                      ...List.generate(_commonMedications.length, (index) {
+                        final item = _commonMedications[index];
+                        final isSelected = widget.controller.data.medications.contains(item.name);
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: StaggeredAnimation(
+                            index: index,
+                            child: _buildMedicationCard(
+                              title: item.name,
+                              description: item.description,
+                              icon: item.icon,
+                              isSelected: isSelected,
+                              onTap: () {
+                                setState(() {
+                                  widget.controller.toggleMedication(item.name);
+                                });
+                              },
+                            ),
+                          ),
+                        );
+                      }),
+                      
+                      const SizedBox(height: 16),
                       
                       // Disclaimer
                       Container(
@@ -354,7 +431,7 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
                 child: ElevatedButton(
                   onPressed: widget.onNext,
                   style: OnboardingTheme.primaryButtonStyle().copyWith(
-                    padding: const MaterialStatePropertyAll(
+                    padding: const WidgetStatePropertyAll(
                       EdgeInsets.symmetric(vertical: 18),
                     ),
                   ),
@@ -374,16 +451,4 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
       ),
     );
   }
-}
-
-class _MedicationOption {
-  final String name;
-  final String category;
-  final IconData icon;
-  
-  _MedicationOption({
-    required this.name,
-    required this.category,
-    required this.icon,
-  });
 }

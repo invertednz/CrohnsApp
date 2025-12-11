@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:crohns_companion/core/theme/app_theme.dart';
-import 'package:crohns_companion/core/backend_service_provider.dart';
+import 'package:gut_md/core/theme/app_theme.dart';
+import 'package:gut_md/core/backend_service_provider.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);
@@ -15,10 +15,10 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isLoading = false;
   List<Map<String, dynamic>> _messages = [];
   List<String> _suggestedQuestions = [
-    'What foods should I avoid with Crohn\'s?',
+    'What foods should I avoid with my condition?',
     'How can I manage pain during a flare-up?',
-    'What supplements are recommended for Crohn\'s?',
-    'Can stress trigger Crohn\'s symptoms?',
+    'What supplements are recommended for gut health?',
+    'Can stress trigger digestive symptoms?',
   ];
 
   @override
@@ -167,7 +167,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Ask questions about Crohn\'s disease',
+                  'Ask questions about your gut health',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.white,
@@ -343,7 +343,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Ask questions about Crohn\'s disease\nand get personalized advice',
+            'Ask questions about your gut health\nand get personalized advice',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: AppTheme.lightTextColor.withOpacity(0.6),

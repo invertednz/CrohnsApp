@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:crohns_companion/core/theme/app_theme.dart';
-import 'package:crohns_companion/core/backend_service_provider.dart';
-import 'package:crohns_companion/screens/home/home_screen.dart';
-import 'package:crohns_companion/screens/onboarding/onboarding_flow.dart';
+import 'package:gut_md/core/theme/app_theme.dart';
+import 'package:gut_md/core/backend_service_provider.dart';
+import 'package:gut_md/screens/home/home_screen.dart';
+import 'package:gut_md/screens/onboarding/onboarding_flow.dart';
 
 class SignUpScreen extends StatefulWidget {
   final bool shouldReturnToOnboarding;
@@ -120,7 +120,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               const Text(
-                                'Join Crohn\'s Companion',
+                                'Join GutMD',
                                 style: TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,

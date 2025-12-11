@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:crohns_companion/core/theme/app_theme.dart';
-import 'package:crohns_companion/core/backend_service_provider.dart';
+import 'package:gut_md/core/theme/app_theme.dart';
+import 'package:gut_md/core/backend_service_provider.dart';
 
 class SupplementsScreen extends StatefulWidget {
   const SupplementsScreen({Key? key}) : super(key: key);

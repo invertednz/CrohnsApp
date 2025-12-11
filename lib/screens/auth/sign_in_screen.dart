@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
-import 'package:crohns_companion/core/theme/app_theme.dart';
-import 'package:crohns_companion/core/backend_service_provider.dart';
-import 'package:crohns_companion/screens/auth/sign_up_screen.dart';
-import 'package:crohns_companion/screens/home/home_screen.dart';
-import 'package:crohns_companion/screens/onboarding/onboarding_flow.dart';
+import 'package:gut_md/core/theme/app_theme.dart';
+import 'package:gut_md/core/backend_service_provider.dart';
+import 'package:gut_md/screens/auth/sign_up_screen.dart';
+import 'package:gut_md/screens/home/home_screen.dart';
+import 'package:gut_md/screens/onboarding/onboarding_flow.dart';
 
 class SignInScreen extends StatefulWidget {
   final bool shouldReturnToOnboarding;
@@ -36,6 +36,26 @@ class _SignInScreenState extends State<SignInScreen> {
     super.dispose();
   }
 
+  Future<void> _ensureBackendInitialized() async {
+    try {
+      // Try to access instance - if not initialized, initialize it
+      BackendServiceProvider.instance;
+    } catch (e) {
+      developer.log('Backend not initialized, initializing now...', name: 'SignInScreen');
+      await BackendServiceProvider.initialize();
+    }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
   Future<void> _signInWithGoogle() async {
     developer.log('Attempting Google sign in', name: 'SignInScreen');
     setState(() {
@@ -43,6 +63,7 @@ class _SignInScreenState extends State<SignInScreen> {
     });
 
     try {
+      await _ensureBackendInitialized();
       final authService = BackendServiceProvider.instance.auth;
       final user = await authService.signInWithGoogle();
 
@@ -68,6 +89,7 @@ class _SignInScreenState extends State<SignInScreen> {
         }
       } else {
         developer.log('Google sign in failed: user is null', name: 'SignInScreen');
+        _showError('Sign in failed. Please try again.');
       }
     } catch (e, stackTrace) {
       developer.log(
@@ -76,6 +98,7 @@ class _SignInScreenState extends State<SignInScreen> {
         error: e,
         stackTrace: stackTrace,
       );
+      _showError('Sign in error: ${e.toString()}');
     } finally {
       if (mounted) {
         setState(() {
@@ -92,6 +115,7 @@ class _SignInScreenState extends State<SignInScreen> {
     });
 
     try {
+      await _ensureBackendInitialized();
       final authService = BackendServiceProvider.instance.auth;
       final user = await authService.signInWithApple();
 
@@ -117,6 +141,7 @@ class _SignInScreenState extends State<SignInScreen> {
         }
       } else {
         developer.log('Apple sign in failed: user is null', name: 'SignInScreen');
+        _showError('Sign in failed. Please try again.');
       }
     } catch (e, stackTrace) {
       developer.log(
@@ -125,6 +150,7 @@ class _SignInScreenState extends State<SignInScreen> {
         error: e,
         stackTrace: stackTrace,
       );
+      _showError('Sign in error: ${e.toString()}');
     } finally {
       if (mounted) {
         setState(() {
@@ -147,6 +173,7 @@ class _SignInScreenState extends State<SignInScreen> {
     });
 
     try {
+      await _ensureBackendInitialized();
       developer.log('Initializing auth service', name: 'SignInScreen');
       final authService = BackendServiceProvider.instance.auth;
       developer.log('Calling signInWithEmail', name: 'SignInScreen');
@@ -177,6 +204,7 @@ class _SignInScreenState extends State<SignInScreen> {
         }
       } else {
         developer.log('Sign in failed: user is null', name: 'SignInScreen');
+        _showError('Sign in failed. Please check your credentials.');
       }
     } catch (e, stackTrace) {
       developer.log(
@@ -185,6 +213,7 @@ class _SignInScreenState extends State<SignInScreen> {
         error: e,
         stackTrace: stackTrace,
       );
+      _showError('Sign in error: ${e.toString()}');
     } finally {
       if (mounted) {
         setState(() {

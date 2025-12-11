@@ -45,7 +45,7 @@ class WelcomeScreen extends StatelessWidget {
                       
                       // Welcome heading
                       Text(
-                        'Welcome to\nCrohn\'s Companion',
+                        'Welcome to\nGutMD',
                         style: OnboardingTheme.headingTextStyle(fontSize: 36),
                         textAlign: TextAlign.center,
                       ),
@@ -53,7 +53,7 @@ class WelcomeScreen extends StatelessWidget {
                       const SizedBox(height: 16),
                       
                       Text(
-                        'Your journey to better digestive health starts here',
+                        'Your personal guide to better gut health',
                         style: OnboardingTheme.subheadingStyle,
                         textAlign: TextAlign.center,
                       ),

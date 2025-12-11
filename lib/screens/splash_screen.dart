@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
-import 'package:crohns_companion/core/analytics/mixpanel_service.dart';
-import 'package:crohns_companion/core/theme/app_theme.dart';
-import 'package:crohns_companion/screens/onboarding/onboarding_flow.dart';
+import 'package:gut_md/core/analytics/mixpanel_service.dart';
+import 'package:gut_md/core/theme/app_theme.dart';
+import 'package:gut_md/screens/onboarding/onboarding_flow.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
