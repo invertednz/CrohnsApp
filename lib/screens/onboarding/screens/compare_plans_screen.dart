@@ -6,12 +6,14 @@ class ComparePlansScreen extends StatefulWidget {
   final OnboardingController controller;
   final VoidCallback onSelectPlan;
   final VoidCallback onBack;
+  final VoidCallback? onNoThanks;
   
   const ComparePlansScreen({
     Key? key,
     required this.controller,
     required this.onSelectPlan,
     required this.onBack,
+    this.onNoThanks,
   }) : super(key: key);
 
   @override
@@ -23,38 +25,42 @@ class _ComparePlansScreenState extends State<ComparePlansScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: widget.onBack,
-                    icon: const Icon(
-                      Icons.arrow_back,
-                      color: Color(0xFF1E293B),
-                    ),
-                  ),
-                  const Expanded(
-                    child: Text(
-                      'Compare Plans',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E293B),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: OnboardingTheme.primaryGradient,
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: widget.onBack,
+                      icon: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.white,
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 48), // Balance the back button
-                ],
+                    const Expanded(
+                      child: Text(
+                        'Compare Plans',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 48), // Balance the back button
+                  ],
+                ),
               ),
-            ),
             
             // Main content
             Expanded(
@@ -163,7 +169,7 @@ class _ComparePlansScreenState extends State<ComparePlansScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'All plans include a 7-day free trial. Cancel anytime.',
+                              'All plans include a 3-day free trial. Cancel anytime.',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Colors.grey.shade600,
@@ -178,40 +184,56 @@ class _ComparePlansScreenState extends State<ComparePlansScreen> {
               ),
             ),
             
-            // Bottom button
+            // Bottom buttons
             Padding(
               padding: const EdgeInsets.all(24),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: widget.onSelectPlan,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: OnboardingTheme.accentIndigo,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Continue with ${_selectedPlan == 'annual' ? 'Annual' : _selectedPlan == 'monthly' ? 'Monthly' : 'Pay It Forward'}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: widget.onSelectPlan,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: OnboardingTheme.healthGreen,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
                         ),
+                        elevation: 0,
                       ),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.arrow_forward, size: 20),
-                    ],
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Continue with ${_selectedPlan == 'annual' ? 'Annual' : _selectedPlan == 'monthly' ? 'Monthly' : 'Pay It Forward'}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.arrow_forward, size: 20),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: widget.onNoThanks,
+                    child: const Text(
+                      'No thanks',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
+        ),
         ),
       ),
     );

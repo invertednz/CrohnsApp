@@ -18,54 +18,58 @@ class TimelineScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header with back button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: onBack,
-                    icon: const Icon(
-                      Icons.arrow_back,
-                      color: Color(0xFF1E293B),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Main content
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: OnboardingTheme.primaryGradient,
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Header with back button
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
                   children: [
-                    const SizedBox(height: 8),
-                    
-                    // Title
-                    const Text(
-                      'GutMD',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E293B),
+                    IconButton(
+                      onPressed: onBack,
+                      icon: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.white,
                       ),
                     ),
-                    
-                    const SizedBox(height: 8),
-                    
-                    Text(
-                      'We\'ll remind you when your trial ends',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
+                  ],
+                ),
+              ),
+              
+              // Main content
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 8),
+                      
+                      // Title
+                      const Text(
+                        'GutMD',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
+                      
+                      const SizedBox(height: 8),
+                      
+                      Text(
+                        'We\'ll remind you when your trial ends',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white.withOpacity(0.7),
+                        ),
+                      ),
                     
                     const SizedBox(height: 40),
                     
@@ -83,7 +87,7 @@ class TimelineScreen extends StatelessWidget {
                       icon: Icons.notifications,
                       iconColor: Colors.white,
                       iconBgColor: OnboardingTheme.warningAmber,
-                      title: 'In 5 days',
+                      title: 'In 2 days',
                       description: 'We\'ll send a reminder before your trial ends',
                       showConnector: true,
                     ),
@@ -92,7 +96,7 @@ class TimelineScreen extends StatelessWidget {
                       icon: Icons.remove,
                       iconColor: Colors.white,
                       iconBgColor: OnboardingTheme.accentIndigo,
-                      title: 'In 7 days',
+                      title: 'In 3 days',
                       description: 'Your subscription begins unless you cancel before',
                       showConnector: false,
                     ),
@@ -104,10 +108,10 @@ class TimelineScreen extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: OnboardingTheme.accentIndigo.withOpacity(0.05),
+                        color: Colors.black.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: OnboardingTheme.accentIndigo.withOpacity(0.2),
+                          color: OnboardingTheme.accentIndigo.withOpacity(0.3),
                         ),
                       ),
                       child: Column(
@@ -119,7 +123,7 @@ class TimelineScreen extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: OnboardingTheme.accentIndigo.withOpacity(0.1),
+                              color: OnboardingTheme.healthGreen.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Text(
@@ -127,7 +131,7 @@ class TimelineScreen extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                color: OnboardingTheme.accentIndigo,
+                                color: OnboardingTheme.healthGreen,
                               ),
                             ),
                           ),
@@ -143,7 +147,7 @@ class TimelineScreen extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: OnboardingTheme.accentIndigo,
+                                    color: OnboardingTheme.lightIndigo,
                                     width: 2,
                                   ),
                                 ),
@@ -151,7 +155,7 @@ class TimelineScreen extends StatelessWidget {
                                   child: Icon(
                                     Icons.play_arrow,
                                     size: 14,
-                                    color: OnboardingTheme.accentIndigo,
+                                    color: OnboardingTheme.lightIndigo,
                                   ),
                                 ),
                               ),
@@ -165,7 +169,7 @@ class TimelineScreen extends StatelessWidget {
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
-                                        color: Color(0xFF1E293B),
+                                        color: Colors.white,
                                       ),
                                     ),
                                     const SizedBox(height: 2),
@@ -173,7 +177,7 @@ class TimelineScreen extends StatelessWidget {
                                       'No commitment. Cancel anytime',
                                       style: TextStyle(
                                         fontSize: 13,
-                                        color: Colors.grey.shade600,
+                                        color: Colors.white.withOpacity(0.6),
                                       ),
                                     ),
                                   ],
@@ -184,7 +188,7 @@ class TimelineScreen extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: OnboardingTheme.accentIndigo,
+                                  color: OnboardingTheme.lightIndigo,
                                 ),
                               ),
                             ],
@@ -208,7 +212,7 @@ class TimelineScreen extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: onNext,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: OnboardingTheme.accentIndigo,
+                        backgroundColor: OnboardingTheme.healthGreen,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 18),
                         shape: RoundedRectangleBorder(
@@ -243,13 +247,13 @@ class TimelineScreen extends StatelessWidget {
                         // Navigate to compare plans - handled by parent
                       },
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF1E293B),
+                        foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
                         side: BorderSide(
-                          color: Colors.grey.shade300,
+                          color: Colors.white.withOpacity(0.3),
                         ),
                       ),
                       child: const Text(
@@ -265,6 +269,7 @@ class TimelineScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
         ),
       ),
     );
@@ -313,7 +318,7 @@ class _TimelineStep extends StatelessWidget {
               Container(
                 width: 2,
                 height: 50,
-                color: Colors.grey.shade300,
+                color: Colors.white.withOpacity(0.2),
               ),
           ],
         ),
@@ -332,7 +337,7 @@ class _TimelineStep extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E293B),
+                    color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -340,7 +345,7 @@ class _TimelineStep extends StatelessWidget {
                   description,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey.shade600,
+                    color: Colors.white.withOpacity(0.7),
                     height: 1.4,
                   ),
                 ),

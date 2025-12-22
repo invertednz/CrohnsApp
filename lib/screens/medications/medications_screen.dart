@@ -3,43 +3,43 @@ import 'package:gut_md/core/theme/app_theme.dart';
 import 'package:gut_md/core/app_state.dart';
 import 'package:gut_md/widgets/calendar_bar.dart';
 
-class SymptomItem {
+class MedicationItem {
   final String name;
   final String description;
   final IconData icon;
 
-  const SymptomItem({
+  const MedicationItem({
     required this.name,
     required this.description,
     required this.icon,
   });
 }
 
-class SymptomsScreen extends StatefulWidget {
-  const SymptomsScreen({Key? key}) : super(key: key);
+class MedicationsScreenMain extends StatefulWidget {
+  const MedicationsScreenMain({Key? key}) : super(key: key);
 
   @override
-  State<SymptomsScreen> createState() => _SymptomsScreenState();
+  State<MedicationsScreenMain> createState() => _MedicationsScreenMainState();
 }
 
-class _SymptomsScreenState extends State<SymptomsScreen> {
+class _MedicationsScreenMainState extends State<MedicationsScreenMain> {
   final _appState = AppState();
   final TextEditingController _customController = TextEditingController();
   bool _initialized = false;
   
-  // User's symptom list to track (persists across days)
-  final Set<String> _mySymptoms = {};
-  final List<String> _customSymptoms = [];
+  // User's medication list (persists across days)
+  final Set<String> _myMedications = {};
+  final List<String> _customMedications = [];
   
   // Per-day tracking data
-  final Map<String, Set<String>> _experiencedByDate = {};
-  final Map<String, Map<String, String>> _severityByDate = {}; // Mild, Moderate, Severe
+  final Map<String, Set<String>> _takenByDate = {};
+  final Map<String, Map<String, bool>> _takenAMByDate = {};
+  final Map<String, Map<String, bool>> _takenPMByDate = {};
 
   DateTime get _selectedDate => _appState.selectedDate;
   String get _dateKey => '${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}';
   
-  Set<String> get _experiencedToday => _experiencedByDate[_dateKey] ?? {};
-  Map<String, String> get _severityToday => _severityByDate[_dateKey] ?? {};
+  Set<String> get _takenToday => _takenByDate[_dateKey] ?? {};
 
   @override
   void initState() {
@@ -51,31 +51,25 @@ class _SymptomsScreenState extends State<SymptomsScreen> {
     if (_initialized) return;
     _initialized = true;
     
-    // Load symptoms from onboarding data
-    final onboardingSymptoms = _appState.userSymptoms;
-    for (var symptom in onboardingSymptoms) {
-      if (symptom.isCustom) {
-        _customSymptoms.add(symptom.name);
-      } else {
-        _mySymptoms.add(symptom.name);
-      }
+    // Load medications from onboarding data
+    final onboardingMeds = _appState.userMedications;
+    for (var med in onboardingMeds) {
+      _myMedications.add(med);
     }
   }
 
-  final List<SymptomItem> _commonSymptoms = const [
-    SymptomItem(name: 'Abdominal Pain', description: 'Stomach cramps or discomfort', icon: Icons.emergency_outlined),
-    SymptomItem(name: 'Diarrhea', description: 'Frequent loose or watery stools', icon: Icons.water_drop_outlined),
-    SymptomItem(name: 'Bloating', description: 'Feeling of fullness or swelling', icon: Icons.air),
-    SymptomItem(name: 'Gas', description: 'Excessive flatulence', icon: Icons.cloud_outlined),
-    SymptomItem(name: 'Fatigue', description: 'Tiredness and low energy', icon: Icons.battery_0_bar),
-    SymptomItem(name: 'Nausea', description: 'Feeling sick or queasy', icon: Icons.sick_outlined),
-    SymptomItem(name: 'Loss of Appetite', description: 'Reduced desire to eat', icon: Icons.no_meals_outlined),
-    SymptomItem(name: 'Constipation', description: 'Difficulty passing stools', icon: Icons.block),
-    SymptomItem(name: 'Joint Pain', description: 'Aching or stiff joints', icon: Icons.accessibility_new),
-    SymptomItem(name: 'Fever', description: 'Elevated body temperature', icon: Icons.thermostat),
+  final List<MedicationItem> _commonMedications = const [
+    MedicationItem(name: 'Mesalamine', description: 'Anti-inflammatory for IBD maintenance', icon: Icons.medication_outlined),
+    MedicationItem(name: 'Prednisone', description: 'Corticosteroid for flare management', icon: Icons.medical_services_outlined),
+    MedicationItem(name: 'Azathioprine', description: 'Immunosuppressant medication', icon: Icons.healing_outlined),
+    MedicationItem(name: 'Infliximab', description: 'Biologic therapy (infusion)', icon: Icons.vaccines_outlined),
+    MedicationItem(name: 'Adalimumab', description: 'Biologic therapy (injection)', icon: Icons.vaccines_outlined),
+    MedicationItem(name: 'Budesonide', description: 'Targeted corticosteroid', icon: Icons.medical_services_outlined),
+    MedicationItem(name: 'Methotrexate', description: 'Immunomodulator therapy', icon: Icons.healing_outlined),
+    MedicationItem(name: 'Vedolizumab', description: 'Gut-selective biologic', icon: Icons.vaccines_outlined),
   ];
 
-  List<String> get _allMySymptoms => [..._mySymptoms, ..._customSymptoms];
+  List<String> get _allMyMedications => [..._myMedications, ..._customMedications];
 
   @override
   void dispose() {
@@ -83,78 +77,70 @@ class _SymptomsScreenState extends State<SymptomsScreen> {
     super.dispose();
   }
 
-  Color _getSeverityColor(String severity) {
-    switch (severity) {
-      case 'Mild': return AppTheme.healthGreen;
-      case 'Moderate': return Colors.amber;
-      case 'Severe': return Colors.redAccent;
-      default: return Colors.amber;
-    }
-  }
-
   void _toggleInMyList(String name) {
     setState(() {
-      if (_mySymptoms.contains(name)) {
-        _mySymptoms.remove(name);
+      if (_myMedications.contains(name)) {
+        _myMedications.remove(name);
       } else {
-        _mySymptoms.add(name);
+        _myMedications.add(name);
       }
     });
   }
 
-  void _toggleExperiencedToday(String name) {
+  void _toggleTakenToday(String name) {
     setState(() {
-      _experiencedByDate[_dateKey] ??= {};
-      _severityByDate[_dateKey] ??= {};
+      _takenByDate[_dateKey] ??= {};
+      _takenAMByDate[_dateKey] ??= {};
+      _takenPMByDate[_dateKey] ??= {};
       
-      if (_experiencedByDate[_dateKey]!.contains(name)) {
-        _experiencedByDate[_dateKey]!.remove(name);
-        _severityByDate[_dateKey]!.remove(name);
+      if (_takenByDate[_dateKey]!.contains(name)) {
+        _takenByDate[_dateKey]!.remove(name);
       } else {
-        _experiencedByDate[_dateKey]!.add(name);
-        _severityByDate[_dateKey]![name] = 'Moderate';
+        _takenByDate[_dateKey]!.add(name);
       }
     });
   }
 
-  void _setSeverity(String name, String severity) {
+  void _toggleAM(String name) {
     setState(() {
-      _severityByDate[_dateKey] ??= {};
-      _severityByDate[_dateKey]![name] = severity;
+      _takenAMByDate[_dateKey] ??= {};
+      _takenAMByDate[_dateKey]![name] = !(_takenAMByDate[_dateKey]![name] ?? false);
     });
   }
 
-  void _markAllExperienced() {
+  void _togglePM(String name) {
     setState(() {
-      _experiencedByDate[_dateKey] = {..._allMySymptoms};
-      _severityByDate[_dateKey] ??= {};
-      for (var name in _allMySymptoms) {
-        _severityByDate[_dateKey]![name] ??= 'Moderate';
-      }
+      _takenPMByDate[_dateKey] ??= {};
+      _takenPMByDate[_dateKey]![name] = !(_takenPMByDate[_dateKey]![name] ?? false);
     });
   }
 
-  void _clearAllExperienced() {
+  void _markAllTaken() {
     setState(() {
-      _experiencedByDate[_dateKey]?.clear();
-      _severityByDate[_dateKey]?.clear();
+      _takenByDate[_dateKey] = {..._allMyMedications};
     });
   }
 
-  void _addCustomSymptom() {
+  void _clearAllTaken() {
+    setState(() {
+      _takenByDate[_dateKey]?.clear();
+    });
+  }
+
+  void _addCustomMedication() {
     final text = _customController.text.trim();
-    if (text.isNotEmpty && !_customSymptoms.contains(text) && !_mySymptoms.contains(text)) {
+    if (text.isNotEmpty && !_customMedications.contains(text) && !_myMedications.contains(text)) {
       setState(() {
-        _customSymptoms.add(text);
+        _customMedications.add(text);
         _customController.clear();
       });
     }
   }
 
-  void _removeCustomSymptom(String name) {
+  void _removeCustomMedication(String name) {
     setState(() {
-      _customSymptoms.remove(name);
-      for (var set in _experiencedByDate.values) {
+      _customMedications.remove(name);
+      for (var set in _takenByDate.values) {
         set.remove(name);
       }
     });
@@ -162,7 +148,7 @@ class _SymptomsScreenState extends State<SymptomsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final hasMySymptoms = _allMySymptoms.isNotEmpty;
+    final hasMyMedications = _allMyMedications.isNotEmpty;
     
     return Container(
       decoration: const BoxDecoration(
@@ -178,12 +164,12 @@ class _SymptomsScreenState extends State<SymptomsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Symptoms',
+                    'Medications',
                     style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Track how you felt today',
+                    'Track your daily medications',
                     style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.7)),
                   ),
                   const SizedBox(height: 16),
@@ -196,17 +182,17 @@ class _SymptomsScreenState extends State<SymptomsScreen> {
             ),
             
             // Quick actions for daily tracking
-            if (hasMySymptoms)
+            if (hasMyMedications)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
                   children: [
                     Expanded(
-                      child: _buildQuickAction('Had All', Icons.check_circle_outline, Colors.amber, _markAllExperienced),
+                      child: _buildQuickAction('Mark All Taken', Icons.check_circle_outline, AppTheme.healthGreen, _markAllTaken),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: _buildQuickAction('None Today', Icons.sentiment_satisfied_alt, AppTheme.healthGreen, _clearAllExperienced),
+                      child: _buildQuickAction('Clear All', Icons.cancel_outlined, Colors.redAccent, _clearAllTaken),
                     ),
                   ],
                 ),
@@ -214,53 +200,79 @@ class _SymptomsScreenState extends State<SymptomsScreen> {
             
             const SizedBox(height: 16),
             
-            // Symptoms list
+            // Medications list
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // My Symptoms - Daily Tracking
-                    if (hasMySymptoms) ...[
+                    // My Medications - Daily Tracking
+                    if (hasMyMedications) ...[
                       Text(
-                        'My Symptoms - Tap if experienced today',
+                        'My Medications - Tap to mark taken',
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7)),
                       ),
                       const SizedBox(height: 12),
-                      ..._allMySymptoms.map((name) {
-                        final isExperienced = _experiencedToday.contains(name);
-                        final severity = _severityToday[name] ?? 'Moderate';
-                        final isCustom = _customSymptoms.contains(name);
-                        final commonSympList = _commonSymptoms.where((s) => s.name == name);
-                        final commonSymp = commonSympList.isNotEmpty ? commonSympList.first : null;
+                      ..._allMyMedications.map((name) {
+                        final isTaken = _takenToday.contains(name);
+                        final takenAM = _takenAMByDate[_dateKey]?[name] ?? false;
+                        final takenPM = _takenPMByDate[_dateKey]?[name] ?? false;
+                        final isCustom = _customMedications.contains(name);
+                        final commonMedList = _commonMedications.where((m) => m.name == name);
+                        final commonMed = commonMedList.isNotEmpty ? commonMedList.first : null;
                         
                         return _buildDailyTrackingCard(
                           name: name,
-                          description: isCustom ? 'Custom symptom' : (commonSymp?.description ?? ''),
-                          icon: isCustom ? Icons.edit_note : (commonSymp?.icon ?? Icons.warning_amber),
-                          isExperienced: isExperienced,
-                          severity: severity,
+                          description: isCustom ? 'Custom medication' : (commonMed?.description ?? ''),
+                          icon: isCustom ? Icons.medication_outlined : (commonMed?.icon ?? Icons.medication_outlined),
+                          isTaken: isTaken,
+                          takenAM: takenAM,
+                          takenPM: takenPM,
                           isCustom: isCustom,
                         );
                       }),
                       const SizedBox(height: 20),
                     ],
                     
-                    // Add custom symptom
+                    // Add custom medication
                     _buildAddCustomSection(),
                     
                     const SizedBox(height: 20),
                     
-                    // Add from common symptoms
+                    // Add from common medications
                     Text(
-                      'Add Symptoms to Track',
+                      'Add to My Medications',
                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7)),
                     ),
                     const SizedBox(height: 12),
                     
-                    ..._commonSymptoms.where((s) => !_mySymptoms.contains(s.name)).map((symp) => 
-                      _buildAddSymptomCard(symp)),
+                    ..._commonMedications.where((m) => !_myMedications.contains(m.name)).map((med) => 
+                      _buildAddMedicationCard(med)),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Disclaimer
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.info_outline, color: Colors.amber, size: 24),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Always consult your doctor before making medication changes',
+                              style: TextStyle(fontSize: 13, color: Colors.amber.withOpacity(0.9)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     
                     const SizedBox(height: 20),
                   ],
@@ -320,15 +332,15 @@ class _SymptomsScreenState extends State<SymptomsScreen> {
               controller: _customController,
               style: const TextStyle(color: Colors.white, fontSize: 14),
               decoration: InputDecoration(
-                hintText: 'Add custom symptom',
+                hintText: 'Add custom medication',
                 hintStyle: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14),
                 border: InputBorder.none,
               ),
-              onSubmitted: (_) => _addCustomSymptom(),
+              onSubmitted: (_) => _addCustomMedication(),
             ),
           ),
           GestureDetector(
-            onTap: _addCustomSymptom,
+            onTap: _addCustomMedication,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
@@ -347,23 +359,22 @@ class _SymptomsScreenState extends State<SymptomsScreen> {
     required String name,
     required String description,
     required IconData icon,
-    required bool isExperienced,
-    required String severity,
+    required bool isTaken,
+    required bool takenAM,
+    required bool takenPM,
     required bool isCustom,
   }) {
-    final severityColor = _getSeverityColor(severity);
-    
     return GestureDetector(
-      onTap: () => _toggleExperiencedToday(name),
+      onTap: () => _toggleTakenToday(name),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isExperienced ? severityColor.withOpacity(0.15) : Colors.black.withOpacity(0.2),
+          color: isTaken ? AppTheme.healthGreen.withOpacity(0.15) : Colors.black.withOpacity(0.2),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isExperienced ? severityColor : Colors.white.withOpacity(0.1),
-            width: isExperienced ? 2 : 1,
+            color: isTaken ? AppTheme.healthGreen : Colors.white.withOpacity(0.1),
+            width: isTaken ? 2 : 1,
           ),
         ),
         child: Column(
@@ -374,12 +385,12 @@ class _SymptomsScreenState extends State<SymptomsScreen> {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: isExperienced ? severityColor.withOpacity(0.3) : Colors.white.withOpacity(0.1),
+                    color: isTaken ? AppTheme.healthGreen.withOpacity(0.3) : Colors.white.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
-                    isExperienced ? Icons.check : icon,
-                    color: isExperienced ? severityColor : Colors.white70,
+                    isTaken ? Icons.check : icon,
+                    color: isTaken ? AppTheme.healthGreen : Colors.white70,
                     size: 22,
                   ),
                 ),
@@ -388,7 +399,7 @@ class _SymptomsScreenState extends State<SymptomsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: isExperienced ? Colors.white : Colors.white.withOpacity(0.9))),
+                      Text(name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: isTaken ? Colors.white : Colors.white.withOpacity(0.9))),
                       if (description.isNotEmpty)
                         Text(description, style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.5))),
                     ],
@@ -396,7 +407,7 @@ class _SymptomsScreenState extends State<SymptomsScreen> {
                 ),
                 if (isCustom)
                   GestureDetector(
-                    onTap: () => _removeCustomSymptom(name),
+                    onTap: () => _removeCustomMedication(name),
                     child: Container(
                       width: 28,
                       height: 28,
@@ -416,18 +427,16 @@ class _SymptomsScreenState extends State<SymptomsScreen> {
                   ),
               ],
             ),
-            if (isExperienced) ...[
+            if (isTaken) ...[
               const SizedBox(height: 10),
               Row(
                 children: [
                   const SizedBox(width: 58),
-                  Text('Severity:', style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.5))),
+                  Text('Time:', style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.5))),
                   const Spacer(),
-                  _buildSeverityChip('Mild', severity == 'Mild', AppTheme.healthGreen, () => _setSeverity(name, 'Mild')),
-                  const SizedBox(width: 6),
-                  _buildSeverityChip('Moderate', severity == 'Moderate', Colors.amber, () => _setSeverity(name, 'Moderate')),
-                  const SizedBox(width: 6),
-                  _buildSeverityChip('Severe', severity == 'Severe', Colors.redAccent, () => _setSeverity(name, 'Severe')),
+                  _buildTimeChip('AM', takenAM, () => _toggleAM(name)),
+                  const SizedBox(width: 8),
+                  _buildTimeChip('PM', takenPM, () => _togglePM(name)),
                 ],
               ),
             ],
@@ -437,9 +446,9 @@ class _SymptomsScreenState extends State<SymptomsScreen> {
     );
   }
 
-  Widget _buildAddSymptomCard(SymptomItem symp) {
+  Widget _buildAddMedicationCard(MedicationItem med) {
     return GestureDetector(
-      onTap: () => _toggleInMyList(symp.name),
+      onTap: () => _toggleInMyList(med.name),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
@@ -457,15 +466,15 @@ class _SymptomsScreenState extends State<SymptomsScreen> {
                 color: Colors.white.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(symp.icon, color: Colors.white54, size: 20),
+              child: Icon(med.icon, color: Colors.white54, size: 20),
             ),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(symp.name, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.white.withOpacity(0.8))),
-                  Text(symp.description, style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.4))),
+                  Text(med.name, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.white.withOpacity(0.8))),
+                  Text(med.description, style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.4))),
                 ],
               ),
             ),
@@ -483,19 +492,19 @@ class _SymptomsScreenState extends State<SymptomsScreen> {
     );
   }
 
-  Widget _buildSeverityChip(String label, bool isSelected, Color color, VoidCallback onTap) {
+  Widget _buildTimeChip(String label, bool isSelected, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.3) : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: isSelected ? color : Colors.white.withOpacity(0.2)),
+          color: isSelected ? AppTheme.healthGreen.withOpacity(0.3) : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: isSelected ? AppTheme.healthGreen : Colors.white.withOpacity(0.2)),
         ),
         child: Text(
           label,
-          style: TextStyle(fontSize: 11, fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal, color: isSelected ? color : Colors.white70),
+          style: TextStyle(fontSize: 12, fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal, color: isSelected ? AppTheme.healthGreen : Colors.white70),
         ),
       ),
     );

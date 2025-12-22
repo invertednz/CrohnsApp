@@ -11,6 +11,9 @@ class Environment {
   static String get mixpanelToken => dotenv.env['MIXPANEL_TOKEN'] ?? '';
   static String get mixpanelProjectId => dotenv.env['MIXPANEL_PROJECT_ID'] ?? '';
   
+  // Gemini API
+  static String get geminiApiKey => dotenv.env['GEMINI_API_KEY'] ?? '';
+  
   // Firebase Configuration
   static bool get useFirebase => dotenv.env['USE_FIREBASE']?.toLowerCase() == 'true';
   static bool get useMockData => dotenv.env['USE_MOCK_DATA']?.toLowerCase() == 'true';

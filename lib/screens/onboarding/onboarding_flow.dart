@@ -107,6 +107,18 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     );
   }
 
+  void _goToSignUp() {
+    _controller.startTrial();
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => const SignUpScreen(
+          shouldReturnToOnboarding: false,
+        ),
+      ),
+      (route) => false,
+    );
+  }
+
   void _showComparePlansScreen() {
     setState(() {
       _showComparePlans = true;
@@ -123,7 +135,15 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     setState(() {
       _showComparePlans = false;
     });
-    _nextStep(); // Go to payment
+    _goToSignUp(); // Go to sign up
+  }
+
+  void _handleNoThanks() {
+    // Show discount screen with Pay It Forward offer
+    setState(() {
+      _showComparePlans = false;
+      _showDiscountScreen = true;
+    });
   }
 
   @override
@@ -134,6 +154,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         controller: _controller,
         onSelectPlan: _selectPlanAndContinue,
         onBack: _hideComparePlansScreen,
+        onNoThanks: _handleNoThanks,
       );
     }
 
@@ -262,7 +283,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         return TimelineScreen(
           key: const ValueKey(14),
           controller: _controller,
-          onNext: _nextStep,
+          onNext: _goToSignUp,
           onBack: _previousStep,
           onComparePlans: _showComparePlansScreen,
         );
