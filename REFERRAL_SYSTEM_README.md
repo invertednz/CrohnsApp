@@ -9,6 +9,7 @@ The Crohn's Companion app now includes a complete viral sharing + referral rewar
 ### 1. Data Models
 
 **`lib/models/referral.dart`**
+
 - Core referral data structure
 - Tracks referral code, successful referrals, and earned rewards
 - Constants:
@@ -20,12 +21,14 @@ The Crohn's Companion app now includes a complete viral sharing + referral rewar
 ### 2. Business Logic
 
 **`lib/services/referral_service.dart`**
+
 - Manages referral state with `ChangeNotifier`
 - Generates unique 8-character alphanumeric codes (avoiding O/0, I/1)
 - Tracks successful referrals and calculates rewards
 - Placeholder methods for database integration (Supabase/Firebase)
 
 Key Methods:
+
 - `generateReferralCode()`: Creates unique codes
 - `createReferral(userId)`: Initializes referral for user
 - `recordSuccessfulReferral(referredUserId)`: Awards $5 reward
@@ -35,6 +38,7 @@ Key Methods:
 ### 3. UI Components
 
 **`lib/widgets/referral_rewards_card.dart`**
+
 - Beautiful green gradient card displaying rewards
 - Shows:
   - Total earned amount (large, bold)
@@ -46,6 +50,7 @@ Key Methods:
 - Celebratory design with trophy icon and badges
 
 **`lib/screens/onboarding/screens/referral_share_screen.dart`**
+
 - Post-gift acceptance screen
 - Mission-driven messaging ("Pay It Forward")
 - Displays referral rewards card
@@ -56,6 +61,7 @@ Key Methods:
 ### 4. Integration
 
 **`lib/screens/onboarding/onboarding_flow.dart`**
+
 - Modified to show referral screen after gift acceptance
 - Flow: Payment → Discount → **Referral Share** → Home
 - New state: `_showReferralScreen`
@@ -102,6 +108,7 @@ Join our community! Use my code: CROHNS8K to get started 💜
 ### Package Dependencies
 
 Added to `pubspec.yaml`:
+
 ```yaml
 share_plus: ^7.2.1
 ```
@@ -109,6 +116,7 @@ share_plus: ^7.2.1
 ### Database Schema (To Implement)
 
 **Referrals Table:**
+
 ```sql
 CREATE TABLE referrals (
   id TEXT PRIMARY KEY,
@@ -126,6 +134,7 @@ CREATE TABLE referrals (
 ### Analytics Events (To Implement)
 
 Track these key events:
+
 - `referral_screen_viewed`
 - `referral_code_generated`
 - `share_button_clicked`
@@ -164,7 +173,7 @@ Track these key events:
 ✅ **Low Friction**: One tap to share  
 ✅ **Visual Progress**: Progress bars and milestones  
 ✅ **Gamification**: Badges and achievements  
-✅ **Reciprocity**: Triggered at peak gratitude moment  
+✅ **Reciprocity**: Triggered at peak gratitude moment
 
 ## Success Metrics Goals
 
@@ -199,6 +208,7 @@ Before production launch:
 ### Update Share Message
 
 Edit `_generateShareMessage()` in `referral_share_screen.dart`:
+
 ```dart
 String _generateShareMessage(String referralCode) {
   return '''Your custom message with $referralCode''';
@@ -208,6 +218,7 @@ String _generateShareMessage(String referralCode) {
 ### Update Rewards
 
 Edit constants in `lib/models/referral.dart`:
+
 ```dart
 static const double rewardPerReferral = 5.0;  // Change reward amount
 static const double maxRewardCap = 25.0;       // Change max cap
@@ -217,6 +228,7 @@ static const int maxReferrals = 5;             // Change max referrals
 ### Update Badges
 
 Edit `badgeLevel` getter in `lib/models/referral.dart`:
+
 ```dart
 String get badgeLevel {
   if (successfulReferrals >= 5) return 'Health Hero';

@@ -7,6 +7,7 @@ Use this prompt to implement a comprehensive daily tracking system for health/ha
 ## Overview
 
 Build a daily tracking app with the following core features:
+
 1. **Shared Calendar State** - Date selection persists across all pages
 2. **Quick Tracking Home Page** - Fast daily check-ins with "Had All" / "Different" buttons
 3. **Detailed Tracking Pages** - Per-item tracking with AM/PM toggles, severity selectors, etc.
@@ -29,7 +30,7 @@ class AppState extends ChangeNotifier {
   // Shared selected date across all tracking pages
   DateTime _selectedDate = DateTime.now();
   DateTime get selectedDate => _selectedDate;
-  
+
   void setSelectedDate(DateTime date) {
     _selectedDate = date;
     notifyListeners();
@@ -37,7 +38,7 @@ class AppState extends ChangeNotifier {
 
   // User's onboarding data (medications, supplements, symptoms, etc.)
   OnboardingData? _onboardingData;
-  
+
   // Quick access getters for user's tracking lists
   List<String> get userMedications => _onboardingData?.medications ?? [];
   List<SupplementEntry> get userSupplements => _onboardingData?.supplements ?? [];
@@ -46,6 +47,7 @@ class AppState extends ChangeNotifier {
 ```
 
 **Key Benefits:**
+
 - When user changes date on Home page, Symptoms/Supplements/Medications pages all show the same date
 - User doesn't have to re-select the date on each page
 - Centralized access to onboarding data
@@ -55,32 +57,37 @@ class AppState extends ChangeNotifier {
 ## 2. Home Page Structure
 
 ### Header Section
+
 - App title/logo
 - **Streak Badge** (top right) - Shows consecutive days with tracking data
   - Fire icon 🔥 with day count
   - Semi-transparent pill-shaped container
 
 ### Calendar Bar
+
 - Horizontal scrollable week view
 - Highlights selected date
 - Tapping a date updates shared app state
 
 ### "How Are You Feeling?" Section
+
 - 5 emoji options: 😫 Terrible → 😄 Great
 - Per-day state - each day saves its own selection
 - Visual feedback with colored borders when selected
 
 ### Quick Tracking Grid (2x2)
+
 Four compact cards for quick daily tracking:
 
-| Card | Purpose |
-|------|---------|
-| **Bowel Motions** | Counter with +/- buttons |
-| **Supplements** | "Had All" / "Different" buttons |
-| **Medications** | "Had All" / "Different" buttons |
-| **Diet** | "Had All" / "Different" buttons |
+| Card              | Purpose                         |
+| ----------------- | ------------------------------- |
+| **Bowel Motions** | Counter with +/- buttons        |
+| **Supplements**   | "Had All" / "Different" buttons |
+| **Medications**   | "Had All" / "Different" buttons |
+| **Diet**          | "Had All" / "Different" buttons |
 
 **Button Behavior:**
+
 - **"Had All"** (green) - Marks as complete for the day, saves to state
 - **"Different"** (amber) - Marks as incomplete AND navigates to the detailed page for that category
 
@@ -91,7 +98,7 @@ Widget _buildCompactGuideCard(String title, IconData icon, bool? followed, Funct
     onTap: () => onChanged(true),
     child: Container(/* green styling when selected */),
   ),
-  // "Different" button  
+  // "Different" button
   GestureDetector(
     onTap: () {
       onChanged(false);
@@ -103,18 +110,22 @@ Widget _buildCompactGuideCard(String title, IconData icon, bool? followed, Funct
 ```
 
 ### Health Insights Section
+
 Show **actual tracked data**, not made-up values:
+
 - Days Tracked (total count)
 - Average Feeling (calculated from mood selections)
 - Current Streak
 - Summary text: "Supplements taken: X days • Medications: Y days"
 
 ### Daily Logs Section
+
 - List of text/photo entries for the selected day
 - Each entry shows: description, time, optional digest score
 - "No logs yet" placeholder when empty
 
 ### Bottom Input Bar
+
 - Photo capture button (camera icon)
 - Text input field for quick logging
 - Send button
@@ -127,6 +138,7 @@ Show **actual tracked data**, not made-up values:
 Each page follows the same pattern:
 
 ### Structure
+
 1. **Header** - Title + subtitle
 2. **Calendar Bar** - Same shared date as home page
 3. **Quick Actions** - "Mark All Taken/Had All" + "Clear All/None Today"
@@ -159,7 +171,7 @@ void initState() {
 void _loadFromOnboarding() {
   if (_initialized) return;
   _initialized = true;
-  
+
   final onboardingItems = _appState.userSupplements; // or userMedications, userSymptoms
   for (var item in onboardingItems) {
     _myItems.add(item.name);
@@ -181,6 +193,7 @@ void _loadFromOnboarding() {
 ```
 
 **Visual States:**
+
 - **Not tracked today**: Dark/muted background, white border
 - **Tracked today**: Colored background (green for taken, severity color for symptoms), colored border, checkmark icon
 
@@ -204,7 +217,7 @@ Row(
 int get _currentStreak {
   int streak = 0;
   DateTime checkDate = DateTime.now();
-  
+
   for (int i = 0; i < 365; i++) {
     final key = '${checkDate.year}-${checkDate.month}-${checkDate.day}';
     final hasData = _feelingsByDate.containsKey(key) ||
@@ -212,7 +225,7 @@ int get _currentStreak {
         _supplementsByDate.containsKey(key) ||
         _medicationsByDate.containsKey(key) ||
         (_logEntriesByDate[key]?.isNotEmpty ?? false);
-    
+
     if (hasData) {
       streak++;
       checkDate = checkDate.subtract(const Duration(days: 1));
@@ -232,12 +245,15 @@ int get _currentStreak {
 ## 5. Navigation Architecture
 
 ### Bottom Navigation Tabs
+
 ```
 [Home] [Symptoms] [Supplements] [Medications] [Chat/More]
 ```
 
 ### Navigation from Home Quick Buttons
+
 When user taps "Different" on a quick tracking card:
+
 1. Mark that category as "not followed" for today
 2. Navigate to the corresponding tab index
 3. User lands on detailed page with same date selected
@@ -264,6 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
 ## 6. Data Models
 
 ### Supplement Entry (with AM/PM)
+
 ```dart
 class SupplementEntry {
   String name;
@@ -273,6 +290,7 @@ class SupplementEntry {
 ```
 
 ### Symptom Entry (with severity)
+
 ```dart
 class SymptomEntry {
   String name;
@@ -282,6 +300,7 @@ class SymptomEntry {
 ```
 
 ### Daily Log Entry
+
 ```dart
 class DailyLogEntry {
   final String description;
@@ -296,11 +315,13 @@ class DailyLogEntry {
 ## 7. UI/UX Patterns
 
 ### Color Coding
+
 - **Green** (`healthGreen`) - Positive/completed/taken/mild
 - **Amber** - Warning/moderate/different
 - **Red** - Severe/not taken/negative
 
 ### Card Styling
+
 ```dart
 Container(
   padding: EdgeInsets.all(14),
@@ -316,6 +337,7 @@ Container(
 ```
 
 ### Section Labels
+
 ```dart
 Text(
   'My Supplements - Tap to mark taken',

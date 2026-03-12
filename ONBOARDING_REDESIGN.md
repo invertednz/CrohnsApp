@@ -1,9 +1,11 @@
 # Crohn's Companion - Onboarding Redesign
 
 ## Overview
+
 Complete redesign of the onboarding flow matching the beautiful DigitalBasics design style with dark gradient backgrounds, neon glow effects, and modern UI components.
 
 ## Design Style
+
 - **Color Scheme**: Dark navy to deep purple gradient backgrounds
 - **Accent Colors**: Indigo with neon glow effects
 - **Typography**: Bold headings with text shadows for neon effect
@@ -13,6 +15,7 @@ Complete redesign of the onboarding flow matching the beautiful DigitalBasics de
 ## Onboarding Flow (14 Screens)
 
 ### 1. Welcome Screen
+
 - **Purpose**: Social proof and app introduction
 - **Features**:
   - Clinically validated badge
@@ -21,6 +24,7 @@ Complete redesign of the onboarding flow matching the beautiful DigitalBasics de
   - Animated entrance
 
 ### 2. Goal Selection
+
 - **Purpose**: Personalize user experience
 - **Options**:
   - Reduce Symptoms
@@ -31,6 +35,7 @@ Complete redesign of the onboarding flow matching the beautiful DigitalBasics de
 - **Features**: Single-select with visual feedback
 
 ### 3. Expected Results
+
 - **Purpose**: Set expectations and build motivation
 - **Results Shown**:
   - More regular bowel movements
@@ -41,6 +46,7 @@ Complete redesign of the onboarding flow matching the beautiful DigitalBasics de
 - **Features**: Animated cards with staggered entrance
 
 ### 4. Progress Graph
+
 - **Purpose**: Show typical improvement timeline
 - **Features**:
   - Custom-painted progress curve (exponential growth)
@@ -49,6 +55,7 @@ Complete redesign of the onboarding flow matching the beautiful DigitalBasics de
   - Encouragement messaging
 
 ### 5. App Usage Carousel
+
 - **Purpose**: Demonstrate key features
 - **Slides**:
   - Daily Tracking
@@ -58,6 +65,7 @@ Complete redesign of the onboarding flow matching the beautiful DigitalBasics de
 - **Features**: Swipeable carousel with page indicators
 
 ### 6. Diet Flags
+
 - **Purpose**: Collect dietary restrictions/triggers
 - **Common Options**: Dairy, Gluten, Lactose, Spicy Foods, High Fiber, Caffeine, etc.
 - **Features**:
@@ -66,6 +74,7 @@ Complete redesign of the onboarding flow matching the beautiful DigitalBasics de
   - Selected items display with remove option
 
 ### 7. Supplements
+
 - **Purpose**: Track vitamins and supplements
 - **Common Options**: Vitamin D, Probiotics, Omega-3, Iron, B12, etc.
 - **Features**:
@@ -75,6 +84,7 @@ Complete redesign of the onboarding flow matching the beautiful DigitalBasics de
   - List view with edit/delete
 
 ### 8. Lifestyle Factors
+
 - **Purpose**: Identify lifestyle impacts
 - **Factors**: Poor Sleep, High Stress, Irregular Meals, Low Exercise, Smoking, etc.
 - **Features**:
@@ -83,6 +93,7 @@ Complete redesign of the onboarding flow matching the beautiful DigitalBasics de
   - Selected items summary
 
 ### 9. Medications
+
 - **Purpose**: Track current medications
 - **Common Options**: Mesalamine, Prednisone, Azathioprine, Infliximab, etc.
 - **Features**:
@@ -92,6 +103,7 @@ Complete redesign of the onboarding flow matching the beautiful DigitalBasics de
   - Selected medications display
 
 ### 10. Current Symptoms
+
 - **Purpose**: Baseline symptom assessment
 - **Symptoms**: Abdominal Pain, Diarrhea, Bloating, Gas, Fatigue, Nausea, etc.
 - **Features**:
@@ -100,6 +112,7 @@ Complete redesign of the onboarding flow matching the beautiful DigitalBasics de
   - Celebration message if no symptoms
 
 ### 11. Thank You Screen
+
 - **Purpose**: Congratulate and motivate user
 - **Features**:
   - Animated checkmark
@@ -108,6 +121,7 @@ Complete redesign of the onboarding flow matching the beautiful DigitalBasics de
   - Smooth transitions
 
 ### 12. Trial Offer
+
 - **Purpose**: Present 7-day free trial
 - **Features**:
   - Special offer badge
@@ -117,6 +131,7 @@ Complete redesign of the onboarding flow matching the beautiful DigitalBasics de
   - Risk-free guarantee
 
 ### 13. Timeline Screen
+
 - **Purpose**: Show trial timeline and expectations
 - **Features**:
   - Visual timeline with 3 milestones:
@@ -127,6 +142,7 @@ Complete redesign of the onboarding flow matching the beautiful DigitalBasics de
   - Risk-free guarantee
 
 ### 14. Payment Screen
+
 - **Purpose**: Collect payment information
 - **Features**:
   - Pricing display with "First 7 days FREE" badge
@@ -136,6 +152,7 @@ Complete redesign of the onboarding flow matching the beautiful DigitalBasics de
   - Terms and conditions
 
 ### Bonus: Discount Screen (Conditional)
+
 - **Purpose**: Retention offer when user tries to skip payment
 - **Features**:
   - Pulsing "WAIT! EXCLUSIVE OFFER" badge
@@ -148,6 +165,7 @@ Complete redesign of the onboarding flow matching the beautiful DigitalBasics de
 ## Technical Implementation
 
 ### File Structure
+
 ```
 lib/screens/onboarding/
 ├── onboarding_data.dart          # Data models
@@ -175,17 +193,20 @@ lib/screens/onboarding/
 ### Key Components
 
 **OnboardingData**
+
 - Stores all user selections
 - Serializable to JSON
 - Includes trial status and payment info
 
 **OnboardingController**
+
 - Manages flow state (currentStep)
 - Handles data mutations
 - Provides progress tracking
 - Extends ChangeNotifier for reactivity
 
 **OnboardingTheme**
+
 - Centralized design tokens
 - Gradient definitions
 - Neon glow effects
@@ -193,6 +214,7 @@ lib/screens/onboarding/
 - Text styles
 
 ### Navigation Flow
+
 1. Splash Screen → Onboarding Flow
 2. Linear progression through 14 screens
 3. Back navigation supported
@@ -200,6 +222,7 @@ lib/screens/onboarding/
 5. Completion → Home Screen
 
 ### Data Collected
+
 - User goal
 - Diet flags (list)
 - Supplements with AM/PM timing
@@ -211,6 +234,7 @@ lib/screens/onboarding/
 ## Design Features
 
 ### Visual Effects
+
 - **Neon Glow**: Box shadows with white and indigo colors
 - **Glassmorphism**: Backdrop blur with semi-transparent backgrounds
 - **Gradients**: Dark navy to deep purple, indigo accent gradients
@@ -218,6 +242,7 @@ lib/screens/onboarding/
 - **Floating**: Subtle up/down animation on cards
 
 ### Color Palette
+
 - Dark Navy: `#0F172A`
 - Deep Purple: `#1E1B4B`
 - Accent Indigo: `#4F46E5`
@@ -227,6 +252,7 @@ lib/screens/onboarding/
 - Error Red: `#EF4444`
 
 ### Typography
+
 - **Headings**: 32-40px, bold, with neon text shadow
 - **Subheadings**: 18px, indigo glow color
 - **Body**: 16px, indigo glow color
@@ -235,18 +261,21 @@ lib/screens/onboarding/
 ## User Experience
 
 ### Progress Indicators
+
 - Step counter (e.g., "Step 5 of 14")
 - Back button on all screens except welcome
 - Visual feedback on selections
 - Loading states for async operations
 
 ### Validation
+
 - Goal selection required before continuing
 - Medications must be non-empty strings
 - Supplements require AM or PM selection
 - Payment methods trigger processing state
 
 ### Accessibility
+
 - High contrast text
 - Clear visual hierarchy
 - Touch-friendly tap targets
@@ -255,6 +284,7 @@ lib/screens/onboarding/
 ## Marketing Flow
 
 ### Conversion Optimization
+
 1. **Social Proof**: Statistics and validation on welcome
 2. **Value Proposition**: Expected results and progress timeline
 3. **Feature Education**: Carousel demonstration
@@ -266,6 +296,7 @@ lib/screens/onboarding/
 9. **Retention**: 50% discount offer on exit attempt
 
 ### Psychological Triggers
+
 - **Authority**: Clinically validated, evidence-based
 - **Social Proof**: 10k+ users, 4.8★ rating
 - **Scarcity**: "Limited time" discount offer
@@ -276,11 +307,13 @@ lib/screens/onboarding/
 ## Next Steps
 
 ### To Run
+
 1. Ensure all dependencies are installed
 2. Run `flutter pub get`
 3. Launch app - it will show new onboarding flow
 
 ### Future Enhancements
+
 - Analytics tracking for each screen
 - A/B testing different messaging
 - Skip options for certain screens

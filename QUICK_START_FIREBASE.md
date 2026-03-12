@@ -5,6 +5,7 @@ A quick reference for getting started with Firebase integration in Crohn's Compa
 ## Current Status
 
 The app is **currently configured to use MOCK DATA** by default. This means:
+
 - ✅ No Firebase setup required to run the app
 - ✅ Sample data is pre-loaded for testing
 - ✅ All features work locally without internet
@@ -19,6 +20,7 @@ flutter run
 ```
 
 The app will automatically use mock data and log:
+
 ```
 FirebaseService initialized successfully (using mock data)
 ```
@@ -28,26 +30,32 @@ FirebaseService initialized successfully (using mock data)
 ## Quick Mode Switching
 
 ### Use Mock Data (Current Default)
+
 Edit `.env`:
+
 ```env
 USE_FIREBASE=false
 USE_MOCK_DATA=true
 ```
 
 **Benefits:**
+
 - No setup required
 - Fast development
 - Works offline
 - Great for UI testing
 
 ### Use Live Firebase
+
 Edit `.env`:
+
 ```env
 USE_FIREBASE=true
 USE_MOCK_DATA=false
 ```
 
 **Requirements:**
+
 - Firebase project created
 - `google-services.json` added (Android)
 - `GoogleService-Info.plist` added (iOS)
@@ -99,6 +107,7 @@ See `lib/core/firebase/usage_example.dart` for more examples.
 ## When to Switch to Firebase
 
 Switch to Firebase when you need:
+
 - ✅ Persistent data storage
 - ✅ Real user authentication
 - ✅ Multi-device sync
@@ -110,10 +119,12 @@ Switch to Firebase when you need:
 ## Next Steps
 
 ### For Development (Keep Mock Mode)
+
 1. Run `flutter pub get`
 2. Start coding - mock data is ready to go!
 
 ### For Production (Switch to Firebase)
+
 1. Read `FIREBASE_SETUP.md` (comprehensive guide)
 2. Follow `env_todo.md` checklist
 3. Create Firebase project
@@ -126,6 +137,7 @@ Switch to Firebase when you need:
 ## Quick Troubleshooting
 
 **App won't run?**
+
 ```bash
 flutter clean
 flutter pub get
@@ -134,6 +146,7 @@ flutter run
 
 **Want to see which mode is active?**
 Check the console logs when the app starts:
+
 ```
 FirebaseService initialized successfully (using mock/Firebase data)
 ```

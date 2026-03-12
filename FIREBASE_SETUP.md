@@ -3,6 +3,7 @@
 This guide walks through setting up Firebase for the Crohn's Companion app, including how to switch between mock data and live Firebase data.
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [Prerequisites](#prerequisites)
 - [Firebase Project Setup](#firebase-project-setup)
@@ -18,6 +19,7 @@ This guide walks through setting up Firebase for the Crohn's Companion app, incl
 ## Overview
 
 The app supports two data modes:
+
 - **Mock Data Mode**: Uses in-memory mock data for development and testing (no Firebase required)
 - **Firebase Mode**: Connects to live Firebase services for production use
 
@@ -28,6 +30,7 @@ The mode is controlled via environment variables in `.env` files.
 ## Prerequisites
 
 Before starting, ensure you have:
+
 - Flutter SDK installed (2.19.0 or higher)
 - A Google account for Firebase Console access
 - Node.js and npm installed (for Firebase CLI)
@@ -48,12 +51,14 @@ Before starting, ensure you have:
 ### 2. Enable Firebase Services
 
 #### Enable Authentication
+
 1. In Firebase Console, navigate to **Build** → **Authentication**
 2. Click **Get Started**
 3. Enable **Email/Password** sign-in method
 4. (Optional) Enable other providers: Google, Apple, etc.
 
 #### Enable Firestore Database
+
 1. Navigate to **Build** → **Firestore Database**
 2. Click **Create Database**
 3. Choose **Start in test mode** (for development)
@@ -62,18 +67,21 @@ Before starting, ensure you have:
 5. Click **Enable**
 
 #### Enable Storage (Optional)
+
 1. Navigate to **Build** → **Storage**
 2. Click **Get Started**
 3. Start in **test mode** for development
 4. Click **Done**
 
 #### Enable Analytics (Optional)
+
 1. Navigate to **Build** → **Analytics**
 2. Follow setup wizard if not already configured
 
 ### 3. Register Your Flutter App
 
 #### For Android:
+
 1. In Firebase Console, click the Android icon to add an Android app
 2. Enter your package name: `com.yourcompany.crohns_companion`
    - Find this in `android/app/build.gradle` under `applicationId`
@@ -82,6 +90,7 @@ Before starting, ensure you have:
 5. Follow the Firebase setup instructions for gradle configuration
 
 #### For iOS:
+
 1. In Firebase Console, click the iOS icon to add an iOS app
 2. Enter your bundle ID: `com.yourcompany.crohnsCompanion`
    - Find this in Xcode project settings or `ios/Runner.xcodeproj`
@@ -90,6 +99,7 @@ Before starting, ensure you have:
 5. Follow Firebase setup instructions for Xcode configuration
 
 #### For Web (Optional):
+
 1. In Firebase Console, click the Web icon to add a web app
 2. Register app with nickname: `Crohn's Companion Web`
 3. Copy the Firebase configuration object (you'll use this later)
@@ -107,6 +117,7 @@ flutter pub get
 ```
 
 This will install:
+
 - `firebase_core` - Firebase core functionality
 - `firebase_auth` - Authentication
 - `cloud_firestore` - Cloud Firestore database
@@ -162,6 +173,7 @@ end
 ```
 
 Run pod install:
+
 ```bash
 cd ios
 pod install
@@ -180,7 +192,7 @@ const firebaseConfig = {
   projectId: "your-project-id",
   storageBucket: "your-project.appspot.com",
   messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef123456"
+  appId: "1:123456789:web:abcdef123456",
 };
 ```
 
@@ -193,6 +205,7 @@ const firebaseConfig = {
 Open `.env` in the project root and set Firebase mode:
 
 **For Mock Data (Development):**
+
 ```env
 # Firebase Configuration
 USE_FIREBASE=false
@@ -200,6 +213,7 @@ USE_MOCK_DATA=true
 ```
 
 **For Live Firebase (Production):**
+
 ```env
 # Firebase Configuration
 USE_FIREBASE=true
@@ -248,18 +262,21 @@ flutter run --dart-define=FLAVOR=production
 ### Mock Data Mode (Default)
 
 **When to use:**
+
 - Local development without internet
 - Rapid prototyping
 - UI/UX testing
 - Writing unit tests
 
 **Configuration:**
+
 ```env
 USE_FIREBASE=false
 USE_MOCK_DATA=true
 ```
 
 **Features:**
+
 - No Firebase setup required
 - Instant data loading
 - Seeded with sample data
@@ -267,6 +284,7 @@ USE_MOCK_DATA=true
 - See `lib/core/firebase/mock_data_provider.dart` for mock data
 
 **Run the app:**
+
 ```bash
 flutter run
 ```
@@ -274,24 +292,28 @@ flutter run
 ### Firebase Mode
 
 **When to use:**
+
 - Production deployment
 - Integration testing with real backend
 - Multi-device data sync
 - Persistent data storage
 
 **Configuration:**
+
 ```env
 USE_FIREBASE=true
 USE_MOCK_DATA=false
 ```
 
 **Features:**
+
 - Real-time data synchronization
 - Persistent cloud storage
 - User authentication
 - Secure data access
 
 **Run the app:**
+
 ```bash
 flutter run
 ```
@@ -307,6 +329,7 @@ flutter run
 ```
 
 The app will automatically detect the mode on startup and log:
+
 ```
 FirebaseService initialized successfully (using mock data)
 # or
@@ -329,7 +352,7 @@ users/
     - age: number
     - diagnosedYear: number
     - createdAt: timestamp
-    
+
     health_data/
       {entryId}/
         - date: timestamp
@@ -337,7 +360,7 @@ users/
         - notes: string
         - meals: array[string]
         - createdAt: timestamp
-    
+
     settings/
       notifications/
         - morningReminder: boolean
@@ -359,12 +382,12 @@ service cloud.firestore {
     // User data is private - only the user can read/write their own data
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
-      
+
       // Health data subcollection
       match /health_data/{entryId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
-      
+
       // Settings subcollection
       match /settings/{document=**} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
@@ -419,6 +442,7 @@ Using Firebase Authentication:
 ### 4. Verify Data Access
 
 In the app:
+
 1. Sign in with test credentials
 2. Navigate to data entry screens
 3. Add health tracking data
@@ -468,6 +492,7 @@ if (FirebaseService.isUsingMock) {
 ### Issue: "Firebase not initialized"
 
 **Solution:**
+
 - Ensure `google-services.json` (Android) or `GoogleService-Info.plist` (iOS) is in the correct location
 - Run `flutter clean` and `flutter pub get`
 - For iOS, run `cd ios && pod install && cd ..`
@@ -475,6 +500,7 @@ if (FirebaseService.isUsingMock) {
 ### Issue: App uses wrong mode (mock vs Firebase)
 
 **Solution:**
+
 - Check `.env` file configuration
 - Restart the app completely (stop and rerun)
 - Check console logs for "FirebaseService initialized successfully (using...)"
@@ -483,6 +509,7 @@ if (FirebaseService.isUsingMock) {
 ### Issue: Permission denied errors in Firestore
 
 **Solution:**
+
 - Verify Firestore security rules allow access
 - Ensure user is authenticated before accessing data
 - Check user ID matches the document path
@@ -490,6 +517,7 @@ if (FirebaseService.isUsingMock) {
 ### Issue: Android build fails with Firebase errors
 
 **Solution:**
+
 - Verify `com.google.gms:google-services` plugin is added to `android/build.gradle`
 - Ensure `google-services.json` is in `android/app/`
 - Run `flutter clean` and rebuild
@@ -497,6 +525,7 @@ if (FirebaseService.isUsingMock) {
 ### Issue: iOS build fails with Firebase errors
 
 **Solution:**
+
 - Verify `GoogleService-Info.plist` is in `ios/Runner/`
 - Ensure iOS deployment target is 12.0 or higher
 - Run `cd ios && pod install && cd ..`
@@ -505,6 +534,7 @@ if (FirebaseService.isUsingMock) {
 ### Issue: Mock data not appearing
 
 **Solution:**
+
 - Check `.env` has `USE_MOCK_DATA=true`
 - Verify `MockDataProvider.initialize()` seeds data correctly
 - Check console for initialization logs
@@ -535,6 +565,7 @@ if (FirebaseService.isUsingMock) {
 ## Support
 
 For issues or questions:
+
 - Check the [Troubleshooting](#troubleshooting) section
 - Review Firebase Console for errors
 - Check console logs in the app

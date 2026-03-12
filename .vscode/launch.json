@@ -6,9 +6,7 @@
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
-      "args": [
-        "--dart-define=FLAVOR=development"
-      ],
+      "args": ["--dart-define=FLAVOR=development"],
       "preLaunchTask": "flutter: pub get"
     },
     {
@@ -16,9 +14,7 @@
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
-      "args": [
-        "--dart-define=FLAVOR=production"
-      ],
+      "args": ["--dart-define=FLAVOR=production"],
       "preLaunchTask": "flutter: pub get"
     },
     {

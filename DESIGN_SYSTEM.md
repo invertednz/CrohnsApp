@@ -3,6 +3,7 @@
 ## Color Palette
 
 ### Primary Colors
+
 ```dart
 Dark Navy:     #0F172A  // Background gradient start
 Deep Purple:   #1E1B4B  // Background gradient end
@@ -12,6 +13,7 @@ Indigo Glow:   #E0E7FF  // Light text, labels
 ```
 
 ### Semantic Colors
+
 ```dart
 Health Green:  #10B981  // Success, positive states
 Warning Amber: #F59E0B  // Warnings, important info
@@ -21,6 +23,7 @@ Error Red:     #EF4444  // Errors, high severity
 ## Gradients
 
 ### Primary Gradient (Background)
+
 ```dart
 LinearGradient(
   begin: Alignment.topLeft,
@@ -30,6 +33,7 @@ LinearGradient(
 ```
 
 ### Accent Gradient (Buttons, Icons)
+
 ```dart
 LinearGradient(
   begin: Alignment.topLeft,
@@ -41,6 +45,7 @@ LinearGradient(
 ## Typography
 
 ### Heading Styles
+
 ```dart
 // Neon Text (Main Headings)
 TextStyle(
@@ -69,6 +74,7 @@ TextStyle(
 ```
 
 ### Body Text
+
 ```dart
 // Body
 TextStyle(
@@ -87,6 +93,7 @@ TextStyle(
 ## Components
 
 ### Neon Glow Effect
+
 ```dart
 BoxShadow(
   color: Colors.white.withOpacity(0.5),
@@ -101,6 +108,7 @@ BoxShadow(
 ```
 
 ### Card Decoration
+
 ```dart
 BoxDecoration(
   color: Colors.black.withOpacity(0.4),
@@ -114,6 +122,7 @@ BoxDecoration(
 ```
 
 ### Input Fields
+
 ```dart
 InputDecoration(
   filled: true,
@@ -137,6 +146,7 @@ InputDecoration(
 ### Buttons
 
 #### Primary Button
+
 ```dart
 ElevatedButton.styleFrom(
   backgroundColor: accentIndigo,
@@ -149,6 +159,7 @@ ElevatedButton.styleFrom(
 ```
 
 #### Secondary Button
+
 ```dart
 OutlinedButton.styleFrom(
   foregroundColor: Colors.white,
@@ -163,6 +174,7 @@ OutlinedButton.styleFrom(
 ```
 
 ### Selection Chips
+
 ```dart
 // Selected State
 Container(
@@ -192,6 +204,7 @@ Container(
 ## Spacing
 
 ### Standard Spacing
+
 ```dart
 Extra Small: 4px
 Small:       8px
@@ -203,6 +216,7 @@ Huge:        48px
 ```
 
 ### Component Spacing
+
 ```dart
 Card Padding:     20-24px
 Button Padding:   16-18px vertical, 32px horizontal
@@ -224,6 +238,7 @@ Round:   50%   // Circular elements
 ## Animations
 
 ### Duration
+
 ```dart
 Fast:     200-300ms  // Transitions, hovers
 Medium:   600ms      // Card animations
@@ -231,6 +246,7 @@ Slow:     1200ms     // Entrance animations
 ```
 
 ### Curves
+
 ```dart
 Ease In Out: Curves.easeInOut     // Standard transitions
 Ease Out:    Curves.easeOut       // Entrance animations
@@ -238,6 +254,7 @@ Elastic:     Curves.elasticOut    // Playful animations
 ```
 
 ### Common Animations
+
 ```dart
 // Fade In
 FadeTransition(
@@ -270,6 +287,7 @@ SlideTransition(
 ## Icons
 
 ### Sizes
+
 ```dart
 Small:   18-20px
 Medium:  24px
@@ -279,6 +297,7 @@ Hero:    60-100px
 ```
 
 ### Common Icons
+
 ```dart
 Success:     Icons.check_circle
 Warning:     Icons.warning_amber
@@ -294,6 +313,7 @@ Chat:        Icons.chat_bubble_outline
 ## Patterns
 
 ### Info Box
+
 ```dart
 Container(
   padding: EdgeInsets.all(16),
@@ -315,6 +335,7 @@ Container(
 ```
 
 ### Feature Card
+
 ```dart
 Container(
   padding: EdgeInsets.all(20),
@@ -346,6 +367,7 @@ Container(
 ```
 
 ### Stat Card
+
 ```dart
 Container(
   padding: EdgeInsets.all(16),
@@ -363,16 +385,19 @@ Container(
 ## Accessibility
 
 ### Contrast Ratios
+
 - White on Dark Navy: 15.3:1 ✓
 - Indigo Glow on Dark Navy: 7.2:1 ✓
 - Accent Indigo on Dark Navy: 4.8:1 ✓
 
 ### Touch Targets
+
 - Minimum: 44x44 pixels
 - Recommended: 48x48 pixels
 - Buttons: 48px height minimum
 
 ### Focus States
+
 - Visible focus indicators
 - 2px border increase on focus
 - Color change on focus
@@ -380,6 +405,7 @@ Container(
 ## Best Practices
 
 ### Do's
+
 ✓ Use neon glow sparingly for emphasis
 ✓ Maintain consistent spacing
 ✓ Use semantic colors appropriately
@@ -388,6 +414,7 @@ Container(
 ✓ Use animations to guide attention
 
 ### Don'ts
+
 ✗ Don't overuse glow effects
 ✗ Don't use pure black backgrounds
 ✗ Don't mix different border radius styles

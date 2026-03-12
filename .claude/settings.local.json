@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find \"/c/Trae Apps/CrohnsApp/lib\" -name \"*.dart\" -type f | xargs grep -l \"class.*Screen\" | head -20)",
+      "Bash(find \"/c/Trae Apps/CrohnsApp/test\" -type f -name \"*.dart\" 2>/dev/null | head -20)"
+    ]
+  }
+}

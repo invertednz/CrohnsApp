@@ -3,9 +3,11 @@
 ## 1. Implementation Context
 
 ### Feature Summary
+
 Crohn's Companion is a comprehensive health tracking application designed specifically for individuals with Crohn's disease. The app enables users to track symptoms, diet, bowel movements, medications/supplements, and receive AI-powered insights to help manage their condition more effectively.
 
 ### User Workflow Overview
+
 - **User Authentication**: Sign up and sign in with email, Google, or Apple ID
 - **Daily Tracking**: Log daily symptoms, bowel movements, pain levels, and energy levels
 - **Symptom Management**: Track and monitor Crohn's-specific symptoms over time
@@ -15,21 +17,25 @@ Crohn's Companion is a comprehensive health tracking application designed specif
 - **Chat Assistant**: Interact with an AI assistant for personalized advice
 
 ### Technical Context
+
 The application will be built using Flutter for cross-platform (iOS and Android) compatibility, with Supabase as the backend service. The existing Flutter backend provides modular services that will be integrated with the new UI based on the HTML mockups.
 
 ### Integration Points
+
 - **Authentication**: Integration with Supabase Auth for user management
 - **Data Storage**: Supabase database for storing user tracking data
 - **AI Services**: Integration with Supabase Edge Functions for insights and chat functionality
 - **Notifications**: Push notifications for reminders and insights
 
 ### Success Criteria
+
 - Fully functional Flutter app that implements all features shown in the HTML mockups
 - Seamless integration with the existing backend services
 - Smooth user experience across iOS and Android platforms
 - Proper data synchronization between app and backend
 
 ### Architecture Diagram
+
 The application follows a modular architecture with the following components:
 
 ```
@@ -45,6 +51,7 @@ Supabase Backend (Auth, Database, Storage, Edge Functions)
 ```
 
 ### Technical Approach
+
 1. Set up a new Flutter project with the required dependencies
 2. Integrate the existing backend services
 3. Implement the UI components based on the HTML mockups
@@ -53,6 +60,7 @@ Supabase Backend (Auth, Database, Storage, Edge Functions)
 6. Add platform-specific configurations for iOS and Android
 
 ### Dependencies
+
 - Flutter SDK (latest stable version)
 - Supabase Flutter SDK
 - Existing backend services from the FlutterBackend directory
@@ -61,6 +69,7 @@ Supabase Backend (Auth, Database, Storage, Edge Functions)
 ## 2. Structured To-Do List
 
 ### Project Setup and Configuration
+
 - [ ] **Development Environment Setup**
   - [ ] Install Flutter SDK (latest stable version)
   - [ ] Set up Android Studio and/or VS Code with Flutter plugins
@@ -80,6 +89,7 @@ Supabase Backend (Auth, Database, Storage, Edge Functions)
   - [ ] Create a service locator or dependency injection system for accessing backend services
 
 ### Authentication Implementation
+
 - [ ] **Authentication UI**
   - [ ] Create a splash screen with app logo and name
   - [ ] Implement a welcome screen with sign-in options (email, Google, Apple)
@@ -96,6 +106,7 @@ Supabase Backend (Auth, Database, Storage, Edge Functions)
   - [ ] Add auto-login functionality for returning users
 
 ### Home Screen Implementation
+
 - [ ] **Home Screen UI**
   - [ ] Create the main layout with header, content area, and bottom navigation
   - [ ] Implement the gradient header with app title and subtitle
@@ -111,6 +122,7 @@ Supabase Backend (Auth, Database, Storage, Edge Functions)
   - [ ] Add refresh functionality to update the summary data
 
 ### Daily Tracking Implementation
+
 - [ ] **Daily Tracking UI**
   - [ ] Create the tracking screen layout with header and date selector
   - [ ] Implement the feeling selector with emoji options
@@ -127,6 +139,7 @@ Supabase Backend (Auth, Database, Storage, Edge Functions)
   - [ ] Add validation and error handling for tracking inputs
 
 ### Symptoms Tracker Implementation
+
 - [ ] **Symptoms UI**
   - [ ] Create the symptoms screen layout with header and date selector
   - [ ] Implement the common symptoms tag selector
@@ -142,6 +155,7 @@ Supabase Backend (Auth, Database, Storage, Edge Functions)
   - [ ] Add validation and error handling for symptom inputs
 
 ### Diet Tracker Implementation
+
 - [ ] **Diet UI**
   - [ ] Create the diet screen layout with header and date selector
   - [ ] Implement the add meal button and form
@@ -157,6 +171,7 @@ Supabase Backend (Auth, Database, Storage, Edge Functions)
   - [ ] Add validation and error handling for diet inputs
 
 ### Supplements Tracker Implementation
+
 - [ ] **Supplements UI**
   - [ ] Create the supplements screen layout with header and date selector
   - [ ] Implement the add supplement button and form
@@ -172,6 +187,7 @@ Supabase Backend (Auth, Database, Storage, Edge Functions)
   - [ ] Add validation and error handling for supplement inputs
 
 ### Insights Implementation
+
 - [ ] **Insights UI**
   - [ ] Create the insights screen layout with header
   - [ ] Implement the health summary card with trend indicator
@@ -188,6 +204,7 @@ Supabase Backend (Auth, Database, Storage, Edge Functions)
   - [ ] Add refresh functionality to update insights
 
 ### Chat Assistant Implementation
+
 - [ ] **Chat UI**
   - [ ] Create the chat screen layout with header and message area
   - [ ] Implement the message input field and send button
@@ -203,6 +220,7 @@ Supabase Backend (Auth, Database, Storage, Edge Functions)
   - [ ] Add loading indicators for message processing
 
 ### State Management and Data Persistence
+
 - [ ] **State Management**
   - [ ] Set up BLoC or Provider pattern for app-wide state management
   - [ ] Implement state management for each feature module
@@ -216,6 +234,7 @@ Supabase Backend (Auth, Database, Storage, Edge Functions)
   - [ ] Implement data backup and restore functionality
 
 ### Platform-Specific Configuration
+
 - [ ] **iOS Configuration**
   - [ ] Configure iOS app settings in Info.plist
   - [ ] Set up app icons and launch screens
@@ -231,6 +250,7 @@ Supabase Backend (Auth, Database, Storage, Edge Functions)
   - [ ] Test on Android emulators and devices
 
 ### Testing and Quality Assurance
+
 - [ ] **Unit Testing**
   - [ ] Write unit tests for backend service integration
   - [ ] Create tests for data models and repositories
@@ -252,6 +272,7 @@ Supabase Backend (Auth, Database, Storage, Edge Functions)
   - [ ] Test performance and responsiveness
 
 ### Deployment and Release
+
 - [ ] **App Store Preparation**
   - [ ] Create app store listings (screenshots, descriptions, etc.)
   - [ ] Configure app signing and provisioning profiles
