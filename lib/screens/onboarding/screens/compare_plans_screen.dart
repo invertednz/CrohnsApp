@@ -1,19 +1,30 @@
 import 'package:flutter/material.dart';
 import '../onboarding_theme.dart';
 import '../onboarding_controller.dart';
+import '../onboarding_data.dart';
+
+/// Features every plan includes; all of them exist in the app today.
+const List<String> _coreFeatures = [
+  'Unlimited symptom tracking',
+  'Diet, supplement & medication logging',
+  'AI summaries of your patterns',
+  'AI health assistant chat',
+  'Meal photo analysis',
+  'Cloud backup & sync',
+];
 
 class ComparePlansScreen extends StatefulWidget {
   final OnboardingController controller;
   final VoidCallback onSelectPlan;
   final VoidCallback onBack;
-  final VoidCallback? onNoThanks;
-  
+  final VoidCallback onNoThanks;
+
   const ComparePlansScreen({
     Key? key,
     required this.controller,
     required this.onSelectPlan,
     required this.onBack,
-    this.onNoThanks,
+    required this.onNoThanks,
   }) : super(key: key);
 
   @override
@@ -21,7 +32,64 @@ class ComparePlansScreen extends StatefulWidget {
 }
 
 class _ComparePlansScreenState extends State<ComparePlansScreen> {
-  String _selectedPlan = 'annual';
+  static const List<SubscriptionPlan> _plans = [
+    SubscriptionPlan.annual,
+    SubscriptionPlan.monthly,
+    SubscriptionPlan.payItForward,
+  ];
+
+  late SubscriptionPlan _selectedPlan;
+
+  @override
+  void initState() {
+    super.initState();
+    final current = widget.controller.selectedPlan;
+    _selectedPlan =
+        _plans.contains(current) ? current : SubscriptionPlan.annual;
+  }
+
+  void _select(SubscriptionPlan plan) {
+    setState(() => _selectedPlan = plan);
+  }
+
+  void _continue() {
+    widget.controller.selectPlan(_selectedPlan);
+    widget.onSelectPlan();
+  }
+
+  String? _badge(SubscriptionPlan plan) {
+    switch (plan) {
+      case SubscriptionPlan.annual:
+        return 'Save ${SubscriptionPlan.annualSavingsPercent}%';
+      case SubscriptionPlan.payItForward:
+        return 'Help Others';
+      default:
+        return null;
+    }
+  }
+
+  String _description(SubscriptionPlan plan) {
+    switch (plan) {
+      case SubscriptionPlan.annual:
+        return 'Best value for long-term tracking';
+      case SubscriptionPlan.monthly:
+        return 'Flexible month-to-month billing';
+      case SubscriptionPlan.payItForward:
+        final extra = (SubscriptionPlan.payItForward.price -
+                SubscriptionPlan.annual.price)
+            .toStringAsFixed(0);
+        return 'Annual plus \$$extra a year to help keep GutMD affordable for others';
+      case SubscriptionPlan.discountedAnnual:
+        return '';
+    }
+  }
+
+  List<String> _features(SubscriptionPlan plan) {
+    if (plan == SubscriptionPlan.payItForward) {
+      return const ['Everything in Annual', ..._coreFeatures];
+    }
+    return _coreFeatures;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,24 +104,29 @@ class _ComparePlansScreenState extends State<ComparePlansScreen> {
             children: [
               // Header
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Row(
                   children: [
                     IconButton(
+                      tooltip: 'Back',
                       onPressed: widget.onBack,
                       icon: const Icon(
                         Icons.arrow_back,
                         color: Colors.white,
                       ),
                     ),
-                    const Expanded(
-                      child: Text(
-                        'Compare Plans',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                    Expanded(
+                      child: Semantics(
+                        header: true,
+                        child: const Text(
+                          'Compare Plans',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
@@ -61,179 +134,119 @@ class _ComparePlansScreenState extends State<ComparePlansScreen> {
                   ],
                 ),
               ),
-            
-            // Main content
-            Expanded(
-              child: SingleChildScrollView(
+
+              // Main content
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      for (final plan in _plans) ...[
+                        _PlanCard(
+                          title: plan.displayName,
+                          price: plan.priceLabel,
+                          period: plan.period,
+                          savings: _badge(plan),
+                          savingsColor: plan == SubscriptionPlan.payItForward
+                              ? OnboardingTheme.ctaGreen
+                              : null,
+                          description: _description(plan),
+                          features: _features(plan),
+                          isSelected: _selectedPlan == plan,
+                          isRecommended: plan == SubscriptionPlan.annual,
+                          onTap: () => _select(plan),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+
+                      const SizedBox(height: 8),
+
+                      // Trial terms
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.info_outline,
+                              color: OnboardingTheme.lightIndigo,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'All plans start with a $kTrialDays-day free trial. '
+                                'No payment today, and you are never charged automatically. Cancel anytime.',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Bottom buttons
+              Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    // Annual Plan (Recommended)
-                    _PlanCard(
-                      title: 'Annual',
-                      price: '\$49',
-                      period: '/year',
-                      savings: 'Save 60%',
-                      description: 'Best value for long-term tracking',
-                      features: const [
-                        'Unlimited symptom tracking',
-                        'AI-powered insights',
-                        'Diet & meal logging',
-                        '24/7 AI health assistant',
-                        'Cloud backup & sync',
-                        'Smart reminders',
-                      ],
-                      isSelected: _selectedPlan == 'annual',
-                      isRecommended: true,
-                      onTap: () {
-                        setState(() {
-                          _selectedPlan = 'annual';
-                        });
-                        widget.controller.data.selectedPlan = 'annual';
-                        widget.controller.data.planPrice = 49;
-                      },
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Monthly Plan
-                    _PlanCard(
-                      title: 'Monthly',
-                      price: '\$9.99',
-                      period: '/month',
-                      savings: null,
-                      description: 'Flexible month-to-month billing',
-                      features: const [
-                        'Unlimited symptom tracking',
-                        'AI-powered insights',
-                        'Diet & meal logging',
-                        '24/7 AI health assistant',
-                        'Cloud backup & sync',
-                        'Smart reminders',
-                      ],
-                      isSelected: _selectedPlan == 'monthly',
-                      isRecommended: false,
-                      onTap: () {
-                        setState(() {
-                          _selectedPlan = 'monthly';
-                        });
-                        widget.controller.data.selectedPlan = 'monthly';
-                        widget.controller.data.planPrice = 9.99;
-                      },
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Pay It Forward Plan
-                    _PlanCard(
-                      title: 'Pay It Forward',
-                      price: '\$59',
-                      period: '/year',
-                      savings: 'Help Others',
-                      savingsColor: OnboardingTheme.healthGreen,
-                      description: 'Your extra \$10 sponsors someone in need',
-                      features: const [
-                        'Everything in Annual',
-                        'Sponsor a user in need',
-                        'Pay It Forward badge',
-                        'Priority support',
-                      ],
-                      isSelected: _selectedPlan == 'payitforward',
-                      isRecommended: false,
-                      onTap: () {
-                        setState(() {
-                          _selectedPlan = 'payitforward';
-                        });
-                        widget.controller.data.selectedPlan = 'annual';
-                        widget.controller.data.isPayItForward = true;
-                        widget.controller.data.planPrice = 59;
-                      },
-                    ),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Features comparison note
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: OnboardingTheme.accentIndigo.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            color: OnboardingTheme.accentIndigo.withOpacity(0.7),
-                            size: 20,
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _continue,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: OnboardingTheme.ctaGreen,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'All plans include a 3-day free trial. Cancel anytime.',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey.shade600,
+                          elevation: 0,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                'Continue with ${_selectedPlan.displayName}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            const Icon(Icons.arrow_forward, size: 20),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: widget.onNoThanks,
+                      child: const Text(
+                        'No thanks',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white70,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            
-            // Bottom buttons
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: widget.onSelectPlan,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: OnboardingTheme.healthGreen,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 18),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Continue with ${_selectedPlan == 'annual' ? 'Annual' : _selectedPlan == 'monthly' ? 'Monthly' : 'Pay It Forward'}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Icon(Icons.arrow_forward, size: 20),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextButton(
-                    onPressed: widget.onNoThanks,
-                    child: const Text(
-                      'No thanks',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
       ),
     );
@@ -251,7 +264,7 @@ class _PlanCard extends StatelessWidget {
   final bool isSelected;
   final bool isRecommended;
   final VoidCallback onTap;
-  
+
   const _PlanCard({
     required this.title,
     required this.price,
@@ -267,178 +280,188 @@ class _PlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isSelected 
-              ? OnboardingTheme.accentIndigo.withOpacity(0.05) 
-              : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected 
-                ? OnboardingTheme.accentIndigo 
-                : Colors.grey.shade200,
-            width: isSelected ? 2 : 1,
-          ),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: OnboardingTheme.accentIndigo.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      inMutuallyExclusiveGroup: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFFEEF2FF) : Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected
+                  ? OnboardingTheme.accentIndigo
+                  : Colors.grey.shade200,
+              width: isSelected ? 2 : 1,
             ),
-          ] : null,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header row
-            Row(
-              children: [
-                // Selection indicator
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isSelected 
-                        ? OnboardingTheme.accentIndigo 
-                        : Colors.transparent,
-                    border: Border.all(
-                      color: isSelected 
-                          ? OnboardingTheme.accentIndigo 
-                          : Colors.grey.shade400,
-                      width: 2,
-                    ),
-                  ),
-                  child: isSelected
-                      ? const Icon(
-                          Icons.check,
-                          size: 14,
-                          color: Colors.white,
-                        )
-                      : null,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: isSelected 
-                        ? OnboardingTheme.accentIndigo 
-                        : const Color(0xFF1E293B),
-                  ),
-                ),
-                const Spacer(),
-                if (savings != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: (savingsColor ?? OnboardingTheme.warningAmber).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      savings!,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: savingsColor ?? OnboardingTheme.warningAmber,
-                      ),
-                    ),
-                  ),
-                if (isRecommended && savings == null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
                       color: OnboardingTheme.accentIndigo.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
-                    child: const Text(
-                      'RECOMMENDED',
+                  ]
+                : null,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header row
+              Row(
+                children: [
+                  // Selection indicator
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isSelected
+                          ? OnboardingTheme.accentIndigo
+                          : Colors.transparent,
+                      border: Border.all(
+                        color: isSelected
+                            ? OnboardingTheme.accentIndigo
+                            : Colors.grey.shade400,
+                        width: 2,
+                      ),
+                    ),
+                    child: isSelected
+                        ? const Icon(
+                            Icons.check,
+                            size: 14,
+                            color: Colors.white,
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: Text(
+                      title,
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: OnboardingTheme.accentIndigo,
+                        color: isSelected
+                            ? OnboardingTheme.accentIndigo
+                            : const Color(0xFF1E293B),
                       ),
                     ),
                   ),
-              ],
-            ),
-            
-            const SizedBox(height: 16),
-            
-            // Price
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  price,
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E293B),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Text(
-                    period,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
+                  const SizedBox(width: 8),
+                  if (savings != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: (savingsColor ?? const Color(0xFFB45309))
+                            .withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        savings!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: savingsColor ?? const Color(0xFFB45309),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 8),
-            
-            Text(
-              description,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
+                  if (isRecommended && savings == null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: OnboardingTheme.accentIndigo.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        'RECOMMENDED',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: OnboardingTheme.accentIndigo,
+                        ),
+                      ),
+                    ),
+                ],
               ),
-            ),
-            
-            if (isSelected) ...[
+
               const SizedBox(height: 16),
-              const Divider(),
-              const SizedBox(height: 12),
-              
-              // Features
-              ...features.map((feature) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.check_circle,
-                      size: 18,
-                      color: OnboardingTheme.healthGreen,
+
+              // Price
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    price,
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E293B),
                     ),
-                    const SizedBox(width: 10),
-                    Text(
-                      feature,
-                      style: const TextStyle(
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Text(
+                      period,
+                      style: TextStyle(
                         fontSize: 14,
-                        color: Color(0xFF1E293B),
+                        color: Colors.grey.shade700,
                       ),
                     ),
-                  ],
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 8),
+
+              Text(
+                description,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade700,
                 ),
-              )),
+              ),
+
+              if (isSelected) ...[
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 12),
+
+                // Features
+                ...features.map((feature) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.check_circle,
+                            size: 18,
+                            color: OnboardingTheme.ctaGreen,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              feature,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFF1E293B),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

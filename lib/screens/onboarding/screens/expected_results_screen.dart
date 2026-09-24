@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import '../onboarding_theme.dart';
+import '../widgets/staggered_animation.dart';
 
 class ExpectedResultsScreen extends StatelessWidget {
   final VoidCallback onNext;
   final VoidCallback onBack;
-  
+
   const ExpectedResultsScreen({
     Key? key,
     required this.onNext,
@@ -27,83 +28,94 @@ class ExpectedResultsScreen extends StatelessWidget {
                 children: [
                   IconButton(
                     onPressed: onBack,
+                    tooltip: 'Back',
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
                   ),
                 ],
               ),
-              
+
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 24),
-                      
+
                       Text(
                         'What to Expect',
                         style: OnboardingTheme.headingTextStyle(fontSize: 32),
                       ),
-                      
+
                       const SizedBox(height: 12),
-                      
-                      Text(
-                        'Real results from consistent tracking',
+
+                      const Text(
+                        'Consistent tracking helps you and your care team see the full picture',
                         style: OnboardingTheme.subheadingStyle,
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
-                      // Results cards
-                      _ResultCard(
-                        icon: Icons.calendar_today,
-                        title: 'More Regular Bowel Movements',
-                        description: 'Track patterns and identify what helps maintain regularity',
-                        color: OnboardingTheme.healthGreen,
-                        delay: 0,
+
+                      // What tracking can help with
+                      const StaggeredAnimation(
+                        index: 0,
+                        child: _ResultCard(
+                          icon: Icons.calendar_today,
+                          title: 'Clearer Bowel Patterns',
+                          description: 'See how frequency and consistency change across days and weeks',
+                          color: OnboardingTheme.healthGreen,
+                        ),
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
-                      _ResultCard(
-                        icon: Icons.favorite_border,
-                        title: 'Reduced Pain & Discomfort',
-                        description: 'Identify triggers and minimize painful episodes',
-                        color: OnboardingTheme.accentIndigo,
-                        delay: 100,
+
+                      const StaggeredAnimation(
+                        index: 1,
+                        child: _ResultCard(
+                          icon: Icons.favorite_border,
+                          title: 'A Record of Pain & Flares',
+                          description: 'Log pain levels to see when flares happen and what came before them',
+                          color: OnboardingTheme.accentIndigo,
+                        ),
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
-                      _ResultCard(
-                        icon: Icons.air,
-                        title: 'Less Bloating & Gas',
-                        description: 'Discover foods and habits that reduce digestive issues',
-                        color: OnboardingTheme.lightIndigo,
-                        delay: 200,
+
+                      const StaggeredAnimation(
+                        index: 2,
+                        child: _ResultCard(
+                          icon: Icons.restaurant,
+                          title: 'Possible Food Triggers',
+                          description: 'Compare meals with symptoms to find foods worth discussing with your doctor',
+                          color: OnboardingTheme.lightIndigo,
+                        ),
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
-                      _ResultCard(
-                        icon: Icons.energy_savings_leaf,
-                        title: 'Increased Energy Levels',
-                        description: 'Better nutrition and symptom management boost vitality',
-                        color: OnboardingTheme.warningAmber,
-                        delay: 300,
+
+                      const StaggeredAnimation(
+                        index: 3,
+                        child: _ResultCard(
+                          icon: Icons.energy_savings_leaf,
+                          title: 'Energy & Wellbeing Trends',
+                          description: 'Follow how your energy and mood shift alongside your symptoms',
+                          color: OnboardingTheme.warningAmber,
+                        ),
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
-                      _ResultCard(
-                        icon: Icons.psychology,
-                        title: 'Better Mental Clarity',
-                        description: 'Understanding your body reduces stress and anxiety',
-                        color: OnboardingTheme.indigoGlow,
-                        delay: 400,
+
+                      const StaggeredAnimation(
+                        index: 4,
+                        child: _ResultCard(
+                          icon: Icons.forum_outlined,
+                          title: 'Better-Informed Appointments',
+                          description: 'Bring an accurate history to your doctor instead of relying on memory',
+                          color: OnboardingTheme.indigoGlow,
+                        ),
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       // Info box
                       Container(
                         padding: const EdgeInsets.all(20),
@@ -124,7 +136,7 @@ class ExpectedResultsScreen extends StatelessWidget {
                             const SizedBox(width: 16),
                             Expanded(
                               child: Text(
-                                'Results vary by individual. Consistency is key to seeing improvements.',
+                                'GutMD is a tracking tool, not a treatment. Everyone is different, and it does not replace advice from your healthcare team.',
                                 style: OnboardingTheme.bodyStyle.copyWith(
                                   fontSize: 14,
                                 ),
@@ -137,9 +149,9 @@ class ExpectedResultsScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -166,105 +178,61 @@ class ExpectedResultsScreen extends StatelessWidget {
   }
 }
 
-class _ResultCard extends StatefulWidget {
+class _ResultCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String description;
   final Color color;
-  final int delay;
-  
+
   const _ResultCard({
     required this.icon,
     required this.title,
     required this.description,
     required this.color,
-    this.delay = 0,
   });
 
   @override
-  State<_ResultCard> createState() => _ResultCardState();
-}
-
-class _ResultCardState extends State<_ResultCard> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-  
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
-    _animation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    );
-    
-    Future.delayed(Duration(milliseconds: widget.delay), () {
-      if (mounted) {
-        _controller.forward();
-      }
-    });
-  }
-  
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _animation,
-      child: SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0, 0.3),
-          end: Offset.zero,
-        ).animate(_animation),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: OnboardingTheme.cardDecoration(),
-          child: Row(
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: widget.color.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  widget.icon,
-                  color: widget.color,
-                  size: 28,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.description,
-                      style: OnboardingTheme.bodyStyle.copyWith(fontSize: 13),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: OnboardingTheme.cardDecoration(),
+      child: Row(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 28,
+            ),
           ),
-        ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: OnboardingTheme.bodyStyle.copyWith(fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

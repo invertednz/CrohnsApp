@@ -19,7 +19,7 @@ class DietFlagsScreen extends StatefulWidget {
   final OnboardingController controller;
   final VoidCallback onNext;
   final VoidCallback onBack;
-  
+
   const DietFlagsScreen({
     Key? key,
     required this.controller,
@@ -33,8 +33,8 @@ class DietFlagsScreen extends StatefulWidget {
 
 class _DietFlagsScreenState extends State<DietFlagsScreen> {
   final TextEditingController _customController = TextEditingController();
-  
-  final List<DietFlagItem> _commonDietFlags = const [
+
+  static const List<DietFlagItem> _commonDietFlags = [
     DietFlagItem(
       name: 'Dairy',
       description: 'Milk, cheese, yogurt, and dairy products',
@@ -97,121 +97,157 @@ class _DietFlagsScreenState extends State<DietFlagsScreen> {
     ),
   ];
 
-  // Track custom items separately (items not in predefined list)
+  // Items the user typed that are not in the predefined list.
   List<String> get _customItems {
     return widget.controller.data.dietFlags
         .where((flag) => !_commonDietFlags.any((item) => item.name == flag))
         .toList();
   }
-  
+
+  bool get _canAddCustom => _customController.text.trim().isNotEmpty;
+
   @override
   void dispose() {
     _customController.dispose();
     super.dispose();
   }
 
+  /// Adds the typed item. A case-insensitive match of a common trigger selects
+  /// that card instead of creating a duplicate custom entry, and an item that
+  /// is already on the list is not added twice.
+  void _addCustomItem() {
+    final value = _customController.text.trim();
+    if (value.isEmpty) return;
+    final lower = value.toLowerCase();
+    final alreadyAdded =
+        widget.controller.data.dietFlags.any((flag) => flag.toLowerCase() == lower);
+    String name = value;
+    for (final item in _commonDietFlags) {
+      if (item.name.toLowerCase() == lower) {
+        name = item.name;
+        break;
+      }
+    }
+    setState(() {
+      if (!alreadyAdded) {
+        widget.controller.addDietFlag(name);
+      }
+      _customController.clear();
+    });
+  }
+
+  Widget _buildRemoveButton(String itemName, VoidCallback onDelete) {
+    return IconButton(
+      tooltip: 'Remove $itemName',
+      onPressed: onDelete,
+      icon: const Icon(Icons.close, color: Colors.red, size: 18),
+      style: IconButton.styleFrom(
+        backgroundColor: Colors.red.withValues(alpha: 0.2),
+        fixedSize: const Size(32, 32),
+        minimumSize: const Size(32, 32),
+        padding: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    );
+  }
+
+  /// A trigger card. With [onTap] it is a checkbox the user can toggle; with
+  /// [onDelete] it is a custom entry that can only be removed.
   Widget _buildOptionCard({
     required String title,
     required String description,
     required IconData icon,
     required bool isSelected,
-    required VoidCallback onTap,
-    bool isCustom = false,
+    VoidCallback? onTap,
     VoidCallback? onDelete,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
+    final content = Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? OnboardingTheme.accentIndigo.withValues(alpha: 0.3)
+                  : OnboardingTheme.accentIndigo.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: isSelected ? Colors.white : OnboardingTheme.lightIndigo,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.white.withValues(alpha: 0.7),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (onDelete != null)
+            _buildRemoveButton(title, onDelete)
+          else if (isSelected)
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: OnboardingTheme.accentIndigo,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.check,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+        ],
+      ),
+    );
+
+    return Material(
+      type: MaterialType.transparency,
+      child: Ink(
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.3),
+          color: Colors.black.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
                 ? OnboardingTheme.accentIndigo
-                : OnboardingTheme.accentIndigo.withOpacity(0.2),
+                : OnboardingTheme.accentIndigo.withValues(alpha: 0.2),
             width: isSelected ? 2 : 1,
           ),
         ),
-        child: Row(
-          children: [
-            // Icon container
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? OnboardingTheme.accentIndigo.withOpacity(0.3)
-                    : OnboardingTheme.accentIndigo.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                icon,
-                color: isSelected
-                    ? Colors.white
-                    : OnboardingTheme.lightIndigo,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 16),
-            // Text content
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    description,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Selection indicator or delete button
-            if (isCustom && onDelete != null)
-              GestureDetector(
-                onTap: onDelete,
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.close,
-                    color: Colors.red,
-                    size: 18,
-                  ),
-                ),
-              )
-            else if (isSelected)
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: OnboardingTheme.accentIndigo,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.check,
-                  color: Colors.white,
-                  size: 18,
+        child: onTap == null
+            ? Semantics(container: true, child: content)
+            : Semantics(
+                container: true,
+                checked: isSelected,
+                child: InkWell(
+                  onTap: onTap,
+                  borderRadius: BorderRadius.circular(16),
+                  child: content,
                 ),
               ),
-          ],
-        ),
       ),
     );
   }
@@ -224,250 +260,243 @@ class _DietFlagsScreenState extends State<DietFlagsScreen> {
           gradient: OnboardingTheme.primaryGradient,
         ),
         child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            children: [
-              // Header
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: widget.onBack,
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  ),
-                ],
-              ),
-              
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 24),
-                      
-                      Text(
-                        'Diet Considerations',
-                        style: OnboardingTheme.headingTextStyle(fontSize: 32),
-                      ),
-                      
-                      const SizedBox(height: 12),
-                      
-                      Text(
-                        'Select foods or ingredients that affect you',
-                        style: OnboardingTheme.subheadingStyle,
-                      ),
-                      
-                      const SizedBox(height: 24),
-                      
-                      // Add Custom Item section
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: OnboardingTheme.accentIndigo.withOpacity(0.2),
-                          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              children: [
+                // Header
+                Row(
+                  children: [
+                    IconButton(
+                      tooltip: 'Back',
+                      onPressed: widget.onBack,
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    ),
+                  ],
+                ),
+
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 24),
+
+                        Text(
+                          'Diet Considerations',
+                          style: OnboardingTheme.headingTextStyle(fontSize: 32),
                         ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: OnboardingTheme.accentIndigo.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.add_circle_outline,
-                                color: OnboardingTheme.lightIndigo,
-                                size: 24,
-                              ),
+
+                        const SizedBox(height: 12),
+
+                        const Text(
+                          'Select foods or ingredients that affect you',
+                          style: OnboardingTheme.subheadingStyle,
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Add Custom Item section
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: OnboardingTheme.accentIndigo.withValues(alpha: 0.2),
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: TextField(
-                                controller: _customController,
-                                style: const TextStyle(color: Colors.white, fontSize: 14),
-                                decoration: InputDecoration(
-                                  hintText: 'Add custom item (e.g., Tomatoes)',
-                                  hintStyle: TextStyle(
-                                    color: Colors.white.withOpacity(0.4),
-                                    fontSize: 14,
-                                  ),
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.zero,
-                                ),
-                                onSubmitted: (value) {
-                                  if (value.trim().isNotEmpty) {
-                                    setState(() {
-                                      widget.controller.addDietFlag(value.trim());
-                                      _customController.clear();
-                                    });
-                                  }
-                                },
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                if (_customController.text.trim().isNotEmpty) {
-                                  setState(() {
-                                    widget.controller.addDietFlag(_customController.text.trim());
-                                    _customController.clear();
-                                  });
-                                }
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 48,
+                                height: 48,
                                 decoration: BoxDecoration(
-                                  color: OnboardingTheme.accentIndigo,
-                                  borderRadius: BorderRadius.circular(10),
+                                  color: OnboardingTheme.accentIndigo.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
+                                child: const Icon(
+                                  Icons.add_circle_outline,
+                                  color: OnboardingTheme.lightIndigo,
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: TextField(
+                                  controller: _customController,
+                                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                                  textInputAction: TextInputAction.done,
+                                  decoration: InputDecoration(
+                                    hintText: 'Add custom item (e.g., Tomatoes)',
+                                    hintStyle: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.6),
+                                      fontSize: 14,
+                                    ),
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.zero,
+                                  ),
+                                  onChanged: (_) => setState(() {}),
+                                  onSubmitted: (_) => _addCustomItem(),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              ElevatedButton(
+                                onPressed: _canAddCustom ? _addCustomItem : null,
+                                style: _addButtonStyle,
                                 child: const Text(
                                   'Add',
                                   style: TextStyle(
-                                    color: Colors.white,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 14,
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      
-                      // Custom Items section
-                      if (_customItems.isNotEmpty) ...[
+
+                        // Custom Items section
+                        if (_customItems.isNotEmpty) ...[
+                          const SizedBox(height: 24),
+                          Text(
+                            'Your Custom Items',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white.withValues(alpha: 0.7),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          ...List.generate(_customItems.length, (index) {
+                            final item = _customItems[index];
+                            return Padding(
+                              key: ValueKey('custom-diet-$item'),
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: StaggeredAnimation(
+                                index: index,
+                                child: _buildOptionCard(
+                                  title: item,
+                                  description: 'Custom diet consideration',
+                                  icon: Icons.restaurant_menu_outlined,
+                                  isSelected: true,
+                                  onDelete: () {
+                                    setState(() {
+                                      widget.controller.removeDietFlag(item);
+                                    });
+                                  },
+                                ),
+                              ),
+                            );
+                          }),
+                        ],
+
                         const SizedBox(height: 24),
+
                         Text(
-                          'Your Custom Items',
+                          'Common Triggers',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white.withOpacity(0.7),
+                            color: Colors.white.withValues(alpha: 0.7),
                           ),
                         ),
+
                         const SizedBox(height: 12),
-                        ...List.generate(_customItems.length, (index) {
-                          final item = _customItems[index];
+
+                        // Common diet flags as cards
+                        ...List.generate(_commonDietFlags.length, (index) {
+                          final item = _commonDietFlags[index];
+                          final isSelected = widget.controller.data.dietFlags.contains(item.name);
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12),
                             child: StaggeredAnimation(
                               index: index,
                               child: _buildOptionCard(
-                                title: item,
-                                description: 'Custom diet consideration',
-                                icon: Icons.restaurant_menu_outlined,
-                                isSelected: true,
-                                isCustom: true,
-                                onTap: () {},
-                                onDelete: () {
+                                title: item.name,
+                                description: item.description,
+                                icon: item.icon,
+                                isSelected: isSelected,
+                                onTap: () {
                                   setState(() {
-                                    widget.controller.removeDietFlag(item);
+                                    widget.controller.toggleDietFlag(item.name);
                                   });
                                 },
                               ),
                             ),
                           );
                         }),
-                      ],
-                      
-                      const SizedBox(height: 24),
-                      
-                      Text(
-                        'Common Triggers',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white.withOpacity(0.7),
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 12),
-                      
-                      // Common diet flags as cards
-                      ...List.generate(_commonDietFlags.length, (index) {
-                        final item = _commonDietFlags[index];
-                        final isSelected = widget.controller.data.dietFlags.contains(item.name);
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: StaggeredAnimation(
-                            index: index,
-                            child: _buildOptionCard(
-                              title: item.name,
-                              description: item.description,
-                              icon: item.icon,
-                              isSelected: isSelected,
-                              onTap: () {
-                                setState(() {
-                                  widget.controller.toggleDietFlag(item.name);
-                                });
-                              },
+
+                        const SizedBox(height: 16),
+
+                        // Info box
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: OnboardingTheme.accentIndigo.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: OnboardingTheme.accentIndigo.withValues(alpha: 0.3),
                             ),
                           ),
-                        );
-                      }),
-                      
-                      const SizedBox(height: 16),
-                      
-                      // Info box
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: OnboardingTheme.accentIndigo.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: OnboardingTheme.accentIndigo.withOpacity(0.3),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.info_outline,
-                              color: OnboardingTheme.lightIndigo,
-                              size: 24,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'You can always update these later in settings',
-                                style: OnboardingTheme.bodyStyle.copyWith(fontSize: 14),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.info_outline,
+                                color: OnboardingTheme.lightIndigo,
+                                size: 24,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Not sure yet? You can skip this step and log trigger and safe foods any time in the Diet tracker.',
+                                  style: OnboardingTheme.bodyStyle.copyWith(fontSize: 14),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: widget.onNext,
+                    style: OnboardingTheme.primaryButtonStyle().copyWith(
+                      padding: const WidgetStatePropertyAll(
+                        EdgeInsets.symmetric(vertical: 18),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              
-              const SizedBox(height: 24),
-              
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: widget.onNext,
-                  style: OnboardingTheme.primaryButtonStyle().copyWith(
-                    padding: const WidgetStatePropertyAll(
-                      EdgeInsets.symmetric(vertical: 18),
                     ),
-                  ),
-                  child: const Text(
-                    'Continue',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                    child: const Text(
+                      'Continue',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
 }
+
+final ButtonStyle _addButtonStyle = ElevatedButton.styleFrom(
+  backgroundColor: OnboardingTheme.accentIndigo,
+  foregroundColor: Colors.white,
+  disabledBackgroundColor: OnboardingTheme.accentIndigo.withValues(alpha: 0.3),
+  disabledForegroundColor: Colors.white.withValues(alpha: 0.5),
+  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+  minimumSize: const Size(0, 40),
+  elevation: 0,
+  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+);

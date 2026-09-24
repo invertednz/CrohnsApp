@@ -20,26 +20,28 @@
     <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
     <meta
       name="description"
-      content="A comprehensive health tracking application for individuals with Crohn's disease."
+      content="GutMD: track symptoms, food and mood, and get AI insights into what calms your gut. For Crohn's, colitis and IBS."
     />
-    <meta
-      http-equiv="Cache-Control"
-      content="no-cache, no-store, must-revalidate"
-    />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
 
     <!-- iOS meta tags & icons -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-    <meta name="apple-mobile-web-app-title" content="Crohn's Companion" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="theme-color" content="#0f172a" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-title" content="GutMD" />
     <meta name="mobile-web-app-capable" content="yes" />
     <link rel="apple-touch-icon" href="icons/Icon-192.png" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png" />
 
-    <title>Crohn's Companion</title>
+    <title>GutMD</title>
     <link rel="manifest" href="manifest.json" />
     <style>
       /* Remove any accidental underlines or text decorations */
@@ -55,36 +57,95 @@
         text-decoration-thickness: 0 !important;
       }
     </style>
-    <script>
-      // Ensure no stale service workers interfere during debug
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function (regs) {
-          regs.forEach(function (r) {
-            r.unregister();
-          });
-        });
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #0f172a;
       }
-    </script>
+      #boot {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        background: linear-gradient(160deg, #0f172a 0%, #1e1b4b 100%);
+        color: #e0e7ff;
+        font-family:
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        transition: opacity 0.3s ease;
+      }
+      #boot .logo {
+        width: 88px;
+        height: 88px;
+        border-radius: 26px;
+        background: #4f46e5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 44px;
+        box-shadow: 0 12px 40px rgba(79, 70, 229, 0.45);
+        animation: pulse 1.6s ease-in-out infinite;
+      }
+      #boot .name {
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+      }
+      @keyframes pulse {
+        50% {
+          transform: scale(1.06);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #boot .logo {
+          animation: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="boot" role="status" aria-label="Loading GutMD">
+      <div class="logo" aria-hidden="true">&#x1F33F;</div>
+      <div class="name">GutMD</div>
+    </div>
     <script>
-      // Service worker version; keep null for debug runs
-      var serviceWorkerVersion = null;
-    </script>
-    <script src="flutter.js" defer></script>
-    <script>
-      // Modern initialization API: force HTML renderer in debug
-      window.addEventListener("load", function () {
-        _flutter.loader.loadEntrypoint({
-          serviceWorker: { serviceWorkerVersion: serviceWorkerVersion },
-          onEntrypointLoaded: function (engineInitializer) {
-            engineInitializer
-              .initializeEngine({ renderer: "html" })
-              .then(function (appRunner) {
-                appRunner.runApp();
-              });
-          },
-        });
+      // Fade out the loading screen once Flutter paints its first frame.
+      window.addEventListener("flutter-first-frame", function () {
+        var boot = document.getElementById("boot");
+        if (!boot) return;
+        boot.style.opacity = "0";
+        setTimeout(function () {
+          boot.remove();
+        }, 300);
       });
     </script>
-  </head>
-  <body></body>
+    <script>
+      // Flutter web puts a Slider's semantics label on the wrapping
+      // <flt-semantics> element, leaving the focusable <input role="slider">
+      // inside it without an accessible name. Copy the label onto the input.
+      new MutationObserver(function () {
+        document
+          .querySelectorAll('flt-semantics > input[role="slider"]')
+          .forEach(function (input) {
+            var label = input.parentElement.getAttribute("aria-label");
+            if (label && input.getAttribute("aria-label") !== label) {
+              input.setAttribute("aria-label", label);
+            }
+          });
+      }).observe(document.documentElement, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ["aria-label"],
+      });
+    </script>
+    <script src="flutter_bootstrap.js" async></script>
+  </body>
 </html>

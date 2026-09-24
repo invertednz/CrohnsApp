@@ -1,11 +1,38 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
+
+import 'package:gut_md/core/backend_service_provider.dart';
+import 'package:gut_md/screens/auth/sign_in_screen.dart';
 import 'package:gut_md/screens/home/home_screen.dart';
-import 'package:gut_md/screens/onboarding/onboarding_theme.dart';
+import 'package:gut_md/screens/onboarding/onboarding_flow.dart';
+
+/// Password rules for new accounts, shown under the password field.
+const passwordRulesText = 'At least 8 characters, with a letter and a number';
+
+/// Validates a new account password against [passwordRulesText].
+String? validateNewPassword(String? value) {
+  final password = value ?? '';
+  if (password.isEmpty) return 'Please enter a password';
+  if (password.length < 8) return 'Password must be at least 8 characters';
+  if (!password.contains(RegExp(r'[A-Za-z]')) || !password.contains(RegExp(r'[0-9]'))) {
+    return 'Password must include a letter and a number';
+  }
+  return null;
+}
 
 class SignUpScreen extends StatefulWidget {
   final bool shouldReturnToOnboarding;
 
-  const SignUpScreen({Key? key, this.shouldReturnToOnboarding = false}) : super(key: key);
+  /// True when this screen was opened from the sign-in screen, so "Sign In"
+  /// goes back instead of stacking another sign-in screen.
+  final bool openedFromSignIn;
+
+  const SignUpScreen({
+    Key? key,
+    this.shouldReturnToOnboarding = false,
+    this.openedFromSignIn = false,
+  }) : super(key: key);
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -13,324 +40,209 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _obscureConfirm = true;
+
+  /// A signed-in guest is upgrading to a full account; their data carries over.
+  bool get _isUpgradingGuest {
+    if (!BackendServiceProvider.isInitialized) return false;
+    return BackendServiceProvider.instance.auth.currentUser?.isAnonymous ?? false;
+  }
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void _goToHome() {
+  void _goToApp() {
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
+      MaterialPageRoute(
+        builder: (context) =>
+            widget.shouldReturnToOnboarding ? const OnboardingFlow() : const HomeScreen(),
+      ),
       (route) => false,
     );
   }
 
+  /// Runs an account attempt, then opens the app or shows why it failed.
+  Future<void> _runAuth(String method, Future<AppUser?> Function(UnifiedAuthService auth) attempt) async {
+    developer.log('Attempting $method', name: 'SignUpScreen');
+    setState(() => _isLoading = true);
+    try {
+      await BackendServiceProvider.initialize();
+      final user = await attempt(BackendServiceProvider.instance.auth);
+      if (!mounted) return;
+      if (user != null) {
+        _goToApp();
+      } else {
+        showAuthError(context, 'We couldn\'t create your account. Please try again.');
+      }
+    } catch (e, stackTrace) {
+      developer.log('$method failed', name: 'SignUpScreen', error: e, stackTrace: stackTrace);
+      if (mounted) showAuthError(context, authErrorMessage(e));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   Future<void> _signUpWithEmail() async {
     if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _isLoading = true);
-
-    // Mock sign up - simulate network delay then go to home
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    if (!mounted) return;
-    _goToHome();
+    final name = _nameController.text.trim();
+    await _runAuth(
+      'email sign up',
+      (auth) => auth.signUpWithEmail(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        userData: {'name': name},
+      ),
+    );
   }
 
-  Future<void> _signUpWithGoogle() async {
-    setState(() => _isLoading = true);
-
-    // Mock Google sign up
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    if (!mounted) return;
-    _goToHome();
-  }
-
-  Future<void> _signUpWithApple() async {
-    setState(() => _isLoading = true);
-
-    // Mock Apple sign up
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    if (!mounted) return;
-    _goToHome();
+  void _openSignIn() {
+    if (widget.openedFromSignIn) {
+      Navigator.of(context).pop();
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => SignInScreen(
+          shouldReturnToOnboarding: widget.shouldReturnToOnboarding,
+          openedFromSignUp: true,
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: OnboardingTheme.primaryGradient,
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => Navigator.of(context).pop(),
+    final upgradingGuest = _isUpgradingGuest;
+    return AuthScaffold(
+      title: 'Create Account',
+      subtitle: upgradingGuest
+          ? 'Save everything you\'ve logged as a guest to a GutMD account'
+          : 'Start your gut health journey',
+      children: [
+        Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextFormField(
+                controller: _nameController,
+                keyboardType: TextInputType.name,
+                textCapitalization: TextCapitalization.words,
+                textInputAction: TextInputAction.next,
+                style: const TextStyle(color: Colors.white),
+                decoration: authInputDecoration(label: 'Name', icon: Icons.person_outline),
+                validator: (value) {
+                  final name = value?.trim() ?? '';
+                  if (name.isEmpty) return 'Please enter your name';
+                  if (name.length > 50) return 'Name must be 50 characters or fewer';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                style: const TextStyle(color: Colors.white),
+                decoration: authInputDecoration(label: 'Email', icon: Icons.email_outlined),
+                validator: validateAuthEmail,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _passwordController,
+                obscureText: _obscurePassword,
+                textInputAction: TextInputAction.next,
+                style: const TextStyle(color: Colors.white),
+                decoration: authInputDecoration(
+                  label: 'Password',
+                  icon: Icons.lock_outline,
+                  helperText: passwordRulesText,
+                  suffixIcon: PasswordVisibilityToggle(
+                    obscured: _obscurePassword,
+                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  ),
+                ),
+                validator: validateNewPassword,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _confirmPasswordController,
+                obscureText: _obscureConfirm,
+                textInputAction: TextInputAction.done,
+                onFieldSubmitted: (_) => _isLoading ? null : _signUpWithEmail(),
+                style: const TextStyle(color: Colors.white),
+                decoration: authInputDecoration(
+                  label: 'Confirm password',
+                  icon: Icons.lock_outline,
+                  suffixIcon: PasswordVisibilityToggle(
+                    obscured: _obscureConfirm,
+                    onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) return 'Please confirm your password';
+                  if (value != _passwordController.text) return 'Passwords do not match';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 24),
+              AuthPrimaryButton(
+                label: 'Create Account',
+                loading: _isLoading,
+                onPressed: _signUpWithEmail,
+              ),
+            ],
           ),
         ),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 20),
-                  
-                  // Title
-                  const Text(
-                    'Create Account',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  
-                  const SizedBox(height: 8),
-                  
-                  Text(
-                    'Start your gut health journey',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  
-                  const SizedBox(height: 40),
-                  
-                  // Email field
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-                      prefixIcon: Icon(Icons.email_outlined, color: Colors.white.withOpacity(0.7)),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.white),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.redAccent),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.redAccent),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.1),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
-                      }
-                      if (!value.contains('@')) {
-                        return 'Please enter a valid email';
-                      }
-                      return null;
-                    },
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Password field
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: _obscurePassword,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-                      prefixIcon: Icon(Icons.lock_outlined, color: Colors.white.withOpacity(0.7)),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                          color: Colors.white.withOpacity(0.7),
-                        ),
-                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.white),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.redAccent),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.redAccent),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.1),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a password';
-                      }
-                      if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
-                      }
-                      return null;
-                    },
-                  ),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Create Account button
-                  SizedBox(
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _signUpWithEmail,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: OnboardingTheme.healthGreen,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : const Text(
-                              'Create Account',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Divider
-                  Row(
-                    children: [
-                      Expanded(child: Divider(color: Colors.white.withOpacity(0.3))),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'or continue with',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                      Expanded(child: Divider(color: Colors.white.withOpacity(0.3))),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Google Sign Up button
-                  SizedBox(
-                    height: 56,
-                    child: OutlinedButton.icon(
-                      onPressed: _isLoading ? null : _signUpWithGoogle,
-                      icon: Image.network(
-                        'https://www.google.com/favicon.ico',
-                        width: 24,
-                        height: 24,
-                        errorBuilder: (context, error, stackTrace) => const Icon(
-                          Icons.g_mobiledata,
-                          size: 24,
-                          color: Colors.white,
-                        ),
-                      ),
-                      label: const Text(
-                        'Continue with Google',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: BorderSide(color: Colors.white.withOpacity(0.3)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 12),
-                  
-                  // Apple Sign Up button
-                  SizedBox(
-                    height: 56,
-                    child: OutlinedButton.icon(
-                      onPressed: _isLoading ? null : _signUpWithApple,
-                      icon: const Icon(Icons.apple, size: 24),
-                      label: const Text(
-                        'Continue with Apple',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: BorderSide(color: Colors.white.withOpacity(0.3)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Terms text
-                  Text(
-                    'By creating an account, you agree to our Terms of Service and Privacy Policy',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white.withOpacity(0.5),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+        const SizedBox(height: 24),
+        SocialSignInButtons(
+          onGoogle: _isLoading ? null : () => _runAuth('Google sign up', (auth) => auth.signInWithGoogle()),
+          onApple: _isLoading ? null : () => _runAuth('Apple sign up', (auth) => auth.signInWithApple()),
+        ),
+        if (!upgradingGuest) ...[
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 48,
+            child: TextButton(
+              onPressed: _isLoading ? null : () => _runAuth('guest sign in', (auth) => auth.signInAsGuest()),
+              style: TextButton.styleFrom(foregroundColor: Colors.white),
+              child: const Text(
+                'Continue as guest',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
           ),
+          Text(
+            'Try GutMD without an account. You can create one later to keep your data.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.75)),
+          ),
+        ],
+        const SizedBox(height: 16),
+        AuthSwitchLink(
+          prompt: 'Already have an account?',
+          action: 'Sign In',
+          onPressed: _isLoading ? null : _openSignIn,
         ),
-      ),
+        const SizedBox(height: 8),
+        Text(
+          'By creating an account, you agree to our Terms of Service and Privacy Policy',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.7)),
+        ),
+      ],
     );
   }
 }

@@ -1,18 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:gut_md/screens/onboarding/onboarding_data.dart';
 
-/// Global app state that persists across screens
+/// Global app state that persists across screens.
+///
+/// Tracked data itself lives in the backend (`BackendServiceProvider`); this
+/// only holds UI state shared between tabs.
 class AppState extends ChangeNotifier {
   static final AppState _instance = AppState._internal();
   factory AppState() => _instance;
   AppState._internal();
 
-  // Selected date (shared across all tracking pages)
-  DateTime _selectedDate = DateTime.now();
+  // Selected date (shared across all tracking pages). Always a calendar day
+  // with no time part.
+  DateTime _selectedDate = _today();
   DateTime get selectedDate => _selectedDate;
-  
+
+  static DateTime _today() {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
   void setSelectedDate(DateTime date) {
-    _selectedDate = date;
+    final day = DateTime(date.year, date.month, date.day);
+    if (day == _selectedDate) return;
+    _selectedDate = day;
     notifyListeners();
   }
 
@@ -31,32 +42,10 @@ class AppState extends ChangeNotifier {
   List<SymptomEntry> get userSymptoms => _onboardingData?.currentSymptoms ?? [];
   List<String> get userDietFlags => _onboardingData?.dietFlags ?? [];
 
-  // Daily tracking state - "Had All" tracking
-  final Map<String, bool> _hadAllSupplements = {};
-  final Map<String, bool> _hadAllMedications = {};
-  final Map<String, bool> _hadAllDiet = {};
-
-  String get _dateKey => '${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}';
-
-  bool getHadAllSupplements(String dateKey) => _hadAllSupplements[dateKey] ?? false;
-  bool getHadAllMedications(String dateKey) => _hadAllMedications[dateKey] ?? false;
-  bool getHadAllDiet(String dateKey) => _hadAllDiet[dateKey] ?? false;
-
-  void setHadAllSupplements(bool value) {
-    _hadAllSupplements[_dateKey] = value;
+  /// Clears per-user state on sign out so the next account starts fresh.
+  void reset() {
+    _selectedDate = _today();
+    _onboardingData = null;
     notifyListeners();
   }
-
-  void setHadAllMedications(bool value) {
-    _hadAllMedications[_dateKey] = value;
-    notifyListeners();
-  }
-
-  void setHadAllDiet(bool value) {
-    _hadAllDiet[_dateKey] = value;
-    notifyListeners();
-  }
-
-  // Current date key for convenience
-  String get currentDateKey => _dateKey;
 }

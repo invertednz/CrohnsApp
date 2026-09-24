@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:gut_md/screens/home/home_screen.dart';
 import 'package:gut_md/core/backend_service_provider.dart';
@@ -18,6 +20,10 @@ import 'screens/medications_screen.dart';
 import 'screens/symptoms_screen.dart';
 import 'screens/thank_you_screen.dart';
 import 'screens/trial_offer_screen.dart';
+import 'screens/plan_building_screen.dart';
+import 'screens/plan_reveal_screen.dart';
+import 'screens/commitment_screen.dart';
+import '../../services/gut_plan_service.dart';
 import 'screens/timeline_screen.dart';
 import 'screens/compare_plans_screen.dart';
 import 'screens/payment_screen.dart';
@@ -33,11 +39,18 @@ class OnboardingFlow extends StatefulWidget {
 }
 
 class _OnboardingFlowState extends State<OnboardingFlow> {
+  GutPlan? _plan;
   final OnboardingController _controller = OnboardingController();
   final ReferralService _referralService = ReferralService();
   bool _showDiscountScreen = false;
   bool _showReferralScreen = false;
   bool _showComparePlans = false;
+  bool _showPayment = false;
+
+  /// Set once the user finished (or skipped to sign-up), so their answers
+  /// belong on the account they are about to create.
+  bool _answersCommitted = false;
+  bool _profileSaved = false;
 
   void _nextStep() {
     setState(() {
@@ -52,14 +65,21 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   }
 
   void _handlePaymentClose() {
-    // User closed payment screen, show discount offer
+    // Leaving the paywall without a plan: offer the discount instead.
     setState(() {
+      _showPayment = false;
       _showDiscountScreen = true;
     });
   }
 
+  void _handlePaymentBack() {
+    setState(() {
+      _showPayment = false;
+      _showComparePlans = true;
+    });
+  }
+
   void _handleDiscountAccept() {
-    // User accepted discount, show referral screen
     setState(() {
       _showDiscountScreen = false;
       _showReferralScreen = true;
@@ -67,56 +87,89 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   }
 
   void _handleDiscountDecline() {
-    // User declined discount, complete onboarding
     _completeOnboarding();
   }
   
   void _handleReferralComplete() {
-    // User completed referral flow, finish onboarding
     _completeOnboarding();
   }
 
-  void _completeOnboarding() {
+  AppUser? get _currentUser => BackendServiceProvider.isInitialized
+      ? BackendServiceProvider.instance.auth.currentUser
+      : null;
+
+  void _commitAnswers() {
+    _answersCommitted = true;
     _controller.completeOnboarding();
-    final authService = BackendServiceProvider.instance.auth;
-    final user = authService.currentUser;
-    if (user != null) {
+  }
+
+  void _completeOnboarding() {
+    _commitAnswers();
+    if (_currentUser != null) {
+      _saveToAccount();
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const HomeScreen()),
         (route) => false,
       );
     } else {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (context) => const SignUpScreen(
-            shouldReturnToOnboarding: false,
-          ),
-        ),
-        (route) => false,
+      _openSignUp();
+    }
+  }
+
+  /// Sign-up sits on top of onboarding so its back button returns here.
+  /// Once the account exists and sign-up opens Home, this flow is disposed
+  /// and [dispose] saves the answers to the new account.
+  void _openSignUp() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const SignUpScreen()),
+    );
+  }
+
+  /// Saves the onboarding answers and any referral code created before
+  /// sign-up to the signed-in account (tracking types `profile`/`referral`).
+  Future<void> _saveToAccount() async {
+    final user = _currentUser;
+    if (user == null || _profileSaved) return;
+    _profileSaved = true;
+    try {
+      await OnboardingProfileStore.save(_controller.data, userId: user.id);
+      await _referralService.saveForUser(user.id);
+    } catch (error, stackTrace) {
+      _profileSaved = false;
+      developer.log(
+        'Could not save onboarding answers to the account',
+        name: 'OnboardingFlow',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  /// A returning user who logged in from the welcome screen: load the
+  /// answers they gave when they first signed up.
+  Future<void> _restoreFromAccount(String userId) async {
+    try {
+      await OnboardingProfileStore.restore(userId);
+    } catch (error, stackTrace) {
+      developer.log(
+        'Could not load saved onboarding answers',
+        name: 'OnboardingFlow',
+        error: error,
+        stackTrace: stackTrace,
       );
     }
   }
 
   void _goToLogin() {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const SignInScreen(
-          shouldReturnToOnboarding: false,
-        ),
-      ),
+      MaterialPageRoute(builder: (context) => const SignInScreen()),
     );
   }
 
   void _goToSignUp() {
     _controller.startTrial();
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (context) => const SignUpScreen(
-          shouldReturnToOnboarding: false,
-        ),
-      ),
-      (route) => false,
-    );
+    _commitAnswers();
+    _openSignUp();
   }
 
   void _showComparePlansScreen() {
@@ -134,21 +187,73 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   void _selectPlanAndContinue() {
     setState(() {
       _showComparePlans = false;
+      _showPayment = true;
     });
-    _goToSignUp(); // Go to sign up
   }
 
   void _handleNoThanks() {
-    // Show discount screen with Pay It Forward offer
     setState(() {
       _showComparePlans = false;
       _showDiscountScreen = true;
     });
   }
 
+  /// System/browser back: step back through the flow instead of leaving it.
+  void _handleSystemBack() {
+    if (_showReferralScreen) {
+      _handleReferralComplete();
+    } else if (_showDiscountScreen) {
+      _handleDiscountDecline();
+    } else if (_showPayment) {
+      _handlePaymentBack();
+    } else if (_showComparePlans) {
+      _hideComparePlansScreen();
+    } else if (_controller.currentStep > 0) {
+      _previousStep();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Show compare plans screen if triggered
+    final atStart = _controller.currentStep == 0 &&
+        !_showComparePlans &&
+        !_showPayment &&
+        !_showDiscountScreen &&
+        !_showReferralScreen;
+    return PopScope(
+      canPop: atStart,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _handleSystemBack();
+      },
+      child: _buildOverlayOrStep(),
+    );
+  }
+
+  Widget _buildOverlayOrStep() {
+    if (_showReferralScreen) {
+      return ReferralShareScreen(
+        referralService: _referralService,
+        onComplete: _handleReferralComplete,
+      );
+    }
+    
+    if (_showDiscountScreen) {
+      return DiscountScreen(
+        controller: _controller,
+        onAccept: _handleDiscountAccept,
+        onComplete: _handleDiscountDecline,
+      );
+    }
+
+    if (_showPayment) {
+      return PaymentScreen(
+        controller: _controller,
+        onNext: _completeOnboarding,
+        onBack: _handlePaymentBack,
+        onClose: _handlePaymentClose,
+      );
+    }
+
     if (_showComparePlans) {
       return ComparePlansScreen(
         controller: _controller,
@@ -158,29 +263,25 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       );
     }
 
-    // Show referral screen if triggered
-    if (_showReferralScreen) {
-      return ReferralShareScreen(
-        controller: _controller,
-        referralService: _referralService,
-        onComplete: _handleReferralComplete,
-        donorName: _controller.data.giftDonorName ?? 'A Community Member',
-      );
-    }
-    
-    // Show discount screen if triggered
-    if (_showDiscountScreen) {
-      return DiscountScreen(
-        controller: _controller,
-        onAccept: _handleDiscountAccept,
-        onComplete: _handleDiscountDecline,
-      );
-    }
-
-    // Main onboarding flow
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300),
-      child: _buildCurrentScreen(),
+    // Main onboarding flow, with a progress bar across the personal quiz.
+    final step = _controller.currentStep;
+    final inQuiz = step >= 1 && step <= OnboardingController.lastQuizStep;
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: _buildCurrentScreen(),
+          ),
+        ),
+        if (inQuiz)
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            left: 24,
+            right: 24,
+            child: _QuizProgressBar(value: step / OnboardingController.lastQuizStep),
+          ),
+      ],
     );
   }
 
@@ -273,27 +374,53 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
           onBack: _previousStep,
         );
       case 13:
-        return TrialOfferScreen(
+        return PlanBuildingScreen(
           key: const ValueKey(13),
+          controller: _controller,
+          onComplete: (plan) {
+            _plan = plan;
+            _controller.data.plan = plan.toJson();
+            _nextStep();
+          },
+        );
+      case 14:
+        final plan = _plan;
+        if (plan == null) {
+          // The plan lives in memory; rebuild it if the user came back here.
+          return PlanBuildingScreen(
+            key: const ValueKey('rebuild-plan'),
+            controller: _controller,
+            onComplete: (plan) => setState(() {
+              _plan = plan;
+              _controller.data.plan = plan.toJson();
+            }),
+          );
+        }
+        return PlanRevealScreen(
+          key: const ValueKey(14),
+          plan: plan,
+          onNext: _nextStep,
+        );
+      case 15:
+        return CommitmentScreen(
+          key: const ValueKey(15),
+          onNext: _nextStep,
+          onBack: _previousStep,
+        );
+      case 16:
+        return TrialOfferScreen(
+          key: const ValueKey(16),
           controller: _controller,
           onNext: _nextStep,
           onBack: _previousStep,
         );
-      case 14:
+      case 17:
         return TimelineScreen(
-          key: const ValueKey(14),
+          key: const ValueKey(17),
           controller: _controller,
           onNext: _goToSignUp,
           onBack: _previousStep,
           onComparePlans: _showComparePlansScreen,
-        );
-      case 15:
-        return PaymentScreen(
-          key: const ValueKey(15),
-          controller: _controller,
-          onNext: _completeOnboarding,
-          onBack: _previousStep,
-          onClose: _handlePaymentClose,
         );
       default:
         return WelcomeScreen(
@@ -306,7 +433,46 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
   @override
   void dispose() {
+    // Leaving onboarding for Home. If an account now exists, finished answers
+    // go to it; a returning user who logged in gets their saved answers back.
+    final user = _currentUser;
+    if (user != null) {
+      if (_answersCommitted) {
+        _saveToAccount();
+      } else {
+        _restoreFromAccount(user.id);
+      }
+    }
     _controller.dispose();
     super.dispose();
+  }
+}
+
+/// Thin animated bar showing how far through the personal quiz the user is.
+class _QuizProgressBar extends StatelessWidget {
+  final double value;
+  const _QuizProgressBar({required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final percent = (value * 100).round();
+    return Semantics(
+      label: 'Onboarding progress $percent percent',
+      excludeSemantics: true,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(end: value.clamp(0.0, 1.0)),
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOutCubic,
+          builder: (context, v, _) => LinearProgressIndicator(
+            value: v,
+            minHeight: 4,
+            backgroundColor: Colors.white.withOpacity(0.12),
+            valueColor: const AlwaysStoppedAnimation(Color(0xFF10B981)),
+          ),
+        ),
+      ),
+    );
   }
 }

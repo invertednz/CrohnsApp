@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
+import 'package:flutter/services.dart';
 import 'package:gut_md/core/theme/app_theme.dart';
 import 'package:gut_md/core/backend_service_provider.dart';
 
@@ -10,125 +12,148 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final TextEditingController _messageController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
-  bool _isLoading = false;
-  List<Map<String, dynamic>> _messages = [];
-  List<String> _suggestedQuestions = [
+  /// Longest message the input accepts.
+  static const int maxMessageLength = 2000;
+
+  static const List<String> suggestedQuestions = [
     'What foods should I avoid with my condition?',
+    'How have I been feeling lately?',
     'How can I manage pain during a flare-up?',
     'What supplements are recommended for gut health?',
     'Can stress trigger digestive symptoms?',
   ];
 
+  final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  final FocusNode _inputFocus = FocusNode();
+  bool _isLoadingHistory = true;
+  bool _isSending = false;
+  bool _hasText = false;
+  List<Map<String, dynamic>> _messages = [];
+
   @override
   void initState() {
     super.initState();
+    _messageController.addListener(_onTextChanged);
     _loadChatHistory();
   }
 
   @override
   void dispose() {
+    _messageController.removeListener(_onTextChanged);
     _messageController.dispose();
     _scrollController.dispose();
+    _inputFocus.dispose();
     super.dispose();
   }
 
-  Future<void> _loadChatHistory() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final chatService = BackendServiceProvider.instance.chat;
-      final userId = BackendServiceProvider.instance.auth.currentUser?.id ?? '';
-      
-      final history = await chatService.getChatHistory(userId);
-      
-      if (mounted) {
-        setState(() {
-          _messages = history ?? [];
-          _isLoading = false;
-        });
-        
-        // Scroll to bottom after loading messages
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToBottom();
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load chat history: ${e.toString()}')),
-        );
-      }
+  void _onTextChanged() {
+    final hasText = _messageController.text.trim().isNotEmpty;
+    if (hasText != _hasText) {
+      setState(() => _hasText = hasText);
     }
   }
 
-  Future<void> _sendMessage(String text) async {
-    if (text.trim().isEmpty) return;
+  bool get _canSend => _hasText && !_isSending;
 
-    final message = {
+  Future<void> _loadChatHistory() async {
+    setState(() => _isLoadingHistory = true);
+
+    try {
+      final backend = BackendServiceProvider.instance;
+      final userId = backend.auth.currentUser?.id ?? '';
+      final history = await backend.chat.getChatHistory(userId);
+
+      if (!mounted) return;
+      setState(() {
+        _messages = history;
+        _isLoadingHistory = false;
+      });
+      _scrollToBottom(animate: false);
+    } catch (e) {
+      debugPrint('ChatScreen: failed to load chat history: $e');
+      if (!mounted) return;
+      setState(() => _isLoadingHistory = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Couldn't load your conversation. Tap reload to try again."),
+        ),
+      );
+    }
+  }
+
+  Future<void> _sendMessage(String rawText) async {
+    final text = rawText.trim();
+    if (text.isEmpty || _isSending) return;
+
+    final message = <String, dynamic>{
       'text': text,
       'isUser': true,
       'timestamp': DateTime.now().toIso8601String(),
     };
 
     setState(() {
-      _messages.add(message);
+      _messages = [..._messages, message];
       _messageController.clear();
-      _isLoading = true;
+      _isSending = true;
     });
-
-    // Scroll to bottom after sending message
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToBottom();
-    });
+    _scrollToBottom();
 
     try {
-      final chatService = BackendServiceProvider.instance.chat;
-      final userId = BackendServiceProvider.instance.auth.currentUser?.id ?? '';
-      
-      final response = await chatService.sendMessage(userId, text);
-      
-      if (mounted) {
-        setState(() {
-          _messages.add({
+      final backend = BackendServiceProvider.instance;
+      final userId = backend.auth.currentUser?.id ?? '';
+      final response = await backend.chat.sendMessage(userId, text);
+
+      if (!mounted) return;
+      setState(() {
+        _messages = [
+          ..._messages,
+          {
             'text': response,
             'isUser': false,
             'timestamp': DateTime.now().toIso8601String(),
-          });
-          _isLoading = false;
-        });
-        
-        // Scroll to bottom after receiving response
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToBottom();
-        });
-      }
+          },
+        ];
+        _isSending = false;
+      });
+      _scrollToBottom();
+      SemanticsService.sendAnnouncement(
+        View.of(context),
+        'GutMD Assistant: $response',
+        TextDirection.ltr,
+      );
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send message: ${e.toString()}')),
-        );
-      }
+      debugPrint('ChatScreen: failed to send message: $e');
+      if (!mounted) return;
+      setState(() {
+        _messages = _messages.where((m) => !identical(m, message)).toList();
+        _isSending = false;
+        if (_messageController.text.isEmpty) {
+          _messageController.text = text;
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Message not sent. Check your connection and try again.'),
+        ),
+      );
     }
   }
 
-  void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    }
+  void _scrollToBottom({bool animate = true}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      final target = _scrollController.position.maxScrollExtent;
+      if (animate) {
+        _scrollController.animateTo(
+          target,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      } else {
+        _scrollController.jumpTo(target);
+      }
+    });
   }
 
   @override
@@ -136,37 +161,46 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       body: Column(
         children: [
-          // Header with gradient background
-          Container(
-            padding: const EdgeInsets.fromLTRB(24, 60, 24, 24),
-            decoration: const BoxDecoration(
-              gradient: AppTheme.primaryGradient,
+          _buildHeader(),
+          Expanded(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 760),
+                child: _buildBody(),
+              ),
             ),
+          ),
+          _buildComposer(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(24, 60, 16, 20),
+      decoration: const BoxDecoration(
+        gradient: AppTheme.primaryGradient,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Chat Assistant',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.refresh,
-                        color: Colors.white,
-                      ),
-                      onPressed: _loadChatHistory,
-                    ),
-                  ],
+                Text(
+                  'Chat Assistant',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
-                const SizedBox(height: 8),
-                const Text(
+                SizedBox(height: 8),
+                Text(
                   'Ask questions about your gut health',
                   style: TextStyle(
                     fontSize: 14,
@@ -177,143 +211,137 @@ class _ChatScreenState extends State<ChatScreen> {
               ],
             ),
           ),
-          // Chat messages
-          Expanded(
-            child: _isLoading && _messages.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : _messages.isEmpty
-                    ? _buildEmptyState()
-                    : ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _messages.length,
-                        itemBuilder: (context, index) {
-                          final message = _messages[index];
-                          final isUser = message['isUser'] as bool;
-                          
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: Row(
-                              mainAxisAlignment: isUser
-                                  ? MainAxisAlignment.end
-                                  : MainAxisAlignment.start,
-                              children: [
-                                if (!isUser)
-                                  Container(
-                                    width: 36,
-                                    height: 36,
-                                    margin: const EdgeInsets.only(right: 8),
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.primaryColor,
-                                      borderRadius: BorderRadius.circular(18),
-                                    ),
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.smart_toy_outlined,
-                                        color: Colors.white,
-                                        size: 20,
-                                      ),
-                                    ),
-                                  ),
-                                Flexible(
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 12,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: isUser
-                                          ? AppTheme.primaryColor
-                                          : AppTheme.neutralColor,
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: Text(
-                                      message['text'] as String,
-                                      style: TextStyle(
-                                        color: isUser ? Colors.white : Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                if (isUser)
-                                  Container(
-                                    width: 36,
-                                    height: 36,
-                                    margin: const EdgeInsets.only(left: 8),
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.secondaryColor,
-                                      borderRadius: BorderRadius.circular(18),
-                                    ),
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.person_outline,
-                                        color: Colors.white,
-                                        size: 20,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
+          IconButton(
+            tooltip: 'Reload conversation',
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: _isSending || _isLoadingHistory ? null : _loadChatHistory,
           ),
-          // Loading indicator
-          if (_isLoading && _messages.isNotEmpty)
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Center(
-                child: SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoadingHistory && _messages.isEmpty) {
+      return const Center(
+        child: CircularProgressIndicator(semanticsLabel: 'Loading conversation'),
+      );
+    }
+    if (_messages.isEmpty) {
+      return _buildEmptyState();
+    }
+    return ListView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(16),
+      itemCount: _messages.length + (_isSending ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index >= _messages.length) {
+          return _buildTypingIndicator();
+        }
+        final message = _messages[index];
+        return _buildMessage(
+          text: message['text']?.toString() ?? '',
+          isUser: message['isUser'] == true,
+        );
+      },
+    );
+  }
+
+  Widget _buildAvatar({required bool isUser}) {
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: isUser ? AppTheme.secondaryColor : AppTheme.primaryColor,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Center(
+        child: Icon(
+          isUser ? Icons.person_outline : Icons.smart_toy_outlined,
+          color: Colors.white,
+          size: 20,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMessage({required String text, required bool isUser}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (!isUser) ...[
+            _buildAvatar(isUser: false),
+            const SizedBox(width: 8),
+          ],
+          Flexible(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: isUser ? AppTheme.primaryColor : AppTheme.deepPurple,
+                  borderRadius: BorderRadius.circular(16),
+                  border: isUser
+                      ? null
+                      : Border.all(color: AppTheme.lightIndigo.withValues(alpha: 0.35)),
+                ),
+                child: Text(
+                  text,
+                  style: const TextStyle(color: Colors.white, fontSize: 15, height: 1.4),
                 ),
               ),
             ),
-          // Message input
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, -5),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: const InputDecoration(
-                      hintText: 'Type your message...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(24)),
-                      ),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+          ),
+          if (isUser) ...[
+            const SizedBox(width: 8),
+            _buildAvatar(isUser: true),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTypingIndicator() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildAvatar(isUser: false),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppTheme.deepPurple,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.lightIndigo.withValues(alpha: 0.35)),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: ExcludeSemantics(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppTheme.lightIndigo,
                       ),
                     ),
-                    textInputAction: TextInputAction.send,
-                    onSubmitted: _sendMessage,
                   ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: AppTheme.primaryGradient,
-                    shape: BoxShape.circle,
+                  SizedBox(width: 10),
+                  Flexible(
+                    child: Text(
+                      'GutMD Assistant is typing…',
+                      style: TextStyle(color: AppTheme.lightTextColor, fontSize: 14),
+                    ),
                   ),
-                  child: IconButton(
-                    icon: const Icon(Icons.send, color: Colors.white),
-                    onPressed: () => _sendMessage(_messageController.text),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -322,68 +350,161 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Padding(
-      padding: const EdgeInsets.all(24),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.chat_bubble_outline,
-            size: 64,
-            color: AppTheme.lightTextColor.withOpacity(0.5),
+            size: 56,
+            color: AppTheme.lightTextColor.withValues(alpha: 0.6),
           ),
           const SizedBox(height: 16),
-          Text(
+          const Text(
             'Start a conversation',
             style: TextStyle(
-              color: AppTheme.lightTextColor.withOpacity(0.8),
+              color: Colors.white,
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            'Ask questions about your gut health\nand get personalized advice',
+          const Text(
+            "Ask about your symptoms, food triggers, supplements or how you've been feeling. "
+            'Answers take into account what you track in GutMD.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AppTheme.lightTextColor.withOpacity(0.6),
+              color: AppTheme.lightTextColor,
               fontSize: 14,
+              height: 1.4,
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 28),
           const Text(
             'Suggested Questions',
             style: TextStyle(
+              color: Colors.white,
               fontWeight: FontWeight.w600,
               fontSize: 16,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             alignment: WrapAlignment.center,
-            children: _suggestedQuestions.map((question) {
-              return GestureDetector(
-                onTap: () => _sendMessage(question),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.neutralColor,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: AppTheme.primaryColor.withOpacity(0.3),
-                    ),
-                  ),
-                  child: Text(question),
-                ),
-              );
-            }).toList(),
+            children: suggestedQuestions.map(_buildSuggestion).toList(),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSuggestion(String question) {
+    return Material(
+      color: AppTheme.deepPurple,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: AppTheme.lightIndigo.withValues(alpha: 0.5)),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: _isSending ? null : () => _sendMessage(question),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Text(
+            question,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white, fontSize: 14),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildComposer() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+      decoration: BoxDecoration(
+        color: AppTheme.darkNavy,
+        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+      ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 760),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _messageController,
+                      focusNode: _inputFocus,
+                      minLines: 1,
+                      maxLines: 4,
+                      keyboardType: TextInputType.multiline,
+                      textInputAction: TextInputAction.send,
+                      textCapitalization: TextCapitalization.sentences,
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(maxMessageLength),
+                      ],
+                      style: const TextStyle(color: Colors.white, fontSize: 15),
+                      decoration: InputDecoration(
+                        hintText: 'Type your message...',
+                        hintStyle: TextStyle(color: AppTheme.lightTextColor.withValues(alpha: 0.7)),
+                        border: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(24)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: const BorderRadius.all(Radius.circular(24)),
+                          borderSide: BorderSide(color: AppTheme.lightIndigo.withValues(alpha: 0.4)),
+                        ),
+                        focusedBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(24)),
+                          borderSide: BorderSide(color: AppTheme.lightIndigo, width: 1.5),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                      // Send on Enter from onEditingComplete rather than onSubmitted:
+                      // with onSubmitted set, EditableText restarts the text input
+                      // connection after a submit, which on web (semantics on)
+                      // leaves the field ignoring typing. A non-null
+                      // onEditingComplete also keeps focus for the next message.
+                      onEditingComplete: () => _sendMessage(_messageController.text),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: _canSend ? AppTheme.accentIndigo : AppTheme.deepPurple,
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      tooltip: 'Send message',
+                      icon: const Icon(Icons.send),
+                      color: Colors.white,
+                      disabledColor: Colors.white.withValues(alpha: 0.45),
+                      onPressed: _canSend ? () => _sendMessage(_messageController.text) : null,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'General information only, not medical advice. '
+                'For urgent or worsening symptoms, contact your doctor.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppTheme.lightTextColor, fontSize: 12),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

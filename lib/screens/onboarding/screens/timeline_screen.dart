@@ -1,23 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../onboarding_theme.dart';
 import '../onboarding_controller.dart';
+import '../onboarding_data.dart';
 
 class TimelineScreen extends StatelessWidget {
   final OnboardingController controller;
   final VoidCallback onNext;
   final VoidCallback onBack;
-  final VoidCallback? onComparePlans;
-  
+  final VoidCallback onComparePlans;
+
   const TimelineScreen({
     Key? key,
     required this.controller,
     required this.onNext,
     required this.onBack,
-    this.onComparePlans,
+    required this.onComparePlans,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final trialEnds = DateFormat('EEEE, MMMM d').format(controller.trialEndDate);
+    final plan = controller.selectedPlan;
     return Container(
       decoration: const BoxDecoration(
         gradient: OnboardingTheme.primaryGradient,
@@ -33,6 +37,7 @@ class TimelineScreen extends StatelessWidget {
                 child: Row(
                   children: [
                     IconButton(
+                      tooltip: 'Back',
                       onPressed: onBack,
                       icon: const Icon(
                         Icons.arrow_back,
@@ -52,52 +57,55 @@ class TimelineScreen extends StatelessWidget {
                       const SizedBox(height: 8),
                       
                       // Title
-                      const Text(
-                        'GutMD',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      Semantics(
+                        header: true,
+                        child: const Text(
+                          'GutMD',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 8),
-                      
+
                       Text(
-                        'We\'ll remind you when your trial ends',
+                        'How your free trial works',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.white.withOpacity(0.7),
                         ),
                       ),
-                    
+
                     const SizedBox(height: 40),
-                    
+
                     // Timeline items
-                    _TimelineStep(
+                    const _TimelineStep(
                       icon: Icons.play_arrow,
                       iconColor: Colors.white,
-                      iconBgColor: OnboardingTheme.healthGreen,
+                      iconBgColor: OnboardingTheme.ctaGreen,
                       title: 'Today',
-                      description: 'Unlock full access to GutMD and start tracking your gut health',
+                      description: 'Full access to GutMD. No payment details needed.',
                       showConnector: true,
                     ),
-                    
-                    _TimelineStep(
-                      icon: Icons.notifications,
+
+                    const _TimelineStep(
+                      icon: Icons.insights,
                       iconColor: Colors.white,
                       iconBgColor: OnboardingTheme.warningAmber,
-                      title: 'In 2 days',
-                      description: 'We\'ll send a reminder before your trial ends',
+                      title: 'During your trial',
+                      description: 'Log symptoms, meals and medications and see what the AI finds in your patterns.',
                       showConnector: true,
                     ),
-                    
+
                     _TimelineStep(
-                      icon: Icons.remove,
+                      icon: Icons.flag,
                       iconColor: Colors.white,
                       iconBgColor: OnboardingTheme.accentIndigo,
-                      title: 'In 3 days',
-                      description: 'Your subscription begins unless you cancel before',
+                      title: 'In $kTrialDays days',
+                      description: 'Your trial ends on $trialEnds. Choose a plan to keep full access - you are never charged automatically.',
                       showConnector: false,
                     ),
                     
@@ -177,15 +185,15 @@ class TimelineScreen extends StatelessWidget {
                                       'No commitment. Cancel anytime',
                                       style: TextStyle(
                                         fontSize: 13,
-                                        color: Colors.white.withOpacity(0.6),
+                                        color: Colors.white.withOpacity(0.7),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                              const Text(
-                                '\$49/year',
-                                style: TextStyle(
+                              Text(
+                                'then ${plan.priceLabel}${plan.period}',
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: OnboardingTheme.lightIndigo,
@@ -212,7 +220,7 @@ class TimelineScreen extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: onNext,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: OnboardingTheme.healthGreen,
+                        backgroundColor: OnboardingTheme.ctaGreen,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 18),
                         shape: RoundedRectangleBorder(
@@ -243,9 +251,7 @@ class TimelineScreen extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
-                      onPressed: onComparePlans ?? () {
-                        // Navigate to compare plans - handled by parent
-                      },
+                      onPressed: onComparePlans,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),

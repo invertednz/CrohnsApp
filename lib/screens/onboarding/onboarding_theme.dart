@@ -12,6 +12,10 @@ class OnboardingTheme {
   static const Color healthGreen = Color(0xFF10B981);
   static const Color warningAmber = Color(0xFFF59E0B);
   static const Color errorRed = Color(0xFFEF4444);
+
+  /// Darker green for buttons with white labels (5.5:1 contrast; the lighter
+  /// healthGreen only reaches about 2.5:1 behind white text).
+  static const Color ctaGreen = Color(0xFF047857);
   
   // Gradient backgrounds
   static const LinearGradient primaryGradient = LinearGradient(

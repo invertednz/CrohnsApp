@@ -52,6 +52,7 @@ class _GoalScreenState extends State<GoalScreen> {
                 children: [
                   IconButton(
                     onPressed: widget.onBack,
+                    tooltip: 'Back',
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
                   ),
                 ],
@@ -160,9 +161,11 @@ class _GoalScreenState extends State<GoalScreen> {
                       EdgeInsets.symmetric(vertical: 18),
                     ),
                   ),
-                  child: const Text(
-                    'Continue',
-                    style: TextStyle(
+                  child: Text(
+                    widget.controller.data.goal == null
+                        ? 'Select a goal to continue'
+                        : 'Continue',
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -194,69 +197,74 @@ class _GoalOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.4),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected
-                ? OnboardingTheme.accentIndigo
-                : OnboardingTheme.accentIndigo.withOpacity(0.3),
-            width: isSelected ? 2 : 1,
+    return Semantics(
+      container: true,
+      button: true,
+      selected: isSelected,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.4),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected
+                  ? OnboardingTheme.accentIndigo
+                  : OnboardingTheme.accentIndigo.withOpacity(0.3),
+              width: isSelected ? 2 : 1,
+            ),
+            // No boxShadow for cleaner look
           ),
-          // No boxShadow for cleaner look
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                gradient: isSelected
-                    ? OnboardingTheme.accentGradient
-                    : null,
-                color: isSelected
-                    ? null
-                    : OnboardingTheme.accentIndigo.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(12),
+          child: Row(
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  gradient: isSelected
+                      ? OnboardingTheme.accentGradient
+                      : null,
+                  color: isSelected
+                      ? null
+                      : OnboardingTheme.accentIndigo.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: Colors.white,
+                  size: 28,
+                ),
               ),
-              child: Icon(
-                icon,
-                color: Colors.white,
-                size: 28,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    description,
-                    style: OnboardingTheme.bodyStyle.copyWith(fontSize: 14),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      description,
+                      style: OnboardingTheme.bodyStyle.copyWith(fontSize: 14),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            if (isSelected)
-              const Icon(
-                Icons.check_circle,
-                color: OnboardingTheme.healthGreen,
-                size: 28,
-              ),
-          ],
+              if (isSelected)
+                const Icon(
+                  Icons.check_circle,
+                  color: OnboardingTheme.healthGreen,
+                  size: 28,
+                ),
+            ],
+          ),
         ),
       ),
     );

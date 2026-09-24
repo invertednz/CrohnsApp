@@ -4,7 +4,7 @@ import '../onboarding_theme.dart';
 class AppUsageScreen extends StatefulWidget {
   final VoidCallback onNext;
   final VoidCallback onBack;
-  
+
   const AppUsageScreen({
     Key? key,
     required this.onNext,
@@ -18,54 +18,54 @@ class AppUsageScreen extends StatefulWidget {
 class _AppUsageScreenState extends State<AppUsageScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  
+
   final List<_CarouselItem> _items = [
     _CarouselItem(
       icon: Icons.edit_note,
       title: 'Daily Tracking',
-      description: 'Log your symptoms, meals, and activities in seconds',
+      description: 'Log how you feel, bowel movements, pain and energy in seconds',
       features: [
-        'Quick symptom logging',
-        'Meal photo capture',
-        'Activity tracking',
-        'Mood monitoring',
+        'Daily check-ins for mood, pain & energy',
+        'Bowel movement log',
+        'Symptom severity tracking',
+        'Medication & supplement checklists',
       ],
     ),
     _CarouselItem(
       icon: Icons.insights,
       title: 'Smart Insights',
-      description: 'AI-powered analysis identifies patterns and triggers',
+      description: 'AI looks across your logs to highlight patterns and possible triggers',
       features: [
-        'Trigger identification',
-        'Pattern recognition',
-        'Personalized recommendations',
-        'Progress tracking',
+        'Possible food trigger detection',
+        'Symptom trend summaries',
+        'Supplement tracking overview',
+        'Suggestions to discuss with your doctor',
       ],
     ),
     _CarouselItem(
       icon: Icons.restaurant_menu,
       title: 'Diet Management',
-      description: 'Discover which foods work best for your body',
+      description: 'Keep a food diary and see how meals line up with symptoms',
       features: [
-        'Food diary',
-        'Trigger foods alerts',
-        'Meal planning',
-        'Nutrition insights',
+        'Meal & food diary',
+        'Meal photo analysis',
+        'Personal trigger & safe food lists',
+        'Estimated nutrition for logged meals',
       ],
     ),
     _CarouselItem(
       icon: Icons.chat_bubble_outline,
       title: 'AI Assistant',
-      description: 'Get instant answers to your health questions',
+      description: 'Ask gut-health questions any time. It does not replace medical advice.',
       features: [
-        '24/7 availability',
-        'Evidence-based answers',
-        'Personalized advice',
-        'Symptom guidance',
+        'Available whenever you need it',
+        'Answers that consider your own logs',
+        'General gut-health information',
+        'Help preparing questions for your doctor',
       ],
     ),
   ];
-  
+
   @override
   void dispose() {
     _pageController.dispose();
@@ -88,27 +88,28 @@ class _AppUsageScreenState extends State<AppUsageScreen> {
                 children: [
                   IconButton(
                     onPressed: widget.onBack,
+                    tooltip: 'Back',
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               Text(
                 'How It Works',
                 style: OnboardingTheme.headingTextStyle(fontSize: 32),
               ),
-              
+
               const SizedBox(height: 12),
-              
-              Text(
-                'Swipe to explore features',
+
+              const Text(
+                'Swipe or tap Next to explore features',
                 style: OnboardingTheme.subheadingStyle,
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Carousel
               Expanded(
                 child: PageView.builder(
@@ -124,30 +125,35 @@ class _AppUsageScreenState extends State<AppUsageScreen> {
                   },
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Page indicators
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  _items.length,
-                  (index) => Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: _currentPage == index ? 24 : 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: _currentPage == index
-                          ? OnboardingTheme.accentIndigo
-                          : OnboardingTheme.accentIndigo.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(4),
+              Semantics(
+                container: true,
+                liveRegion: true,
+                label: 'Feature ${_currentPage + 1} of ${_items.length}',
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    _items.length,
+                    (index) => Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      width: _currentPage == index ? 24 : 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: _currentPage == index
+                            ? OnboardingTheme.accentIndigo
+                            : OnboardingTheme.accentIndigo.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Navigation buttons
               Row(
                 children: [
@@ -160,8 +166,21 @@ class _AppUsageScreenState extends State<AppUsageScreen> {
                             curve: Curves.easeInOut,
                           );
                         },
-                        style: OnboardingTheme.secondaryButtonStyle(),
-                        child: const Text('Previous'),
+                        style: OnboardingTheme.secondaryButtonStyle().copyWith(
+                          padding: const MaterialStatePropertyAll(
+                            EdgeInsets.symmetric(vertical: 18, horizontal: 8),
+                          ),
+                          // Same height as Next, whose label is larger.
+                          minimumSize: const MaterialStatePropertyAll(Size.fromHeight(60)),
+                        ),
+                        child: const Text(
+                          'Previous',
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   if (_currentPage > 0) const SizedBox(width: 12),
@@ -182,6 +201,7 @@ class _AppUsageScreenState extends State<AppUsageScreen> {
                         padding: const MaterialStatePropertyAll(
                           EdgeInsets.symmetric(vertical: 18),
                         ),
+                        minimumSize: const MaterialStatePropertyAll(Size.fromHeight(60)),
                       ),
                       child: Text(
                         _currentPage < _items.length - 1 ? 'Next' : 'Continue',
@@ -207,7 +227,7 @@ class _CarouselItem {
   final String title;
   final String description;
   final List<String> features;
-  
+
   _CarouselItem({
     required this.icon,
     required this.title,
@@ -218,7 +238,7 @@ class _CarouselItem {
 
 class _CarouselCard extends StatelessWidget {
   final _CarouselItem item;
-  
+
   const _CarouselCard({required this.item});
 
   @override
@@ -227,70 +247,74 @@ class _CarouselCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 8),
       padding: const EdgeInsets.all(24),
       decoration: OnboardingTheme.cardDecoration(withShadow: true),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Icon
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              gradient: OnboardingTheme.accentGradient,
-              borderRadius: BorderRadius.circular(24),
-              
-            ),
-            child: Icon(
-              item.icon,
-              size: 50,
-              color: Colors.white,
-            ),
-          ),
-          
-          const SizedBox(height: 32),
-          
-          // Title
-          Text(
-            item.title,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          
-          const SizedBox(height: 12),
-          
-          // Description
-          Text(
-            item.description,
-            style: OnboardingTheme.subheadingStyle.copyWith(fontSize: 16),
-            textAlign: TextAlign.center,
-          ),
-          
-          const SizedBox(height: 32),
-          
-          // Features
-          ...item.features.map((feature) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.check_circle,
-                  color: OnboardingTheme.healthGreen,
-                  size: 24,
+      // Scrolls instead of overflowing on short screens.
+      child: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  gradient: OnboardingTheme.accentGradient,
+                  borderRadius: BorderRadius.circular(24),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    feature,
-                    style: OnboardingTheme.bodyStyle.copyWith(fontSize: 15),
-                  ),
+                child: Icon(
+                  item.icon,
+                  size: 50,
+                  color: Colors.white,
                 ),
-              ],
-            ),
-          )),
-        ],
+              ),
+
+              const SizedBox(height: 32),
+
+              // Title
+              Text(
+                item.title,
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 12),
+
+              // Description
+              Text(
+                item.description,
+                style: OnboardingTheme.subheadingStyle.copyWith(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 32),
+
+              // Features
+              ...item.features.map((feature) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.check_circle,
+                      color: OnboardingTheme.healthGreen,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        feature,
+                        style: OnboardingTheme.bodyStyle.copyWith(fontSize: 15),
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+            ],
+          ),
+        ),
       ),
     );
   }

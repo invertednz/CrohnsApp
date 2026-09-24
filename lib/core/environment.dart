@@ -1,32 +1,16 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-
+/// Build-time configuration, supplied with `--dart-define-from-file=config/<env>.json`.
+///
+/// Only public values belong here: anything compiled into the app can be read
+/// by anyone who downloads it. AI calls go through Firebase AI Logic, so no
+/// model API key is ever shipped to the client.
 class Environment {
-  static String get supabaseUrl => dotenv.env['SUPABASE_URL'] ?? '';
-  static String get supabaseAnonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? '';
-  
-  static String get llmApiKey => dotenv.env['LLM_API_KEY'] ?? '';
-  static String get llmModel => dotenv.env['LLM_MODEL'] ?? '';
-  static String get llmEndpoint => dotenv.env['LLM_ENDPOINT'] ?? '';
-  static String get mixpanelToken => dotenv.env['MIXPANEL_TOKEN'] ?? '';
-  static String get mixpanelProjectId => dotenv.env['MIXPANEL_PROJECT_ID'] ?? '';
-  
-  // Gemini API
-  static String get geminiApiKey => dotenv.env['GEMINI_API_KEY'] ?? '';
-  
-  // Firebase Configuration
-  static bool get useFirebase => dotenv.env['USE_FIREBASE']?.toLowerCase() == 'true';
-  static bool get useMockData => dotenv.env['USE_MOCK_DATA']?.toLowerCase() == 'true';
+  static const String mixpanelToken = String.fromEnvironment('MIXPANEL_TOKEN');
 
-  static Future<void> initialize() async {
-    const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'development');
-    final envFile = flavor == 'production' ? '.env.production' : '.env';
+  /// Gemini model used for chat, meal photo analysis and insights.
+  static const String geminiModel =
+      String.fromEnvironment('GEMINI_MODEL', defaultValue: 'gemini-3.5-flash');
 
-    try {
-      await dotenv.load(fileName: envFile);
-    } catch (error, stackTrace) {
-      debugPrint('Environment: failed to load $envFile. Using fallback values. Error: $error');
-      debugPrintStack(stackTrace: stackTrace);
-    }
-  }
+  /// When true the app runs fully offline against the in-memory mock backend
+  /// with deterministic AI responses (used by the E2E test build).
+  static const bool useMockData = bool.fromEnvironment('USE_MOCK_DATA');
 }

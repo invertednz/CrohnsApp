@@ -1,7 +1,7 @@
 {
   "name": "crohnsapp",
   "version": "1.0.0",
-  "description": "A comprehensive health tracking application for individuals with Crohn's disease. This app enables users to track symptoms, diet, bowel movements, medications/supplements, and receive AI-powered insights to help manage their condition more effectively.",
+  "description": "GutMD: Flutter app for Crohn's, colitis and IBS tracking with Gemini-powered insights (Firebase).",
   "main": "index.js",
   "directories": {
     "doc": "docs",
@@ -9,27 +9,22 @@
     "test": "test"
   },
   "scripts": {
-    "test": "npx playwright test",
-    "test:e2e": "npx playwright test",
-    "test:e2e:ui": "npx playwright test --ui",
-    "test:e2e:headed": "npx playwright test --headed",
-    "test:e2e:debug": "npx playwright test --debug",
-    "test:chat": "npx playwright test chat.spec.ts",
-    "test:insights": "npx playwright test insights.spec.ts",
-    "test:supplements": "npx playwright test supplements.spec.ts",
-    "test:notifications": "npx playwright test notification-preferences.spec.ts",
-    "test:navigation": "npx playwright test navigation.spec.ts",
-    "test:accessibility": "npx playwright test accessibility.spec.ts",
-    "test:responsive": "npx playwright test responsive.spec.ts",
-    "test:visual": "npx playwright test visual.spec.ts",
-    "test:visual:update": "npx playwright test visual.spec.ts --update-snapshots",
-    "test:report": "npx playwright show-report"
+    "build:web": "flutter build web --release --dart-define-from-file=config/prod.json",
+    "build:web:test": "flutter build web --release --dart-define-from-file=config/test.json -o build/web-test",
+    "test:unit": "flutter test",
+    "test:flutter": "npx playwright test -c playwright.flutter.config.ts",
+    "test:flutter:video": "cross-env VIDEO=1 PW_WORKERS=4 npx playwright test -c playwright.flutter.config.ts",
+    "test:report": "npx playwright show-report playwright-report/flutter",
+    "test:mockups": "npx playwright test",
+    "deploy:rules": "npx -y firebase-tools@14 deploy --only firestore:rules --project gutmd-app",
+    "deploy:preview": "npx -y firebase-tools@14 hosting:channel:deploy preview --expires 30d --project gutmd-app"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@playwright/test": "^1.58.2",
+    "cross-env": "^10.1.0",
     "serve": "^14.2.6"
   }
 }
