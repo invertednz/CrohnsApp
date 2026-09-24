@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:gut_md/core/theme/app_theme.dart';
+import 'package:gut_md/core/backend_service_provider.dart';
+import 'package:gut_md/screens/auth/sign_in_screen.dart';
 import 'package:gut_md/screens/symptoms/symptoms_screen.dart';
 import 'package:gut_md/screens/supplements/supplements_screen.dart';
 import 'package:gut_md/screens/chat/chat_screen.dart';
@@ -253,12 +255,33 @@ class _HomeContentState extends State<HomeContent> {
                             ),
                           ],
                         ),
-                        _buildStreakBadge(),
+                        Row(
+                          children: [
+                            _buildStreakBadge(),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () => _showSignOutDialog(context),
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: Colors.white.withOpacity(0.2)),
+                                ),
+                                child: const Icon(
+                                  Icons.logout,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Calendar Bar
                     CalendarBar(
                       selectedDate: _selectedDate,
@@ -813,6 +836,36 @@ class _HomeContentState extends State<HomeContent> {
                     )
                   : const Icon(Icons.send, color: Colors.white, size: 20),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSignOutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Sign Out'),
+        content: const Text('Are you sure you want to sign out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              final backendService = BackendServiceProvider.instance;
+              await backendService.signOut();
+              if (context.mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const SignInScreen()),
+                  (route) => false,
+                );
+              }
+            },
+            child: const Text('Sign Out'),
           ),
         ],
       ),

@@ -41,3 +41,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Signing certificates (keep .gitkeep, ignore actual certs)
+certs/*.key
+certs/*.p12
+certs/*.pem
+certs/*.cer
+certs/*.mobileprovision
+certs/*.certSigningRequest

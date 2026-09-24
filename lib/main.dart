@@ -68,7 +68,8 @@ Future<void> _initializeBackend() async {
 
   try {
     developer.log('Initializing BackendService', name: 'App.main');
-    await BackendServiceProvider.initialize();
+    await BackendServiceProvider.initialize()
+        .timeout(const Duration(seconds: 10));
     developer.log('BackendService initialized successfully', name: 'App.main');
   } catch (error, stackTrace) {
     developer.log(
@@ -83,7 +84,8 @@ Future<void> _initializeBackend() async {
 Future<void> _initializeAnalytics() async {
   try {
     developer.log('Initializing MixpanelService', name: 'App.main');
-    await MixpanelService.initialize();
+    await MixpanelService.initialize()
+        .timeout(const Duration(seconds: 10));
     developer.log('MixpanelService initialized successfully', name: 'App.main');
   } catch (error, stackTrace) {
     developer.log(
@@ -98,7 +100,8 @@ Future<void> _initializeAnalytics() async {
 Future<void> _initializeFirebase() async {
   try {
     developer.log('Initializing FirebaseService', name: 'App.main');
-    await FirebaseService.initialize();
+    await FirebaseService.initialize()
+        .timeout(const Duration(seconds: 10));
     developer.log(
       'FirebaseService initialized successfully (using ${FirebaseService.isUsingMock ? "mock" : "Firebase"} data)',
       name: 'App.main',
