@@ -1,14 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 /// A widget that applies a staggered fade + slide-up animation to its child.
-/// 
+///
 /// Used for animating lists of cards, features, or options with a sequential reveal effect.
+/// When the platform asks for reduced motion, the child is shown immediately.
 class StaggeredAnimation extends StatefulWidget {
   final Widget child;
   final int index;
   final int staggerDelayMs;
   final int durationMs;
-  
+
   const StaggeredAnimation({
     Key? key,
     required this.child,
@@ -26,11 +29,13 @@ class _StaggeredAnimationState extends State<StaggeredAnimation>
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  Timer? _startTimer;
+  bool _scheduled = false;
 
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationController(
       duration: Duration(milliseconds: widget.durationMs),
       vsync: this,
@@ -55,20 +60,37 @@ class _StaggeredAnimationState extends State<StaggeredAnimation>
         curve: Curves.easeOut,
       ),
     );
+  }
 
-    // Start animation after stagger delay
-    Future.delayed(
-      Duration(milliseconds: widget.index * widget.staggerDelayMs),
-      () {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_scheduled) return;
+    _scheduled = true;
+
+    // Respect the system "reduce motion" setting.
+    if (MediaQuery.maybeDisableAnimationsOf(context) ?? false) {
+      _controller.value = 1.0;
+      return;
+    }
+
+    // Start animation after stagger delay. The timer is cancelled on dispose
+    // so a quickly dismissed screen leaves nothing pending.
+    final delay = Duration(milliseconds: widget.index * widget.staggerDelayMs);
+    if (delay == Duration.zero) {
+      _controller.forward();
+    } else {
+      _startTimer = Timer(delay, () {
         if (mounted) {
           _controller.forward();
         }
-      },
-    );
+      });
+    }
   }
 
   @override
   void dispose() {
+    _startTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }

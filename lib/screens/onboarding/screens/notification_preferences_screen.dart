@@ -70,6 +70,7 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
                 children: [
                   IconButton(
                     onPressed: widget.onBack,
+                    tooltip: 'Back',
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
                   ),
                 ],
@@ -148,80 +149,85 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
                         final isSelected = widget.controller.data.notificationTimes.contains(time.id);
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 16),
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                widget.controller.toggleNotificationTime(time.id);
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.4),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? time.color
-                                      : OnboardingTheme.accentIndigo.withOpacity(0.3),
-                                  width: isSelected ? 2 : 1,
+                          child: Semantics(
+                            container: true,
+                            button: true,
+                            selected: isSelected,
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  widget.controller.toggleNotificationTime(time.id);
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.4),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? time.color
+                                        : OnboardingTheme.accentIndigo.withOpacity(0.3),
+                                    width: isSelected ? 2 : 1,
+                                  ),
                                 ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 56,
-                                    height: 56,
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? time.color.withOpacity(0.2)
-                                          : OnboardingTheme.accentIndigo.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(12),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 56,
+                                      height: 56,
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? time.color.withOpacity(0.2)
+                                            : OnboardingTheme.accentIndigo.withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Icon(
+                                        time.icon,
+                                        color: isSelected ? time.color : Colors.white,
+                                        size: 28,
+                                      ),
                                     ),
-                                    child: Icon(
-                                      time.icon,
-                                      color: isSelected ? time.color : Colors.white,
-                                      size: 28,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          time.title,
-                                          style: const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            time.title,
+                                            style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          time.subtitle,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: isSelected
-                                                ? time.color
-                                                : OnboardingTheme.lightIndigo,
-                                            fontWeight: FontWeight.w600,
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            time.subtitle,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: isSelected
+                                                  ? time.color
+                                                  : OnboardingTheme.lightIndigo,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          time.description,
-                                          style: OnboardingTheme.bodyStyle.copyWith(fontSize: 13),
-                                        ),
-                                      ],
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            time.description,
+                                            style: OnboardingTheme.bodyStyle.copyWith(fontSize: 13),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  if (isSelected)
-                                    Icon(
-                                      Icons.check_circle,
-                                      color: time.color,
-                                      size: 28,
-                                    ),
-                                ],
+                                    if (isSelected)
+                                      Icon(
+                                        Icons.check_circle,
+                                        color: time.color,
+                                        size: 28,
+                                      ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -250,7 +256,7 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'You can change these settings anytime in your profile',
+                                'Reminders are optional. You can skip this step and still use every feature.',
                                 style: OnboardingTheme.bodyStyle.copyWith(fontSize: 14),
                               ),
                             ),

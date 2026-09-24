@@ -72,17 +72,16 @@ class Referral {
   }
 
   factory Referral.fromJson(Map<String, dynamic> json) {
+    final code = '${json['referralCode'] ?? ''}';
     return Referral(
-      id: json['id'],
-      userId: json['userId'],
-      referralCode: json['referralCode'],
-      successfulReferrals: json['successfulReferrals'] ?? 0,
-      earnedRewards: (json['earnedRewards'] ?? 0.0).toDouble(),
-      createdAt: DateTime.parse(json['createdAt']),
-      lastReferralAt: json['lastReferralAt'] != null 
-          ? DateTime.parse(json['lastReferralAt']) 
-          : null,
-      referredUserIds: List<String>.from(json['referredUserIds'] ?? []),
+      id: '${json['id'] ?? code}',
+      userId: '${json['userId'] ?? ''}',
+      referralCode: code,
+      successfulReferrals: (json['successfulReferrals'] as num?)?.toInt() ?? 0,
+      earnedRewards: (json['earnedRewards'] as num?)?.toDouble() ?? 0.0,
+      createdAt: DateTime.tryParse('${json['createdAt'] ?? ''}') ?? DateTime.now(),
+      lastReferralAt: DateTime.tryParse('${json['lastReferralAt'] ?? ''}'),
+      referredUserIds: List<String>.from(json['referredUserIds'] ?? const []),
     );
   }
 }

@@ -12,6 +12,24 @@ class ReferralRewardsCard extends StatelessWidget {
     this.onSharePressed,
   }) : super(key: key);
 
+  Future<void> _copyCode(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    var copied = true;
+    try {
+      await Clipboard.setData(ClipboardData(text: referral.referralCode));
+    } catch (_) {
+      copied = false;
+    }
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(copied
+            ? 'Referral code copied'
+            : 'Couldn\'t copy. Your code is ${referral.referralCode}'),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -20,15 +38,16 @@ class ReferralRewardsCard extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
+          // Dark greens keep the white text readable (over 5:1 contrast).
           colors: [
-            const Color(0xFF10B981), // Green
-            const Color(0xFF059669),
+            const Color(0xFF047857),
+            const Color(0xFF065F46),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF10B981).withOpacity(0.3),
+            color: const Color(0xFF047857).withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -138,12 +157,14 @@ class ReferralRewardsCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Progress to max reward',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.white.withOpacity(0.9),
-                      fontWeight: FontWeight.w500,
+                  Flexible(
+                    child: Text(
+                      'Progress to max reward',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.white.withOpacity(0.9),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                   Text(
@@ -160,6 +181,7 @@ class ReferralRewardsCard extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: LinearProgressIndicator(
+                  semanticsLabel: 'Referral credit progress',
                   value: referral.progressPercent / 100,
                   backgroundColor: Colors.white.withOpacity(0.2),
                   valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
@@ -189,7 +211,7 @@ class ReferralRewardsCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '${referral.remainingReferralSlots} more referral${referral.remainingReferralSlots != 1 ? 's' : ''} to earn \$${referral.remainingRewardPotential.toStringAsFixed(0)}!',
+                      '${referral.remainingReferralSlots} more referral${referral.remainingReferralSlots != 1 ? 's' : ''} to earn \$${referral.remainingRewardPotential.toStringAsFixed(0)} in credit',
                       style: const TextStyle(
                         fontSize: 13,
                         color: Colors.white,
@@ -258,24 +280,15 @@ class ReferralRewardsCard extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF10B981),
+                        color: Color(0xFF047857),
                         letterSpacing: 2,
                       ),
                     ),
                     IconButton(
-                      onPressed: () {
-                        Clipboard.setData(
-                          ClipboardData(text: referral.referralCode),
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Referral code copied!'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      },
+                      tooltip: 'Copy referral code',
+                      onPressed: () => _copyCode(context),
                       icon: const Icon(Icons.copy, size: 20),
-                      color: const Color(0xFF10B981),
+                      color: const Color(0xFF047857),
                     ),
                   ],
                 ),

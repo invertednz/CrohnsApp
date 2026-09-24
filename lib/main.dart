@@ -4,12 +4,11 @@ import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' as rendering;
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 
 import 'package:gut_md/core/analytics/mixpanel_service.dart';
 import 'package:gut_md/core/backend_service_provider.dart';
-import 'package:gut_md/core/environment.dart';
-import 'package:gut_md/core/firebase/firebase_service.dart';
 import 'package:gut_md/core/theme/app_theme.dart';
 import 'package:gut_md/screens/splash_screen.dart';
 
@@ -19,6 +18,11 @@ Future<void> main() async {
   try {
     developer.log('Initializing WidgetsFlutterBinding', name: 'App.main');
     WidgetsFlutterBinding.ensureInitialized();
+    if (kIsWeb) {
+      // Always build the web accessibility tree so screen readers (and the
+      // E2E suite) can see every control without an opt-in click.
+      SemanticsBinding.instance.ensureSemantics();
+    }
 
     developer.log('Setting preferred orientations', name: 'App.main');
     await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
@@ -26,8 +30,6 @@ Future<void> main() async {
       DeviceOrientation.portraitDown,
     ]);
 
-    developer.log('Loading environment configuration', name: 'App.main');
-    await Environment.initialize();
   } catch (error, stackTrace) {
     developer.log(
       'Non-fatal error during synchronous initialization',
@@ -51,34 +53,10 @@ Future<void> main() async {
 
   runApp(const MyApp());
 
-  // Kick off backend initialization in the background so the UI is never blocked
-  unawaited(_initializeBackend());
+  // Start backend initialization without blocking the first frame; the splash
+  // screen awaits it before routing anywhere that needs data.
+  unawaited(BackendServiceProvider.initialize());
   unawaited(_initializeAnalytics());
-  unawaited(_initializeFirebase());
-}
-
-Future<void> _initializeBackend() async {
-  if (kIsWeb) {
-    developer.log(
-      'Skipping BackendService initialization on web',
-      name: 'App.main',
-    );
-    return;
-  }
-
-  try {
-    developer.log('Initializing BackendService', name: 'App.main');
-    await BackendServiceProvider.initialize()
-        .timeout(const Duration(seconds: 10));
-    developer.log('BackendService initialized successfully', name: 'App.main');
-  } catch (error, stackTrace) {
-    developer.log(
-      'BackendService initialization failed, continuing in offline mode',
-      name: 'App.main',
-      error: error,
-      stackTrace: stackTrace,
-    );
-  }
 }
 
 Future<void> _initializeAnalytics() async {
@@ -90,25 +68,6 @@ Future<void> _initializeAnalytics() async {
   } catch (error, stackTrace) {
     developer.log(
       'MixpanelService initialization failed',
-      name: 'App.main',
-      error: error,
-      stackTrace: stackTrace,
-    );
-  }
-}
-
-Future<void> _initializeFirebase() async {
-  try {
-    developer.log('Initializing FirebaseService', name: 'App.main');
-    await FirebaseService.initialize()
-        .timeout(const Duration(seconds: 10));
-    developer.log(
-      'FirebaseService initialized successfully (using ${FirebaseService.isUsingMock ? "mock" : "Firebase"} data)',
-      name: 'App.main',
-    );
-  } catch (error, stackTrace) {
-    developer.log(
-      'FirebaseService initialization failed',
       name: 'App.main',
       error: error,
       stackTrace: stackTrace,

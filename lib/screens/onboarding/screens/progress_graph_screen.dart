@@ -5,7 +5,7 @@ import '../onboarding_theme.dart';
 class ProgressGraphScreen extends StatefulWidget {
   final VoidCallback onNext;
   final VoidCallback onBack;
-  
+
   const ProgressGraphScreen({
     Key? key,
     required this.onNext,
@@ -61,27 +61,30 @@ class _ProgressGraphScreenState extends State<ProgressGraphScreen> {
                 children: [
                   IconButton(
                     onPressed: widget.onBack,
+                    tooltip: 'Back',
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               Text(
-                'How It Works',
+                'Your Tracking Journey',
                 style: OnboardingTheme.headingTextStyle(fontSize: 32),
+                textAlign: TextAlign.center,
               ),
-              
+
               const SizedBox(height: 12),
-              
-              Text(
-                'Your journey to better health',
+
+              const Text(
+                'The more you log, the more there is to learn',
                 style: OnboardingTheme.subheadingStyle,
+                textAlign: TextAlign.center,
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Carousel with arrows
               Expanded(
                 child: Stack(
@@ -99,30 +102,30 @@ class _ProgressGraphScreenState extends State<ProgressGraphScreen> {
                         _buildMilestonePage(
                           week: 'Week 1-2',
                           title: 'Getting Started',
-                          description: 'Building tracking habits and gathering baseline data',
+                          description: 'Build a daily logging habit and record a baseline of how you feel',
                           icon: Icons.play_circle_outline,
                         ),
                         _buildMilestonePage(
                           week: 'Week 3-4',
-                          title: 'Early Insights',
-                          description: 'Beginning to identify patterns and potential triggers',
+                          title: 'Early Patterns',
+                          description: 'With a few weeks of data, possible patterns and triggers can start to show',
                           icon: Icons.lightbulb_outline,
                         ),
                         _buildMilestonePage(
                           week: 'Week 5-8',
-                          title: 'Noticeable Changes',
-                          description: 'Implementing changes and seeing symptom reduction',
-                          icon: Icons.trending_up,
+                          title: 'Testing Changes',
+                          description: 'Try adjustments agreed with your care team and track how you respond',
+                          icon: Icons.science_outlined,
                         ),
                         _buildMilestonePage(
                           week: 'Week 9+',
-                          title: 'Sustained Improvement',
-                          description: 'Maintaining healthy habits and continued progress',
-                          icon: Icons.emoji_events,
+                          title: 'The Long-Term Picture',
+                          description: 'Keep logging to follow trends over time and share them at appointments',
+                          icon: Icons.timeline,
                         ),
                       ],
                     ),
-                    
+
                     // Left Arrow
                     if (_currentPage > 0)
                       Positioned(
@@ -132,6 +135,7 @@ class _ProgressGraphScreenState extends State<ProgressGraphScreen> {
                         child: Center(
                           child: IconButton(
                             onPressed: _previousPage,
+                            tooltip: 'Previous slide',
                             icon: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
@@ -147,7 +151,7 @@ class _ProgressGraphScreenState extends State<ProgressGraphScreen> {
                           ),
                         ),
                       ),
-                    
+
                     // Right Arrow
                     if (_currentPage < _totalPages - 1)
                       Positioned(
@@ -157,6 +161,7 @@ class _ProgressGraphScreenState extends State<ProgressGraphScreen> {
                         child: Center(
                           child: IconButton(
                             onPressed: _nextPage,
+                            tooltip: 'Next slide',
                             icon: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
@@ -175,29 +180,34 @@ class _ProgressGraphScreenState extends State<ProgressGraphScreen> {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Page indicators
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(_totalPages, (index) {
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: _currentPage == index ? 24 : 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: _currentPage == index
-                          ? OnboardingTheme.accentIndigo
-                          : Colors.white.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  );
-                }),
+              Semantics(
+                container: true,
+                liveRegion: true,
+                label: 'Slide ${_currentPage + 1} of $_totalPages',
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(_totalPages, (index) {
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      width: _currentPage == index ? 24 : 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: _currentPage == index
+                            ? OnboardingTheme.accentIndigo
+                            : Colors.white.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    );
+                  }),
+                ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -228,53 +238,90 @@ class _ProgressGraphScreenState extends State<ProgressGraphScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-                      
-                      // Graph card
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: OnboardingTheme.cardDecoration(withShadow: true),
-                        child: Column(
-                          children: [
-                            const Text(
-                              'Symptom Improvement Over Time',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            
-                            // Custom graph
-                            SizedBox(
-                              height: 250,
-                              child: CustomPaint(
-                                painter: ProgressGraphPainter(),
-                                child: Container(),
-                              ),
-                            ),
-                            
-                            const SizedBox(height: 24),
-                            
-                            // Legend
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                _LegendItem(
-                                  color: OnboardingTheme.healthGreen,
-                                  label: 'Improvement',
-                                ),
-                                _LegendItem(
-                                  color: OnboardingTheme.warningAmber,
-                                  label: 'Learning Phase',
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 24),
+          // Graph card
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: OnboardingTheme.cardDecoration(withShadow: true),
+            child: Column(
+              children: [
+                const Text(
+                  'Insights Grow With Your Data',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+
+                // Illustrative curve
+                Semantics(
+                  container: true,
+                  image: true,
+                  label: 'Illustrative chart: insight into your patterns builds slowly '
+                      'while you record a baseline in weeks 1 to 2, then grows as you '
+                      'keep logging.',
+                  child: SizedBox(
+                    height: 220,
+                    child: CustomPaint(
+                      painter: ProgressGraphPainter(),
+                      child: Container(),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                // Time axis
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Week 1',
+                      style: OnboardingTheme.bodyStyle.copyWith(fontSize: 12),
+                    ),
+                    Text(
+                      'Week 9+',
+                      style: OnboardingTheme.bodyStyle.copyWith(fontSize: 12),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // Legend (wraps rather than overflowing with large text)
+                const Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 24,
+                  runSpacing: 8,
+                  children: [
+                    _LegendItem(
+                      color: OnboardingTheme.warningAmber,
+                      label: 'Learning phase',
+                    ),
+                    _LegendItem(
+                      color: OnboardingTheme.healthGreen,
+                      label: 'Pattern insights',
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                Text(
+                  'Illustration only, not a prediction of your results',
+                  style: OnboardingTheme.bodyStyle.copyWith(
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
         ],
       ),
     );
@@ -297,7 +344,7 @@ class _ProgressGraphScreenState extends State<ProgressGraphScreen> {
               Container(
                 width: 120,
                 height: 120,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   gradient: OnboardingTheme.accentGradient,
                   shape: BoxShape.circle,
                 ),
@@ -307,9 +354,9 @@ class _ProgressGraphScreenState extends State<ProgressGraphScreen> {
                   size: 60,
                 ),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Week badge
               Container(
                 padding: const EdgeInsets.symmetric(
@@ -333,18 +380,18 @@ class _ProgressGraphScreenState extends State<ProgressGraphScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Title
               Text(
                 title,
                 style: OnboardingTheme.headingTextStyle(fontSize: 28),
                 textAlign: TextAlign.center,
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Description
               Container(
                 padding: const EdgeInsets.all(24),
@@ -369,7 +416,7 @@ class _ProgressGraphScreenState extends State<ProgressGraphScreen> {
 class _LegendItem extends StatelessWidget {
   final Color color;
   final String label;
-  
+
   const _LegendItem({
     required this.color,
     required this.label,
@@ -378,6 +425,7 @@ class _LegendItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: 16,
@@ -397,87 +445,19 @@ class _LegendItem extends StatelessWidget {
   }
 }
 
-class _TimelineMilestone extends StatelessWidget {
-  final String week;
-  final String title;
-  final String description;
-  final IconData icon;
-  
-  const _TimelineMilestone({
-    required this.week,
-    required this.title,
-    required this.description,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: OnboardingTheme.cardDecoration(),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              gradient: OnboardingTheme.accentGradient,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  week,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: OnboardingTheme.lightIndigo,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  description,
-                  style: OnboardingTheme.bodyStyle.copyWith(fontSize: 13),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
+/// Draws an illustrative (not data-driven) curve of how insight builds as a
+/// user keeps logging: a slow baseline "learning phase" followed by growth.
 class ProgressGraphPainter extends CustomPainter {
+  /// Share of the timeline (weeks 1-2) drawn as the learning phase.
+  static const int learningPhaseEndPercent = 25;
+
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3;
-    
     // Draw grid lines
     final gridPaint = Paint()
       ..color = OnboardingTheme.accentIndigo.withOpacity(0.2)
       ..strokeWidth = 1;
-    
+
     for (int i = 0; i <= 4; i++) {
       final y = size.height * i / 4;
       canvas.drawLine(
@@ -486,25 +466,28 @@ class ProgressGraphPainter extends CustomPainter {
         gridPaint,
       );
     }
-    
-    // Draw progress curve (slow start, then ramp up)
-    final path = Path();
+
+    // Curve points (slow start, then ramp up), inset so the end markers
+    // are not clipped by the canvas edges.
+    const inset = 8.0;
+    final plotHeight = size.height - inset * 2;
     final points = <Offset>[];
-    
     for (int i = 0; i <= 100; i++) {
-      final x = size.width * i / 100;
-      // Exponential growth curve
       final progress = i / 100;
-      final y = size.height * (1 - math.pow(progress, 2));
+      final x = size.width * progress;
+      final y = inset + plotHeight * (1 - math.pow(progress, 2));
       points.add(Offset(x, y));
     }
-    
-    path.moveTo(points[0].dx, points[0].dy);
-    for (int i = 1; i < points.length; i++) {
-      path.lineTo(points[i].dx, points[i].dy);
+
+    Path pathFor(int from, int to) {
+      final path = Path()..moveTo(points[from].dx, points[from].dy);
+      for (int i = from + 1; i <= to; i++) {
+        path.lineTo(points[i].dx, points[i].dy);
+      }
+      return path;
     }
-    
-    // Draw gradient under curve
+
+    // Gradient under the whole curve
     final gradientPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
@@ -514,32 +497,49 @@ class ProgressGraphPainter extends CustomPainter {
           OnboardingTheme.healthGreen.withOpacity(0.0),
         ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-    
-    final fillPath = Path.from(path);
-    fillPath.lineTo(size.width, size.height);
-    fillPath.lineTo(0, size.height);
-    fillPath.close();
-    
+
+    final fillPath = pathFor(0, 100)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
     canvas.drawPath(fillPath, gradientPaint);
-    
-    // Draw the curve line
-    paint.color = OnboardingTheme.healthGreen;
-    paint.strokeWidth = 3;
-    canvas.drawPath(path, paint);
-    
-    // Draw points at key milestones
-    final pointPaint = Paint()
-      ..color = OnboardingTheme.healthGreen
-      ..style = PaintingStyle.fill;
-    
-    final milestones = [0, 25, 50, 75, 100];
+
+    // Learning phase segment (amber) then pattern insights segment (green),
+    // matching the legend.
+    final linePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
+    canvas.drawPath(
+      pathFor(0, learningPhaseEndPercent),
+      linePaint..color = OnboardingTheme.warningAmber,
+    );
+    canvas.drawPath(
+      pathFor(learningPhaseEndPercent, 100),
+      linePaint..color = OnboardingTheme.healthGreen,
+    );
+
+    // Markers at each milestone
+    const milestones = [0, 25, 50, 75, 100];
     for (final milestone in milestones) {
       final point = points[milestone];
-      canvas.drawCircle(point, 6, pointPaint);
-      canvas.drawCircle(point, 6, Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2);
+      final color = milestone <= learningPhaseEndPercent
+          ? OnboardingTheme.warningAmber
+          : OnboardingTheme.healthGreen;
+      canvas.drawCircle(
+        point,
+        6,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.fill,
+      );
+      canvas.drawCircle(
+        point,
+        6,
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2,
+      );
     }
   }
 

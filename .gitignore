@@ -49,3 +49,17 @@ certs/*.pem
 certs/*.cer
 certs/*.mobileprovision
 certs/*.certSigningRequest
+
+# Local secrets / env files (never commit)
+.env
+.env.*
+!.env.example
+
+# Recorded E2E runs (regenerate with scripts/collect-e2e-videos.mjs)
+videos/e2e/
+test-results/
+playwright-report/
+
+# Dependencies and tool caches
+node_modules/
+.firebase/

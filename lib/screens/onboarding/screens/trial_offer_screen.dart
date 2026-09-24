@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../onboarding_theme.dart';
 import '../onboarding_controller.dart';
+import '../onboarding_data.dart';
 
 class TrialOfferScreen extends StatelessWidget {
   final OnboardingController controller;
@@ -16,6 +18,7 @@ class TrialOfferScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final trialEnds = DateFormat('MMMM d').format(controller.trialEndDate);
     return Container(
       decoration: const BoxDecoration(
         gradient: OnboardingTheme.primaryGradient,
@@ -31,6 +34,7 @@ class TrialOfferScreen extends StatelessWidget {
                 child: Row(
                   children: [
                     IconButton(
+                      tooltip: 'Back',
                       onPressed: onBack,
                       icon: const Icon(
                         Icons.arrow_back,
@@ -73,7 +77,9 @@ class TrialOfferScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         // Heading
-                        RichText(
+                        Semantics(
+                          header: true,
+                          child: RichText(
                           textAlign: TextAlign.center,
                           text: const TextSpan(
                             style: TextStyle(
@@ -92,6 +98,7 @@ class TrialOfferScreen extends StatelessWidget {
                               TextSpan(text: ' free'),
                             ],
                           ),
+                        ),
                         ),
                         
                         const SizedBox(height: 32),
@@ -126,9 +133,10 @@ class TrialOfferScreen extends StatelessWidget {
                         
                         const SizedBox(height: 20),
                         
-                        // Bold reminder text
-                        const Text(
-                          'We\'ll send you a reminder before your trial ends',
+                        // Trial terms
+                        Text(
+                          'Your $kTrialDays-day free trial runs until $trialEnds. '
+                          'You are never charged automatically.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 16,
@@ -141,7 +149,7 @@ class TrialOfferScreen extends StatelessWidget {
                         
                         // Feature hint
                         Text(
-                          'Track unlimited symptoms & get AI insights during your 3-day trial',
+                          'Track unlimited symptoms & get AI insights during your $kTrialDays-day trial',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14,
@@ -165,7 +173,7 @@ class TrialOfferScreen extends StatelessWidget {
                       onNext();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: OnboardingTheme.healthGreen,
+                      backgroundColor: OnboardingTheme.ctaGreen,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 18),
                       shape: RoundedRectangleBorder(

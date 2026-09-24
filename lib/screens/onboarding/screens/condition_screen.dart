@@ -41,14 +41,18 @@ class _ConditionScreenState extends State<ConditionScreen> {
         _selectedConditions.add(condition);
       }
     });
+    _saveSelection();
+  }
+
+  /// Keep the controller in sync so the choice survives back navigation.
+  void _saveSelection() {
+    widget.controller.data.conditions = _selectedConditions.toList();
+    widget.controller.data.condition =
+        _selectedConditions.isNotEmpty ? _selectedConditions.first : null;
   }
 
   void _handleNext() {
-    // Save selected conditions
-    widget.controller.data.conditions = _selectedConditions.toList();
-    if (_selectedConditions.isNotEmpty) {
-      widget.controller.data.condition = _selectedConditions.first;
-    }
+    _saveSelection();
     widget.onNext();
   }
 
@@ -90,18 +94,12 @@ class _ConditionScreenState extends State<ConditionScreen> {
                 children: [
                   Row(
                     children: [
-                      GestureDetector(
-                        onTap: widget.onBack,
-                        child: const Icon(
+                      IconButton(
+                        onPressed: widget.onBack,
+                        tooltip: 'Back',
+                        icon: const Icon(
                           Icons.arrow_back,
                           color: Colors.white,
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        'Step 1 of 15',
-                        style: OnboardingTheme.bodyStyle.copyWith(
-                          color: Colors.white70,
                         ),
                       ),
                     ],
@@ -131,92 +129,97 @@ class _ConditionScreenState extends State<ConditionScreen> {
 
                     return StaggeredAnimation(
                       index: index,
-                      child: GestureDetector(
-                        onTap: () => _toggleCondition(condition),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? Colors.white.withOpacity(0.2)
-                                : Colors.white.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
+                      child: Semantics(
+                        container: true,
+                        button: true,
+                        selected: isSelected,
+                        child: GestureDetector(
+                          onTap: () => _toggleCondition(condition),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
                               color: isSelected
-                                  ? Colors.white
-                                  : Colors.white.withOpacity(0.2),
-                              width: isSelected ? 2 : 1,
+                                  ? Colors.white.withOpacity(0.2)
+                                  : Colors.white.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isSelected
+                                    ? Colors.white
+                                    : Colors.white.withOpacity(0.2),
+                                width: isSelected ? 2 : 1,
+                              ),
                             ),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 48,
-                                height: 48,
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? OnboardingTheme.healthGreen.withOpacity(0.2)
-                                      : Colors.white.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  _getConditionIcon(condition),
-                                  color: isSelected
-                                      ? OnboardingTheme.healthGreen
-                                      : Colors.white70,
-                                  size: 24,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      condition.displayName,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      condition.description,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.white.withOpacity(0.7),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                width: 24,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? OnboardingTheme.healthGreen
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? OnboardingTheme.healthGreen.withOpacity(0.2)
+                                        : Colors.white.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(
+                                    _getConditionIcon(condition),
                                     color: isSelected
                                         ? OnboardingTheme.healthGreen
-                                        : Colors.white54,
-                                    width: 2,
+                                        : Colors.white70,
+                                    size: 24,
                                   ),
                                 ),
-                                child: isSelected
-                                    ? const Icon(
-                                        Icons.check,
-                                        color: Colors.white,
-                                        size: 16,
-                                      )
-                                    : null,
-                              ),
-                            ],
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        condition.displayName,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        condition.description,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.white.withOpacity(0.7),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? OnboardingTheme.healthGreen
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? OnboardingTheme.healthGreen
+                                          : Colors.white54,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: isSelected
+                                      ? const Icon(
+                                          Icons.check,
+                                          color: Colors.white,
+                                          size: 16,
+                                        )
+                                      : null,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),

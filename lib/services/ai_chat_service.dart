@@ -1,7 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
-import 'package:gut_md/core/environment.dart';
+import 'package:intl/intl.dart';
+
+import 'package:gut_md/services/gemini_client.dart';
 
 /// Model for a chat message
 class ChatMessage {
@@ -25,415 +25,536 @@ class ChatMessage {
   };
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
-    id: json['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
-    text: json['text'] ?? json['message'] ?? '',
-    isUser: json['isUser'] ?? json['role'] == 'user',
-    timestamp: json['timestamp'] != null 
-        ? DateTime.parse(json['timestamp']) 
-        : DateTime.now(),
+    id: json['id']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
+    text: (json['text'] ?? json['message'] ?? '').toString(),
+    isUser: json['isUser'] == true || json['role'] == 'user',
+    timestamp: DateTime.tryParse(json['timestamp']?.toString() ?? '') ?? DateTime.now(),
   );
+}
+
+/// Feeling scale used by the daily log (0 = Terrible .. 4 = Great).
+const List<String> _feelingLabels = ['Terrible', 'Bad', 'Okay', 'Good', 'Great'];
+
+int? _asInt(dynamic value) {
+  if (value is num) return value.round();
+  return value == null ? null : int.tryParse(value.toString());
+}
+
+double? _asNum(dynamic value) {
+  if (value is num) return value.toDouble();
+  return value == null ? null : double.tryParse(value.toString());
+}
+
+/// Free-text fields may be stored as a string or a list of strings.
+String _asText(dynamic value) {
+  if (value == null) return '';
+  if (value is Iterable) {
+    return value.map((e) => e.toString().trim()).where((e) => e.isNotEmpty).join(', ');
+  }
+  return value.toString().trim();
+}
+
+List<Map<String, dynamic>> _maps(dynamic value) {
+  if (value is! Iterable) return const [];
+  return value
+      .whereType<Map>()
+      .map((e) => Map<String, dynamic>.from(e))
+      .toList();
+}
+
+String _feelingLabel(dynamic feeling) {
+  final value = _asInt(feeling);
+  if (value == null || value < 0 || value >= _feelingLabels.length) return 'Unknown';
+  return _feelingLabels[value];
+}
+
+String _formatNumber(double value) =>
+    value == value.roundToDouble() ? value.toInt().toString() : value.toStringAsFixed(1);
+
+String _joinNatural(List<String> items) {
+  if (items.isEmpty) return '';
+  if (items.length == 1) return items.first;
+  return '${items.sublist(0, items.length - 1).join(', ')} and ${items.last}';
 }
 
 /// User health context for AI chat
 class UserHealthContext {
+  /// Onboarding answers (conditions, goal, diet flags, lifestyle...), if saved.
+  final Map<String, dynamic>? profile;
   final List<Map<String, dynamic>> recentDailyTracking;
   final List<Map<String, dynamic>> recentSymptoms;
   final List<Map<String, dynamic>> recentSupplements;
+  final List<Map<String, dynamic>> recentMedications;
   final List<Map<String, dynamic>> recentDiet;
+
+  /// Free-text diary days from Home: `{date, entries: [{time, text, ...}]}`.
+  final List<Map<String, dynamic>> recentLogs;
   final List<String> foodTriggers;
   final List<String> safeFoods;
   final List<ChatMessage> chatHistory;
 
   UserHealthContext({
+    this.profile,
     this.recentDailyTracking = const [],
     this.recentSymptoms = const [],
     this.recentSupplements = const [],
+    this.recentMedications = const [],
     this.recentDiet = const [],
+    this.recentLogs = const [],
     this.foodTriggers = const [],
     this.safeFoods = const [],
     this.chatHistory = const [],
   });
 
+  bool get hasTrackedData =>
+      recentDailyTracking.isNotEmpty ||
+      recentSymptoms.isNotEmpty ||
+      recentSupplements.isNotEmpty ||
+      recentMedications.isNotEmpty ||
+      recentDiet.isNotEmpty ||
+      recentLogs.isNotEmpty ||
+      foodTriggers.isNotEmpty ||
+      safeFoods.isNotEmpty;
+
+  int? feelingOn(Map<String, dynamic> day) => _asInt(day['feeling']);
+
+  List<Map<String, dynamic>> get goodDays =>
+      recentDailyTracking.where((d) => (feelingOn(d) ?? 2) >= 3).toList();
+
+  List<Map<String, dynamic>> get toughDays =>
+      recentDailyTracking.where((d) => (feelingOn(d) ?? 2) <= 1).toList();
+
+  /// Foods logged on [date] across diet entries and analysed meals.
+  List<String> foodsOn(dynamic date) {
+    final foods = <String>[];
+    for (final entry in recentDiet.where((d) => d['date'] == date)) {
+      for (final meal in _maps(entry['meals'])) {
+        final items = meal['foods'];
+        if (items is Iterable) {
+          foods.addAll(items.map((f) => f.toString()).where((f) => f.trim().isNotEmpty));
+        }
+      }
+    }
+    return foods.toSet().toList();
+  }
+
+  /// Distinct symptom names from the most recent [entries] symptom logs,
+  /// with the highest severity seen for each.
+  Map<String, int> recentSymptomSeverity({int entries = 3}) {
+    final result = <String, int>{};
+    for (final entry in recentSymptoms.take(entries)) {
+      for (final symptom in _maps(entry['active_symptoms'])) {
+        final name = _asText(symptom['name']);
+        if (name.isEmpty) continue;
+        final severity = _asInt(symptom['severity']) ?? 0;
+        result[name] = severity > (result[name] ?? 0) ? severity : (result[name] ?? severity);
+      }
+    }
+    return result;
+  }
+
+  /// Latest logged list for supplements/medications as `name dosage (taken)`.
+  static List<Map<String, dynamic>> latestItems(List<Map<String, dynamic>> log, String key) {
+    if (log.isEmpty) return const [];
+    return _maps(log.first[key]).where((i) => _asText(i['name']).isNotEmpty).toList();
+  }
+
   /// Build a summary string of the user's health context for the AI
   String buildContextSummary() {
     final buffer = StringBuffer();
-    
-    // Recent feelings and wellness
+    buffer.writeln("Today's date: ${DateFormat('yyyy-MM-dd').format(DateTime.now())}");
+    buffer.writeln();
+    _writeProfile(buffer);
+
+    if (!hasTrackedData) {
+      buffer.writeln('The user has not tracked any health data in the app yet.');
+      return buffer.toString();
+    }
+
     if (recentDailyTracking.isNotEmpty) {
-      buffer.writeln('=== Recent Daily Tracking (last 7 days) ===');
-      for (final entry in recentDailyTracking.take(7)) {
-        final feeling = _feelingToText(entry['feeling'] ?? 2);
-        final date = entry['date'] ?? 'Unknown date';
-        final painLevel = entry['pain_level'] ?? 0;
-        final energyLevel = entry['energy_level'] ?? 5;
-        final bowelMovements = entry['bowel_movements'] ?? 0;
-        buffer.writeln('- $date: Feeling $feeling, Pain level: $painLevel/10, Energy: $energyLevel/10, Bowel movements: $bowelMovements');
+      buffer.writeln('=== Daily Check-ins (newest first) ===');
+      for (final entry in recentDailyTracking.take(14)) {
+        final parts = <String>['Feeling ${_feelingLabel(entry['feeling'])}'];
+        final pain = _asNum(entry['pain_level']);
+        if (pain != null) parts.add('pain ${_formatNumber(pain)}/10');
+        final energy = _asNum(entry['energy_level']);
+        if (energy != null) parts.add('energy ${_formatNumber(energy)}/10');
+        final bowel = _asInt(entry['bowel_movements']);
+        if (bowel != null) parts.add('bowel movements $bowel');
+        void flag(String key, String label) {
+          final value = entry[key];
+          if (value is bool) parts.add('$label: ${value ? 'yes' : 'no'}');
+        }
+        flag('supplements_followed', 'took all supplements');
+        flag('medications_followed', 'took all medications');
+        flag('diet_followed', 'stuck to usual diet');
+        buffer.writeln('- ${entry['date'] ?? 'Unknown date'}: ${parts.join(', ')}');
+        final good = _asText(entry['feel_good_factors']);
+        final bad = _asText(entry['feel_bad_factors']);
+        final notes = _asText(entry['notes']);
+        if (good.isNotEmpty) buffer.writeln('    Helped: $good');
+        if (bad.isNotEmpty) buffer.writeln('    Made it worse: $bad');
+        if (notes.isNotEmpty) buffer.writeln('    Notes: $notes');
       }
       buffer.writeln();
     }
 
-    // Recent symptoms
     if (recentSymptoms.isNotEmpty) {
-      buffer.writeln('=== Recent Symptoms ===');
-      for (final entry in recentSymptoms.take(7)) {
-        final date = entry['date'] ?? 'Unknown date';
-        final symptoms = entry['active_symptoms'] as List? ?? [];
+      buffer.writeln('=== Symptom Logs ===');
+      for (final entry in recentSymptoms.take(14)) {
+        final symptoms = _maps(entry['active_symptoms'])
+            .where((s) => _asText(s['name']).isNotEmpty)
+            .map((s) => '${_asText(s['name'])} (severity ${_asInt(s['severity']) ?? '?'}/5)')
+            .toList();
         if (symptoms.isNotEmpty) {
-          final symptomNames = symptoms.map((s) => '${s['name']} (severity: ${s['severity']}/5)').join(', ');
-          buffer.writeln('- $date: $symptomNames');
+          buffer.writeln('- ${entry['date'] ?? 'Unknown date'}: ${symptoms.join(', ')}');
         }
       }
       buffer.writeln();
     }
 
-    // Recent supplements
-    if (recentSupplements.isNotEmpty) {
-      buffer.writeln('=== Current Supplements ===');
-      final latestSupplements = recentSupplements.first['supplements'] as List? ?? [];
-      for (final supp in latestSupplements) {
-        final taken = supp['taken'] == true ? '✓ taken' : 'not taken';
-        buffer.writeln('- ${supp['name']} ${supp['dosage'] ?? ''} (${supp['time']}) - $taken');
+    void writeItems(String title, List<Map<String, dynamic>> items) {
+      if (items.isEmpty) return;
+      buffer.writeln('=== $title ===');
+      for (final item in items) {
+        final dosage = _asText(item['dosage']);
+        final time = _asText(item['time']);
+        final details = [if (dosage.isNotEmpty) dosage, if (time.isNotEmpty) time].join(', ');
+        final taken = item['taken'] == true ? 'taken' : 'not marked as taken';
+        buffer.writeln('- ${_asText(item['name'])}${details.isEmpty ? '' : ' ($details)'}: $taken');
       }
       buffer.writeln();
     }
 
-    // Diet information
+    writeItems('Supplements (latest log)', latestItems(recentSupplements, 'supplements'));
+    writeItems('Medications (latest log)', latestItems(recentMedications, 'medications'));
+
     if (recentDiet.isNotEmpty) {
       buffer.writeln('=== Recent Meals ===');
-      for (final entry in recentDiet.take(3)) {
-        final date = entry['date'] ?? 'Unknown date';
-        final meals = entry['meals'] as List? ?? [];
-        for (final meal in meals) {
-          final foods = (meal['foods'] as List?)?.join(', ') ?? '';
-          buffer.writeln('- $date ${meal['name']}: $foods');
+      for (final entry in recentDiet.take(10)) {
+        for (final meal in _maps(entry['meals'])) {
+          final foods = _asText(meal['foods']);
+          if (foods.isEmpty) continue;
+          buffer.writeln('- ${entry['date'] ?? 'Unknown date'} ${_asText(meal['name'])}: $foods');
         }
       }
       buffer.writeln();
     }
 
-    // Food triggers and safe foods
+    if (recentLogs.isNotEmpty) {
+      buffer.writeln('=== Diary Entries (free text, newest day first) ===');
+      for (final day in recentLogs) {
+        for (final entry in _maps(day['entries'])) {
+          final text = _asText(entry['text'] ?? entry['description']);
+          if (text.isEmpty) continue;
+          buffer.writeln('- ${day['date'] ?? 'Unknown date'} ${_asText(entry['time'])}: $text');
+        }
+      }
+      buffer.writeln();
+    }
+
     if (foodTriggers.isNotEmpty) {
-      buffer.writeln('=== Known Food Triggers ===');
+      buffer.writeln('=== Food Triggers (marked by the user) ===');
       buffer.writeln(foodTriggers.join(', '));
       buffer.writeln();
     }
 
     if (safeFoods.isNotEmpty) {
-      buffer.writeln('=== Safe Foods ===');
+      buffer.writeln('=== Safe Foods (marked by the user) ===');
       buffer.writeln(safeFoods.join(', '));
       buffer.writeln();
     }
 
-    // Analyze patterns - what made them feel good/bad
-    buffer.writeln(_analyzePatterns());
-
+    buffer.write(_analyzePatterns());
     return buffer.toString();
   }
 
-  String _feelingToText(int feeling) {
-    switch (feeling) {
-      case 0: return 'Very Bad 😞';
-      case 1: return 'Bad 😐';
-      case 2: return 'Okay 🙂';
-      case 3: return 'Good 😊';
-      case 4: return 'Great 🤗';
-      default: return 'Unknown';
-    }
+  void _writeProfile(StringBuffer buffer) {
+    final p = profile;
+    if (p == null) return;
+    String list(Object? v) => v is Iterable ? v.map((e) => e is Map ? e['name'] : e).join(', ') : '';
+    final lines = <String>[
+      if (_asText(p['condition_display']).isNotEmpty) 'Conditions: ${_asText(p['condition_display'])}',
+      if (_asText(p['goal']).isNotEmpty) 'Main goal: ${_asText(p['goal']).replaceAll('_', ' ')}',
+      if (list(p['dietFlags']).isNotEmpty) 'Diet notes: ${list(p['dietFlags'])}',
+      if (list(p['lifestyle']).isNotEmpty) 'Lifestyle: ${list(p['lifestyle'])}',
+      if (list(p['currentSymptoms']).isNotEmpty) 'Symptoms at sign-up: ${list(p['currentSymptoms'])}',
+    ];
+    if (lines.isEmpty) return;
+    buffer.writeln('=== About the User (from onboarding) ===');
+    lines.forEach(buffer.writeln);
+    buffer.writeln();
   }
 
   String _analyzePatterns() {
+    if (recentDailyTracking.isEmpty) return '';
     final buffer = StringBuffer();
-    buffer.writeln('=== Pattern Analysis ===');
-
-    // Find good days and what was eaten/done
-    final goodDays = recentDailyTracking.where((d) => (d['feeling'] ?? 2) >= 3).toList();
-    final badDays = recentDailyTracking.where((d) => (d['feeling'] ?? 2) <= 1).toList();
-
-    if (goodDays.isNotEmpty) {
-      buffer.writeln('Good days (feeling good/great): ${goodDays.length} in recent history');
-      // Show user-reported factors that made them feel good
-      for (final goodDay in goodDays.take(3)) {
-        final date = goodDay['date'];
-        final feelGoodFactors = goodDay['feel_good_factors'] ?? '';
-        if (feelGoodFactors.isNotEmpty) {
-          buffer.writeln('  - On $date: User reported feeling good because: $feelGoodFactors');
-        }
-        // Also correlate with diet
-        final dietOnDay = recentDiet.where((d) => d['date'] == date).toList();
-        if (dietOnDay.isNotEmpty) {
-          final meals = dietOnDay.first['meals'] as List? ?? [];
-          final allFoods = meals.expand((m) => (m['foods'] as List?) ?? []).toList();
-          if (allFoods.isNotEmpty) {
-            buffer.writeln('    Foods eaten: ${allFoods.join(', ')}');
-          }
-        }
+    buffer.writeln('=== Pattern Summary ===');
+    buffer.writeln(
+      '${recentDailyTracking.length} check-in(s): ${goodDays.length} good/great, '
+      '${toughDays.length} bad/terrible.',
+    );
+    for (final day in toughDays.take(3)) {
+      final foods = foodsOn(day['date']);
+      if (foods.isNotEmpty) {
+        buffer.writeln('- Foods on tough day ${day['date']}: ${foods.join(', ')}');
       }
     }
-
-    if (badDays.isNotEmpty) {
-      buffer.writeln('Bad days (feeling bad/very bad): ${badDays.length} in recent history');
-      for (final badDay in badDays.take(3)) {
-        final date = badDay['date'];
-        final feelBadFactors = badDay['feel_bad_factors'] ?? '';
-        if (feelBadFactors.isNotEmpty) {
-          buffer.writeln('  - On $date: User reported feeling bad because: $feelBadFactors');
-        }
-        // Correlate with diet and symptoms
-        final dietOnDay = recentDiet.where((d) => d['date'] == date).toList();
-        final symptomsOnDay = recentSymptoms.where((s) => s['date'] == date).toList();
-        
-        if (dietOnDay.isNotEmpty) {
-          final meals = dietOnDay.first['meals'] as List? ?? [];
-          final allFoods = meals.expand((m) => (m['foods'] as List?) ?? []).toList();
-          if (allFoods.isNotEmpty) {
-            buffer.writeln('    Foods eaten: ${allFoods.join(', ')}');
-          }
-        }
-        if (symptomsOnDay.isNotEmpty) {
-          final symptoms = symptomsOnDay.first['active_symptoms'] as List? ?? [];
-          if (symptoms.isNotEmpty) {
-            buffer.writeln('    Symptoms: ${symptoms.map((s) => s['name']).join(', ')}');
-          }
-        }
+    for (final day in goodDays.take(3)) {
+      final foods = foodsOn(day['date']);
+      if (foods.isNotEmpty) {
+        buffer.writeln('- Foods on good day ${day['date']}: ${foods.join(', ')}');
       }
     }
-
-    // Collect all reported feel-good and feel-bad factors
-    final allFeelGoodFactors = recentDailyTracking
-        .where((d) => (d['feel_good_factors'] ?? '').isNotEmpty)
-        .map((d) => d['feel_good_factors'] as String)
-        .toList();
-    final allFeelBadFactors = recentDailyTracking
-        .where((d) => (d['feel_bad_factors'] ?? '').isNotEmpty)
-        .map((d) => d['feel_bad_factors'] as String)
-        .toList();
-
-    if (allFeelGoodFactors.isNotEmpty) {
-      buffer.writeln('\n=== User-Reported Feel Good Factors ===');
-      buffer.writeln(allFeelGoodFactors.join('; '));
-    }
-
-    if (allFeelBadFactors.isNotEmpty) {
-      buffer.writeln('\n=== User-Reported Feel Bad Factors ===');
-      buffer.writeln(allFeelBadFactors.join('; '));
-    }
-
     return buffer.toString();
   }
 }
 
-/// AI Chat Service for generating intelligent responses
+/// AI chat assistant backed by Gemini (Firebase AI Logic).
+///
+/// Falls back to deterministic, data-aware responses when Gemini is
+/// unavailable (offline mock mode or a transient API failure).
 class AIChatService {
-  final String apiKey;
-  final String model;
-  final String endpoint;
+  const AIChatService();
 
-  AIChatService({
-    required this.apiKey,
-    required this.model,
-    required this.endpoint,
-  });
-
-  factory AIChatService.fromEnvironment() {
-    return AIChatService(
-      apiKey: Environment.llmApiKey,
-      model: Environment.llmModel.isNotEmpty ? Environment.llmModel : 'gpt-4o-mini',
-      endpoint: Environment.llmEndpoint.isNotEmpty 
-          ? Environment.llmEndpoint 
-          : 'https://api.openai.com/v1/chat/completions',
-    );
-  }
-
-  /// Generate a response using the AI model with user health context
+  /// Generate a response using Gemini with the user's health context.
   Future<String> generateResponse({
     required String userMessage,
     required UserHealthContext context,
   }) async {
-    if (apiKey.isEmpty) {
-      debugPrint('AIChatService: No API key configured, using fallback response');
+    if (!GeminiClient.isAvailable) {
       return _generateFallbackResponse(userMessage, context);
     }
 
     try {
-      final systemPrompt = _buildSystemPrompt(context);
-      final messages = _buildMessages(systemPrompt, context.chatHistory, userMessage);
-
-      final response = await http.post(
-        Uri.parse(endpoint),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $apiKey',
-        },
-        body: jsonEncode({
-          'model': model,
-          'messages': messages,
-          'max_tokens': 1000,
-          'temperature': 0.7,
-        }),
+      final reply = await GeminiClient.chat(
+        systemInstruction: _buildSystemPrompt(context),
+        history: recentHistory(context.chatHistory, userMessage),
+        message: userMessage,
       );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final content = data['choices'][0]['message']['content'] as String;
-        return content;
-      } else {
-        debugPrint('AIChatService: API error ${response.statusCode}: ${response.body}');
-        return _generateFallbackResponse(userMessage, context);
-      }
+      return toPlainText(reply);
     } catch (e) {
-      debugPrint('AIChatService: Error generating response: $e');
+      debugPrint('AIChatService: Gemini request failed: $e');
       return _generateFallbackResponse(userMessage, context);
     }
   }
 
+  /// Last 12 turns of history, excluding the message being sent now.
+  ///
+  /// Gemini expects alternating turns starting with the user, so consecutive
+  /// turns from the same side (e.g. after a failed reply) are merged.
+  @visibleForTesting
+  List<GeminiTurn> recentHistory(List<ChatMessage> history, String userMessage) {
+    final turns = <GeminiTurn>[];
+    for (final message in history) {
+      final text = message.text.trim();
+      if (text.isEmpty) continue;
+      if (turns.isNotEmpty && turns.last.isUser == message.isUser) {
+        final previous = turns.removeLast();
+        turns.add(GeminiTurn(isUser: message.isUser, text: '${previous.text}\n\n$text'));
+      } else {
+        turns.add(GeminiTurn(isUser: message.isUser, text: text));
+      }
+    }
+    if (turns.isNotEmpty && turns.last.isUser && turns.last.text == userMessage.trim()) {
+      turns.removeLast();
+    }
+    // The new message is sent as a user turn, so history must end on a model turn.
+    if (turns.isNotEmpty && turns.last.isUser) {
+      turns.removeLast();
+    }
+    var recent = turns.length > 12 ? turns.sublist(turns.length - 12) : turns;
+    while (recent.isNotEmpty && !recent.first.isUser) {
+      recent = recent.sublist(1);
+    }
+    return recent;
+  }
+
+  /// Chat bubbles render plain text, so strip common Markdown from replies.
+  @visibleForTesting
+  static String toPlainText(String reply) {
+    final lines = reply.replaceAll('\r\n', '\n').split('\n').map((line) {
+      var out = line;
+      out = out.replaceFirst(RegExp(r'^\s{0,3}#{1,6}\s+'), '');
+      out = out.replaceFirstMapped(
+        RegExp(r'^(\s*)[*\-+]\s+'),
+        (m) => '${m.group(1)}• ',
+      );
+      out = out.replaceAllMapped(RegExp(r'\*\*(.+?)\*\*'), (m) => m.group(1)!);
+      out = out.replaceAllMapped(RegExp(r'__(.+?)__'), (m) => m.group(1)!);
+      out = out.replaceAllMapped(RegExp(r'(?<![\w*])\*(?!\s)(.+?)(?<!\s)\*(?![\w*])'), (m) => m.group(1)!);
+      out = out.replaceAllMapped(RegExp(r'`([^`]+)`'), (m) => m.group(1)!);
+      return out;
+    });
+    return lines.join('\n').replaceAll(RegExp(r'\n{3,}'), '\n\n').trim();
+  }
+
   String _buildSystemPrompt(UserHealthContext context) {
-    return '''You are a caring and knowledgeable health assistant for a Crohn's disease management app called "Crohn's Companion". Your role is to:
+    return '''You are the GutMD Assistant, a caring, knowledgeable companion inside GutMD, an app people use to track Crohn's disease, ulcerative colitis, IBS and other digestive conditions.
 
-1. Help users understand their symptoms and patterns
-2. Provide personalized advice based on their tracked health data
-3. Suggest foods that might be safe or should be avoided based on their history
-4. Offer emotional support and encouragement
-5. Help identify correlations between diet, supplements, and how they feel
+What you do:
+1. Help the user understand their own tracked symptoms, meals, supplements, medications and daily check-ins.
+2. Point out possible links between food, stress, sleep, supplements and how they feel, but only when the data below supports it. Say how much data a pattern is based on, and call it a possible link, not a cause.
+3. Share general, evidence-based self-care information for digestive conditions.
+4. Offer emotional support and encourage consistent tracking.
 
-IMPORTANT GUIDELINES:
-- Always be empathetic and supportive
-- Never provide specific medical diagnoses or replace professional medical advice
-- Encourage users to consult their healthcare provider for medical decisions
-- Use the user's tracked data to provide personalized insights
-- When discussing patterns, reference specific data from their history
-- Be encouraging about their tracking efforts
-- If they're having a bad day, be supportive and help them identify potential triggers
+Safety rules (always follow):
+- You are not a doctor. Never diagnose, and never tell the user to start, stop or change the dose of a prescribed medication; suggest they discuss it with their doctor or IBD team.
+- If the user mentions red-flag symptoms (blood in stool, black or tarry stool, severe or worsening abdominal pain, fever, persistent vomiting, signs of dehydration, fainting, or no bowel movement with a swollen belly), tell them clearly to contact their doctor urgently or seek emergency care.
+- If the user mentions self-harm or suicidal thoughts, respond with compassion and urge them to contact local emergency services or a crisis line (for example 988 in the US, or Samaritans on 116 123 in the UK).
+- Never invent data. If something has not been tracked, say so and suggest what to log.
 
-USER'S HEALTH DATA:
-${context.buildContextSummary()}
+Style:
+- Plain text only: no Markdown, no headings, no asterisks. Use short paragraphs, and "• " for lists.
+- Be warm and concise: usually under 150 words.
+- Refer to specific dates, foods and symptoms from the data when they are relevant.
 
-Remember to reference their specific data when relevant to make responses personalized and helpful.''';
+USER'S TRACKED DATA:
+${context.buildContextSummary()}''';
   }
 
-  List<Map<String, String>> _buildMessages(
-    String systemPrompt,
-    List<ChatMessage> chatHistory,
-    String userMessage,
-  ) {
-    final messages = <Map<String, String>>[
-      {'role': 'system', 'content': systemPrompt},
-    ];
+  /// True when any keyword starts a word in [text] (so "eat" does not match
+  /// "great" and "iron" does not match "environment").
+  static bool _containsAny(String text, List<String> keywords) =>
+      keywords.any((k) => RegExp('\\b${RegExp.escape(k)}').hasMatch(text));
 
-    // Add recent chat history (last 10 messages for context)
-    for (final msg in chatHistory.take(10)) {
-      messages.add({
-        'role': msg.isUser ? 'user' : 'assistant',
-        'content': msg.text,
-      });
-    }
-
-    // Add current user message
-    messages.add({'role': 'user', 'content': userMessage});
-
-    return messages;
-  }
-
-  /// Fallback response when API is not available
+  /// Fallback response when Gemini is not available
   String _generateFallbackResponse(String userMessage, UserHealthContext context) {
-    final lowerMessage = userMessage.toLowerCase();
-    
-    // Analyze recent data for personalized responses
-    final recentFeeling = context.recentDailyTracking.isNotEmpty 
-        ? context.recentDailyTracking.first['feeling'] ?? 2 
-        : 2;
-    final hasGoodDays = context.recentDailyTracking.any((d) => (d['feeling'] ?? 2) >= 3);
-    final hasBadDays = context.recentDailyTracking.any((d) => (d['feeling'] ?? 2) <= 1);
+    final message = userMessage.toLowerCase().replaceAll('’', "'");
 
-    // Symptom-related questions
-    if (lowerMessage.contains('symptom') || lowerMessage.contains('pain') || lowerMessage.contains('hurt')) {
-      if (context.recentSymptoms.isNotEmpty) {
-        final recentSymptomsList = context.recentSymptoms.take(3).expand((s) {
-          final symptoms = s['active_symptoms'] as List? ?? [];
-          return symptoms.map((sym) => sym['name']);
-        }).toSet().toList();
-        
-        if (recentSymptomsList.isNotEmpty) {
-          return "I see you've been tracking symptoms like ${recentSymptomsList.join(', ')} recently. "
-              "It's important to monitor these patterns. Have you noticed if any particular foods or activities "
-              "tend to trigger these symptoms? Your food trigger list shows: ${context.foodTriggers.isNotEmpty ? context.foodTriggers.join(', ') : 'no triggers identified yet'}. "
-              "Keep tracking to help identify patterns!";
-        }
+    if (_containsAny(message, const [
+      'suicid', 'kill myself', 'end my life', 'self harm', 'self-harm', 'hurt myself',
+    ])) {
+      return "I'm really sorry you're feeling this way, and I'm glad you told me. You deserve support right now. "
+          'Please contact your local emergency number or a crisis line straight away '
+          '(for example 988 in the US, or Samaritans on 116 123 in the UK), or reach out to someone you trust.';
+    }
+
+    if (_containsAny(message, const [
+      'blood in', 'bloody', 'bleeding', 'black stool', 'tarry', 'fever', 'vomiting blood',
+      "can't keep", 'cannot keep', 'dehydrat', 'faint', 'passed out', 'emergency', 'severe pain',
+      'severe abdominal', 'severe stomach', 'worst pain', 'unbearable',
+    ])) {
+      return 'What you describe can need urgent medical attention. Please contact your doctor or IBD team today, '
+          'or call emergency services if symptoms are severe or getting worse. Warning signs include blood in your stool, '
+          'severe or worsening abdominal pain, a fever, being unable to keep fluids down, or feeling faint. '
+          'Log what you are experiencing in the Symptoms tab so you can share it with your care team.';
+    }
+
+    if (_containsAny(message, const ['stress', 'anxious', 'anxiety', 'worried', 'overwhelm'])) {
+      final stressDays = context.recentDailyTracking
+          .where((d) => _asText(d['feel_bad_factors']).toLowerCase().contains('stress'))
+          .length;
+      return 'Stress is commonly linked to digestive symptom flares, especially in IBS, and many people with IBD notice it too, '
+          'because the gut and brain are closely connected. '
+          '${stressDays > 0 ? 'You noted stress as a factor on $stressDays tough day${stressDays == 1 ? '' : 's'} in your log. ' : ''}'
+          'Things that help many people: slow breathing (in for 4, out for 6), a short daily walk, regular sleep, and '
+          'gut-directed relaxation or CBT, which your care team can refer you to. '
+          'Managing a chronic condition is hard, and your feelings are valid.';
+    }
+
+    if (_containsAny(message, const ['medication', 'medicine', 'meds', 'prescription', 'dose'])) {
+      final meds = UserHealthContext.latestItems(context.recentMedications, 'medications');
+      if (meds.isNotEmpty) {
+        final taken = meds.where((m) => m['taken'] == true).map((m) => _asText(m['name'])).toList();
+        final missed = meds.where((m) => m['taken'] != true).map((m) => _asText(m['name'])).toList();
+        return 'Your latest medication log lists ${_joinNatural(meds.map((m) => _asText(m['name'])).toList())}. '
+            '${taken.isNotEmpty ? 'Marked as taken: ${taken.join(', ')}. ' : ''}'
+            '${missed.isNotEmpty ? 'Not marked as taken yet: ${missed.join(', ')}. ' : ''}'
+            'Taking medication consistently, as prescribed, is one of the most important parts of staying in remission. '
+            'Never stop or change a dose without talking to your doctor, and ask them or your pharmacist about side effects or interactions.';
       }
-      return "I understand you're experiencing symptoms. Tracking them consistently helps identify patterns. "
-          "Would you like tips on managing common Crohn's symptoms, or help identifying potential triggers?";
+      return "You haven't logged any medications in GutMD yet. Add them in the Meds tab so you can track doses each day. "
+          'Take medication exactly as prescribed, and talk to your doctor or pharmacist before stopping or changing anything.';
     }
 
-    // Diet-related questions
-    if (lowerMessage.contains('eat') || lowerMessage.contains('food') || lowerMessage.contains('diet') || lowerMessage.contains('meal')) {
-      final safeFoodsText = context.safeFoods.isNotEmpty 
-          ? "Based on your tracking, your safe foods include: ${context.safeFoods.join(', ')}. " 
-          : "";
-      final triggersText = context.foodTriggers.isNotEmpty 
-          ? "You've identified these as triggers to avoid: ${context.foodTriggers.join(', ')}. "
-          : "";
-      
-      return "${safeFoodsText}${triggersText}"
-          "Everyone with Crohn's has different trigger foods, so your personal tracking is valuable. "
-          "Generally, easily digestible foods like white rice, bananas, and lean proteins are often well-tolerated. "
-          "Would you like to discuss specific foods or meal ideas?";
+    if (_containsAny(message, const ['supplement', 'vitamin', 'probiotic', 'iron', 'b12', 'omega'])) {
+      final supplements = UserHealthContext.latestItems(context.recentSupplements, 'supplements');
+      final tracked = supplements.isEmpty
+          ? ''
+          : "You're currently tracking ${_joinNatural(supplements.map((s) => _asText(s['name'])).toList())}. ";
+      return '$tracked'
+          'People with IBD are more likely to be low in vitamin D, vitamin B12, iron and folate, so these are the supplements '
+          'most often recommended, ideally after a blood test shows you need them. Evidence for probiotics is mixed and varies by condition. '
+          'Check any new supplement with your doctor or pharmacist, as some can interact with medications.';
     }
 
-    // Supplement/medication questions
-    if (lowerMessage.contains('supplement') || lowerMessage.contains('vitamin') || lowerMessage.contains('medication')) {
-      if (context.recentSupplements.isNotEmpty) {
-        final supplements = context.recentSupplements.first['supplements'] as List? ?? [];
-        final suppNames = supplements.map((s) => s['name']).toList();
-        if (suppNames.isNotEmpty) {
-          return "I see you're currently tracking: ${suppNames.join(', ')}. "
-              "Consistency with supplements is key! Common supplements for Crohn's include Vitamin D, B12, Iron, and probiotics. "
-              "Always discuss any new supplements with your healthcare provider as they can interact with medications.";
-        }
+    if (_containsAny(message, const ['pattern', 'trigger', 'why', 'caus', 'insight', 'correlat'])) {
+      if (context.recentDailyTracking.isEmpty) {
+        return "I don't have enough data to spot patterns yet. Log how you feel each day, plus your meals and symptoms, "
+            'for at least a week and I can start comparing your good and tough days.'
+            '${context.foodTriggers.isNotEmpty ? ' So far you have marked these food triggers: ${context.foodTriggers.join(', ')}.' : ''}';
       }
-      return "Supplements like Vitamin D, B12, Iron, and probiotics are commonly recommended for Crohn's patients, "
-          "but it's important to discuss with your doctor before starting any new supplements. "
-          "Would you like to track your supplements in the app?";
-    }
-
-    // Feeling-related questions
-    if (lowerMessage.contains('feel') || lowerMessage.contains('today') || lowerMessage.contains('how am i')) {
-      if (recentFeeling >= 3) {
-        return "I'm glad to see you've been feeling ${recentFeeling >= 4 ? 'great' : 'good'} recently! 🎉 "
-            "Keep up what you're doing. Looking at your data, your consistent tracking is really helping build a picture of what works for you.";
-      } else if (recentFeeling <= 1) {
-        return "I'm sorry you haven't been feeling well lately. 💙 Looking at your recent data, "
-            "let's see if we can identify any patterns. ${hasBadDays ? "You've had some tough days recently." : ""} "
-            "Remember to stay hydrated and rest when you need to. Would you like to talk about what might be contributing to how you're feeling?";
+      final toughFoods = <String>{};
+      for (final day in context.toughDays) {
+        toughFoods.addAll(context.foodsOn(day['date']));
       }
+      return 'Across ${context.recentDailyTracking.length} check-in${context.recentDailyTracking.length == 1 ? '' : 's'} '
+          'you had ${context.goodDays.length} good day${context.goodDays.length == 1 ? '' : 's'} and '
+          '${context.toughDays.length} tough day${context.toughDays.length == 1 ? '' : 's'}. '
+          '${toughFoods.isNotEmpty ? 'Foods logged on tough days: ${toughFoods.join(', ')}. ' : ''}'
+          '${context.foodTriggers.isNotEmpty ? 'Your marked food triggers: ${context.foodTriggers.join(', ')}. ' : ''}'
+          'These are possible links, not proof. Keep logging meals and how you feel, and share the patterns with your care team.';
     }
 
-    // Pattern/insight questions
-    if (lowerMessage.contains('pattern') || lowerMessage.contains('trigger') || lowerMessage.contains('why') || lowerMessage.contains('insight')) {
-      final goodDays = context.recentDailyTracking.where((d) => (d['feeling'] ?? 2) >= 3).length;
-      final badDays = context.recentDailyTracking.where((d) => (d['feeling'] ?? 2) <= 1).length;
-      
-      return "Based on your recent tracking, you've had $goodDays good days and $badDays challenging days. "
-          "${context.foodTriggers.isNotEmpty ? 'Your identified triggers (${context.foodTriggers.join(', ')}) are important to watch. ' : ''}"
-          "The more consistently you track, the better we can identify patterns together. "
-          "Try to note what you eat on both good and bad days to find correlations!";
+    if (_containsAny(message, const [
+      'food', 'eat', 'diet', 'meal', 'avoid', 'drink', 'breakfast', 'lunch', 'dinner', 'snack',
+      'dairy', 'gluten', 'lactose', 'fibre', 'fiber', 'coffee', 'alcohol', 'spicy',
+    ])) {
+      final parts = <String>[];
+      if (context.foodTriggers.isNotEmpty) {
+        parts.add("You've marked these food triggers to avoid: ${context.foodTriggers.join(', ')}.");
+      }
+      if (context.safeFoods.isNotEmpty) {
+        parts.add('Foods you have marked as safe: ${context.safeFoods.join(', ')}.');
+      }
+      if (parts.isEmpty) {
+        parts.add("You haven't marked any food triggers or safe foods yet. Add them from Home, then Meals & triggers, "
+            'and log your meals so patterns can show up.');
+      }
+      parts.add('Trigger foods differ from person to person. During a flare many people find low-fibre, lower-fat foods '
+          'such as white rice, bananas, eggs and lean protein easier to tolerate. '
+          'Talk to your doctor or a dietitian before cutting out whole food groups.');
+      return parts.join(' ');
     }
 
-    // Stress-related
-    if (lowerMessage.contains('stress') || lowerMessage.contains('anxious') || lowerMessage.contains('worried')) {
-      return "Stress can definitely impact Crohn's symptoms. Many people find that stress management techniques like "
-          "deep breathing, gentle exercise, meditation, or getting enough sleep can help. "
-          "Your feelings are valid, and managing a chronic condition is challenging. "
-          "Would you like some specific stress-management techniques that have helped others with Crohn's?";
+    if (_containsAny(message, const ['symptom', 'pain', 'hurt', 'flare', 'cramp', 'diarr', 'bloat', 'nause'])) {
+      final symptoms = context.recentSymptomSeverity();
+      final logged = symptoms.isEmpty
+          ? ''
+          : 'Recently you logged ${symptoms.entries.map((e) => '${e.key} (severity ${e.value}/5)').join(', ')}. ';
+      return '$logged'
+          'During a flare, things that often help are resting, a heat pad on your abdomen, small low-fibre meals and plenty of fluids. '
+          'Avoid anti-inflammatory painkillers such as ibuprofen unless your doctor has approved them, as they can worsen IBD. '
+          'If pain is severe or comes with fever, blood in your stool or vomiting, contact your doctor or IBD team promptly.';
     }
 
-    // Default personalized response
-    return "Thanks for reaching out! I'm here to help you manage your Crohn's journey. "
-        "${context.recentDailyTracking.isNotEmpty ? "I can see you've been tracking your health, which is great! " : "Start tracking your symptoms, diet, and how you feel to get personalized insights. "}"
-        "You can ask me about:\n"
-        "• Your symptoms and patterns\n"
-        "• Diet recommendations based on your tracked triggers\n"
-        "• Supplement information\n"
-        "• Stress management tips\n"
-        "• Understanding your health data\n\n"
-        "What would you like to know more about?";
+    if (_containsAny(message, const ['feel', 'how am i', 'how have i', 'lately', 'this week', 'today', 'progress', 'doing'])) {
+      final days = context.recentDailyTracking;
+      if (days.isEmpty) {
+        return "You haven't logged how you're feeling yet. Tap a mood on the Home screen each day, "
+            'and use Add details for pain and energy, so I can show you how you are trending.';
+      }
+      final latest = days.first;
+      final pains = days.take(7).map((d) => _asNum(d['pain_level'])).whereType<double>().toList();
+      final avgPain = pains.isEmpty ? null : pains.reduce((a, b) => a + b) / pains.length;
+      final okayDays = days.length - context.goodDays.length - context.toughDays.length;
+      return 'Your most recent check-in (${latest['date'] ?? 'latest'}) was "${_feelingLabel(latest['feeling'])}". '
+          'Across ${days.length} check-in${days.length == 1 ? '' : 's'}: ${context.goodDays.length} good, '
+          '$okayDays okay and ${context.toughDays.length} tough. '
+          '${avgPain != null ? 'Average pain in your recent logs: ${_formatNumber(double.parse(avgPain.toStringAsFixed(1)))}/10. ' : ''}'
+          '${context.toughDays.isNotEmpty ? 'On tough days, rest, fluids and gentle food can help, and contact your care team if things get worse. ' : 'Keep doing what is working for you. '}'
+          'Consistent tracking makes these trends more reliable.';
+    }
+
+    return "Hi, I'm the GutMD Assistant. "
+        '${context.hasTrackedData ? "I can see what you've been tracking and can help you make sense of it. " : 'Start tracking your symptoms, meals and how you feel, and I can help you spot patterns. '}'
+        'You can ask me about:\n'
+        '• Your symptoms and flares\n'
+        '• Foods to avoid and your safe foods\n'
+        '• Supplements and medications\n'
+        '• Stress and the gut\n'
+        '• How you have been feeling lately\n\n'
+        'I give general information, not medical advice.';
   }
 }

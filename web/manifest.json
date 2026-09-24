@@ -1,11 +1,11 @@
 {
-  "name": "crohns_companion",
-  "short_name": "crohns_companion",
+  "name": "GutMD",
+  "short_name": "GutMD",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#0175C2",
-  "theme_color": "#0175C2",
-  "description": "A new Flutter project.",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "description": "Track symptoms, food and mood, and get AI insights for Crohn's, colitis and IBS.",
   "orientation": "portrait-primary",
   "prefer_related_applications": false,
   "icons": [

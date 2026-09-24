@@ -203,7 +203,7 @@ class AppTheme {
       hintStyle: TextStyle(color: lightIndigo.withOpacity(0.5)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: Colors.black.withOpacity(0.4),
       elevation: 0,
       shadowColor: Colors.transparent,

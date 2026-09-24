@@ -1,152 +1,133 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../core/backend_service_provider.dart';
 import '../models/referral.dart';
 
+/// A user's referral code, stored as one `referral` tracking entry on their
+/// own account.
+///
+/// Crediting the person who referred a new member has to happen on the
+/// server: security rules only let a user read and write their own data, so
+/// the app can never update someone else's referral record.
 class ReferralService extends ChangeNotifier {
+  static const String trackingType = 'referral';
+  static const String entryId = 'referral_code';
+
+  /// Characters used in codes (no O/0 or I/1, which are easy to confuse).
+  static const String codeAlphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  static const int codeLength = 8;
+
+  final UnifiedTrackingService? _trackingOverride;
+  final Random _random;
+
+  ReferralService({UnifiedTrackingService? tracking, Random? random})
+      : _trackingOverride = tracking,
+        _random = random ?? Random.secure();
+
+  UnifiedTrackingService get _tracking =>
+      _trackingOverride ?? BackendServiceProvider.instance.tracking;
+
   Referral? _referral;
   bool _isLoading = false;
+  bool _isSaved = false;
 
   Referral? get referral => _referral;
   bool get isLoading => _isLoading;
   bool get hasReferral => _referral != null;
 
-  // Generate unique 8-character alphanumeric code (avoiding confusing chars)
+  /// True once the code is stored on an account; false while it only exists
+  /// on this device (created before the user signed up).
+  bool get isSaved => _isSaved;
+
+  /// Generates an 8-character code from [codeAlphabet].
   String generateReferralCode() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // No O,0,I,1
-    final random = Random();
-    return List.generate(8, (index) => chars[random.nextInt(chars.length)]).join();
+    return List.generate(
+      codeLength,
+      (_) => codeAlphabet[_random.nextInt(codeAlphabet.length)],
+    ).join();
   }
 
-  // Create new referral for user
-  Future<void> createReferral(String userId) async {
-    _isLoading = true;
-    notifyListeners();
-
+  /// Loads the user's existing code or creates one. With no [userId] (not
+  /// signed up yet) the code is kept on this device until [saveForUser].
+  Future<Referral> loadOrCreate(String? userId) async {
+    _setLoading(true);
     try {
-      final code = generateReferralCode();
-      _referral = Referral(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        userId: userId,
-        referralCode: code,
-        createdAt: DateTime.now(),
-      );
-
-      // TODO: Save to database (Supabase/Firebase)
-      await _saveToDatabase(_referral!);
-
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _isLoading = false;
-      notifyListeners();
-      rethrow;
-    }
-  }
-
-  // Load referral from database
-  Future<void> loadReferral(String userId) async {
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      // TODO: Load from database
-      final data = await _loadFromDatabase(userId);
-      if (data != null) {
-        _referral = Referral.fromJson(data);
+      if (userId != null) {
+        final existing = await loadReferral(userId);
+        if (existing != null) return existing;
       }
-
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _isLoading = false;
-      notifyListeners();
-      rethrow;
+      return await createReferral(userId);
+    } finally {
+      _setLoading(false);
     }
   }
 
-  // Record successful referral
-  Future<void> recordSuccessfulReferral(String referredUserId) async {
-    if (_referral == null || _referral!.hasReachedCap) return;
-
-    final newSuccessfulReferrals = _referral!.successfulReferrals + 1;
-    final newEarnedRewards = (newSuccessfulReferrals * Referral.rewardPerReferral)
-        .clamp(0, Referral.maxRewardCap)
-        .toDouble();
-
-    _referral = _referral!.copyWith(
-      successfulReferrals: newSuccessfulReferrals,
-      earnedRewards: newEarnedRewards,
-      lastReferralAt: DateTime.now(),
-      referredUserIds: [..._referral!.referredUserIds, referredUserId],
+  /// Loads the code saved on [userId]'s account, or null if there is none.
+  Future<Referral?> loadReferral(String userId) async {
+    final data = await _tracking.getTrackingData(
+      userId: userId,
+      date: entryId,
+      type: trackingType,
     );
-
-    // TODO: Save to database
-    await _saveToDatabase(_referral!);
-
+    final code = data?['referralCode'];
+    if (data == null || code is! String || code.isEmpty) return null;
+    _referral = Referral.fromJson(data);
+    _isSaved = true;
     notifyListeners();
+    return _referral;
   }
 
-  // Validate and apply referral code (for new user)
-  Future<bool> applyReferralCode(String code, String newUserId) async {
-    try {
-      // TODO: Query database for referral code
-      final referrerData = await _findReferralByCode(code);
-      
-      if (referrerData == null) return false;
-      
-      final referrer = Referral.fromJson(referrerData);
-      
-      if (referrer.hasReachedCap) return false;
-      if (referrer.referredUserIds.contains(newUserId)) return false;
-
-      // Record the successful referral for the referrer
-      // This would be called from backend after new user completes payment
-      return true;
-    } catch (e) {
-      return false;
+  /// Creates a new code, saving it straight away when [userId] is known.
+  Future<Referral> createReferral(String? userId) async {
+    final now = DateTime.now();
+    _referral = Referral(
+      id: now.millisecondsSinceEpoch.toString(),
+      userId: userId ?? '',
+      referralCode: generateReferralCode(),
+      createdAt: now,
+    );
+    _isSaved = false;
+    if (userId != null) {
+      await _save(userId);
     }
-  }
-
-  // Reset rewards at renewal (called annually)
-  Future<void> resetRewards() async {
-    if (_referral == null) return;
-
-    _referral = _referral!.copyWith(
-      successfulReferrals: 0,
-      earnedRewards: 0.0,
-      referredUserIds: [],
-    );
-
-    await _saveToDatabase(_referral!);
     notifyListeners();
+    return _referral!;
   }
 
-  // Database placeholder methods (implement with actual DB)
-  Future<void> _saveToDatabase(Referral referral) async {
-    // TODO: Implement with Supabase/Firebase
-    // Example: await supabase.from('referrals').upsert(referral.toJson());
-    await Future.delayed(const Duration(milliseconds: 500));
+  /// Stores a code created before sign-up on the new account. If the account
+  /// already has a code, that one is kept and loaded instead. Returns true
+  /// when the account has a saved code afterwards.
+  Future<bool> saveForUser(String userId) async {
+    final pending = _referral;
+    if (pending == null) return false;
+    if (_isSaved && pending.userId == userId) return true;
+    final existing = await loadReferral(userId);
+    if (existing != null) return true;
+    _referral = pending;
+    await _save(userId);
+    notifyListeners();
+    return true;
   }
 
-  Future<Map<String, dynamic>?> _loadFromDatabase(String userId) async {
-    // TODO: Implement with Supabase/Firebase
-    // Example: final response = await supabase
-    //   .from('referrals')
-    //   .select()
-    //   .eq('userId', userId)
-    //   .single();
-    await Future.delayed(const Duration(milliseconds: 500));
-    return null;
+  Future<void> _save(String userId) async {
+    final referral = _referral!.copyWith(userId: userId);
+    await _tracking.trackEvent(
+      userId: userId,
+      type: trackingType,
+      data: {
+        ...referral.toJson(),
+        'entry_id': entryId,
+        'date': DateFormat('yyyy-MM-dd').format(referral.createdAt),
+      },
+    );
+    _referral = referral;
+    _isSaved = true;
   }
 
-  Future<Map<String, dynamic>?> _findReferralByCode(String code) async {
-    // TODO: Implement with Supabase/Firebase
-    // Example: final response = await supabase
-    //   .from('referrals')
-    //   .select()
-    //   .eq('referralCode', code)
-    //   .single();
-    await Future.delayed(const Duration(milliseconds: 500));
-    return null;
+  void _setLoading(bool value) {
+    if (_isLoading == value) return;
+    _isLoading = value;
+    notifyListeners();
   }
 }
